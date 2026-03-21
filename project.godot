@@ -12,7 +12,7 @@ config_version=5
 config/name="Last Signal"
 config/description="A sci-fi tower defense game where you defend the last signal relay station against waves of corrupted machines."
 config/version="0.1.0"
-run/main_scene="res://scenes/game.tscn"
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://assets/sprites/icon.png"
 
