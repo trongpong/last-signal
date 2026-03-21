@@ -326,6 +326,7 @@ LevelDefinition:
 - Bonus for sending next wave early
 - Harvester towers generate passive income per wave
 - Spent on: placing towers, upgrading tiers, activating abilities
+- Tower sell refund: base 70% of total investment (upgradeable to 90% via global upgrades)
 - Resets each level
 
 ### Diamonds (Meta-Progression Currency)
