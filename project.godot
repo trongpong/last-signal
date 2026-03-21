@@ -1,11 +1,16 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; but the file format allows direct editing.
-; If the file has been edited manually, the editor may not understand it.
-
-[configuration]
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
@@ -13,7 +18,7 @@ config/name="Last Signal"
 config/description="A sci-fi tower defense game where you defend the last signal relay station against waves of corrupted machines."
 config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
-config/features=PackedStringArray("4.2", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://assets/sprites/icon.png"
 
 [autoload]
@@ -23,18 +28,24 @@ EconomyManager="*res://core/economy/economy_manager.gd"
 SaveManager="*res://core/save/save_manager.gd"
 AudioManager="*res://core/audio/audio_manager.gd"
 
+[configuration]
+
+config_version=5
+
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/resizable=true
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+
+[dotnet]
+
+project/assembly_name="Last Signal"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://content/translations/ui.csv")
-
-[rendering]
-
-renderer/rendering_method="forward_plus"
+locale/translations=PackedStringArray()
