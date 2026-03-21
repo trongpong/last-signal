@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://shielder001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_shielder"]
+
+[resource]
+script = ExtResource("1_shielder")
+id = "shielder"
+display_name = "Shielder"
+archetype = 4
+base_hp = 150.0
+speed = 120.0
+armor = 5.0
+shield = 50.0
+gold_value = 20
+diamond_chance = 0.0
+shape_sides = 6
+shape_radius = 14.0
+color = Color(0.2, 0.4, 1, 1)
+size_scale = 1.0
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = false

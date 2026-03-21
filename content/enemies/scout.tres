@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://scout001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_scout"]
+
+[resource]
+script = ExtResource("1_scout")
+id = "scout"
+display_name = "Scout"
+archetype = 0
+base_hp = 50.0
+speed = 200.0
+armor = 0.0
+shield = 0.0
+gold_value = 5
+diamond_chance = 0.0
+shape_sides = 3
+shape_radius = 8.0
+color = Color(1, 1, 0, 1)
+size_scale = 1.0
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = false
