@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_nano001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_nano"]
+
+[resource]
+script = ExtResource("1_nano")
+id = "nano_hive"
+display_name = "Nano Hive"
+tower_type = 5
+damage_type = 5
+base_damage = 0.0
+base_fire_rate = 0.0
+base_range = 150.0
+cost = 150
+shape_sides = 8
+shape_radius = 16.0
+color = Color(0, 0.502, 0, 1)
+targeting_modes = []
+is_support = true
+is_income = false
+projectile_speed = 0.0
+splash_radius = 0.0
+slow_factor = 1.0
+slow_duration = 0.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 150.0
+buff_damage_mult = 1.25
+buff_fire_rate_mult = 1.15
+income_per_wave = 0
+skill_tree_id = "nano_hive"
+tier_branches = [{
+	"name": "swarm",
+	"display_name": "Nano Swarm",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.3,
+	"cost": 120,
+	"special": "buff_damage_mult+0.1",
+	"branches": [{
+		"name": "hive_mind",
+		"display_name": "Hive Mind",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.2,
+		"cost": 240,
+		"special": "buff_fire_rate_mult+0.1",
+		"branches": []
+	}]
+}, {
+	"name": "repair",
+	"display_name": "Repair Drones",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.0,
+	"cost": 130,
+	"special": "repair",
+	"branches": [{
+		"name": "restoration",
+		"display_name": "Restoration Field",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.1,
+		"cost": 220,
+		"special": "repair_enhanced",
+		"branches": []
+	}]
+}]

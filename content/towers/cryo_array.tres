@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_cryo001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_cryo"]
+
+[resource]
+script = ExtResource("1_cryo")
+id = "cryo_array"
+display_name = "Cryo Array"
+tower_type = 2
+damage_type = 2
+base_damage = 8.0
+base_fire_rate = 1.2
+base_range = 160.0
+cost = 90
+shape_sides = 4
+shape_radius = 14.0
+color = Color(0.933, 0.933, 1.0, 1)
+targeting_modes = [3, 0, 1, 2, 4]
+is_support = false
+is_income = false
+projectile_speed = 350.0
+splash_radius = 0.0
+slow_factor = 0.5
+slow_duration = 2.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 0.0
+buff_damage_mult = 1.0
+buff_fire_rate_mult = 1.0
+income_per_wave = 0
+skill_tree_id = "cryo_array"
+tier_branches = [{
+	"name": "deep_freeze",
+	"display_name": "Deep Freeze",
+	"damage_mult": 1.2,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.0,
+	"cost": 70,
+	"special": "slow_factor-0.15",
+	"branches": [{
+		"name": "permafrost",
+		"display_name": "Permafrost",
+		"damage_mult": 1.3,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.0,
+		"cost": 140,
+		"special": "slow_duration+1.5",
+		"branches": []
+	}]
+}, {
+	"name": "blizzard",
+	"display_name": "Blizzard",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.5,
+	"range_mult": 1.2,
+	"cost": 85,
+	"special": "",
+	"branches": [{
+		"name": "avalanche",
+		"display_name": "Avalanche",
+		"damage_mult": 1.4,
+		"fire_rate_mult": 1.2,
+		"range_mult": 1.1,
+		"cost": 160,
+		"special": "splash=30",
+		"branches": []
+	}]
+}]

@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_harvest001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_harvest"]
+
+[resource]
+script = ExtResource("1_harvest")
+id = "harvester"
+display_name = "Harvester"
+tower_type = 6
+damage_type = 6
+base_damage = 0.0
+base_fire_rate = 0.0
+base_range = 100.0
+cost = 200
+shape_sides = 5
+shape_radius = 14.0
+color = Color(1, 0.843, 0, 1)
+targeting_modes = []
+is_support = false
+is_income = true
+projectile_speed = 0.0
+splash_radius = 0.0
+slow_factor = 1.0
+slow_duration = 0.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 0.0
+buff_damage_mult = 1.0
+buff_fire_rate_mult = 1.0
+income_per_wave = 50
+skill_tree_id = "harvester"
+tier_branches = [{
+	"name": "efficiency",
+	"display_name": "Efficiency Module",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.0,
+	"cost": 160,
+	"special": "income+25",
+	"branches": [{
+		"name": "surplus",
+		"display_name": "Surplus Generator",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.0,
+		"cost": 320,
+		"special": "income+50",
+		"branches": []
+	}]
+}, {
+	"name": "network",
+	"display_name": "Harvester Network",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.5,
+	"cost": 180,
+	"special": "income+15",
+	"branches": [{
+		"name": "megacore",
+		"display_name": "Mega Core",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.2,
+		"cost": 300,
+		"special": "income+40",
+		"branches": []
+	}]
+}]

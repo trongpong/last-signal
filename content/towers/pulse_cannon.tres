@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_pulse001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_pulse"]
+
+[resource]
+script = ExtResource("1_pulse")
+id = "pulse_cannon"
+display_name = "Pulse Cannon"
+tower_type = 0
+damage_type = 0
+base_damage = 25.0
+base_fire_rate = 1.0
+base_range = 200.0
+cost = 100
+shape_sides = 8
+shape_radius = 16.0
+color = Color(0, 1, 1, 1)
+targeting_modes = [3, 0, 1, 2, 4]
+is_support = false
+is_income = false
+projectile_speed = 400.0
+splash_radius = 0.0
+slow_factor = 1.0
+slow_duration = 0.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 0.0
+buff_damage_mult = 1.0
+buff_fire_rate_mult = 1.0
+income_per_wave = 0
+skill_tree_id = "pulse_cannon"
+tier_branches = [{
+	"name": "rapid",
+	"display_name": "Rapid Fire",
+	"damage_mult": 1.0,
+	"fire_rate_mult": 1.5,
+	"range_mult": 1.0,
+	"cost": 75,
+	"special": "",
+	"branches": [{
+		"name": "rapid_burst",
+		"display_name": "Burst Mode",
+		"damage_mult": 1.3,
+		"fire_rate_mult": 1.2,
+		"range_mult": 1.0,
+		"cost": 150,
+		"special": "",
+		"branches": []
+	}]
+}, {
+	"name": "overcharge",
+	"display_name": "Overcharge",
+	"damage_mult": 2.0,
+	"fire_rate_mult": 0.75,
+	"range_mult": 1.15,
+	"cost": 100,
+	"special": "",
+	"branches": [{
+		"name": "overcharge_impact",
+		"display_name": "Impact Core",
+		"damage_mult": 1.5,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.1,
+		"cost": 200,
+		"special": "",
+		"branches": []
+	}]
+}]

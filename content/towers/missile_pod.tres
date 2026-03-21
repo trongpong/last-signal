@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_missile001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_missile"]
+
+[resource]
+script = ExtResource("1_missile")
+id = "missile_pod"
+display_name = "Missile Pod"
+tower_type = 3
+damage_type = 3
+base_damage = 60.0
+base_fire_rate = 0.3
+base_range = 250.0
+cost = 180
+shape_sides = 4
+shape_radius = 16.0
+color = Color(1, 0.647, 0, 1)
+targeting_modes = [3, 0, 1, 2, 4]
+is_support = false
+is_income = false
+projectile_speed = 350.0
+splash_radius = 60.0
+slow_factor = 1.0
+slow_duration = 0.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 0.0
+buff_damage_mult = 1.0
+buff_fire_rate_mult = 1.0
+income_per_wave = 0
+skill_tree_id = "missile_pod"
+tier_branches = [{
+	"name": "payload",
+	"display_name": "Heavy Payload",
+	"damage_mult": 1.5,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.0,
+	"cost": 140,
+	"special": "splash+20",
+	"branches": [{
+		"name": "nuke",
+		"display_name": "Tactical Nuke",
+		"damage_mult": 1.8,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.0,
+		"cost": 280,
+		"special": "splash+30",
+		"branches": []
+	}]
+}, {
+	"name": "salvo",
+	"display_name": "Rapid Salvo",
+	"damage_mult": 0.8,
+	"fire_rate_mult": 2.0,
+	"range_mult": 1.0,
+	"cost": 150,
+	"special": "",
+	"branches": [{
+		"name": "carpet_bomb",
+		"display_name": "Carpet Bomb",
+		"damage_mult": 1.2,
+		"fire_rate_mult": 1.5,
+		"range_mult": 1.1,
+		"cost": 250,
+		"special": "",
+		"branches": []
+	}]
+}]

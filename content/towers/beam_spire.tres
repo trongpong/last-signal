@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="TowerDefinition" load_steps=2 format=3 uid="uid://tower_beam001"]
+
+[ext_resource type="Script" path="res://core/tower_system/tower_definition.gd" id="1_beam"]
+
+[resource]
+script = ExtResource("1_beam")
+id = "beam_spire"
+display_name = "Beam Spire"
+tower_type = 4
+damage_type = 4
+base_damage = 80.0
+base_fire_rate = 0.2
+base_range = 350.0
+cost = 250
+shape_sides = 6
+shape_radius = 18.0
+color = Color(0.502, 0, 0.502, 1)
+targeting_modes = [3, 0, 1, 2, 4]
+is_support = false
+is_income = false
+projectile_speed = 800.0
+splash_radius = 0.0
+slow_factor = 1.0
+slow_duration = 0.0
+chain_count = 0
+chain_range = 0.0
+buff_range = 0.0
+buff_damage_mult = 1.0
+buff_fire_rate_mult = 1.0
+income_per_wave = 0
+skill_tree_id = "beam_spire"
+tier_branches = [{
+	"name": "focused",
+	"display_name": "Focused Beam",
+	"damage_mult": 1.6,
+	"fire_rate_mult": 1.0,
+	"range_mult": 1.2,
+	"cost": 200,
+	"special": "",
+	"branches": [{
+		"name": "death_ray",
+		"display_name": "Death Ray",
+		"damage_mult": 2.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.15,
+		"cost": 400,
+		"special": "",
+		"branches": []
+	}]
+}, {
+	"name": "rapid_beam",
+	"display_name": "Pulse Beam",
+	"damage_mult": 0.7,
+	"fire_rate_mult": 2.5,
+	"range_mult": 1.0,
+	"cost": 180,
+	"special": "",
+	"branches": [{
+		"name": "beam_storm",
+		"display_name": "Beam Storm",
+		"damage_mult": 1.3,
+		"fire_rate_mult": 1.3,
+		"range_mult": 1.0,
+		"cost": 300,
+		"special": "",
+		"branches": []
+	}]
+}]
