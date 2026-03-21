@@ -203,7 +203,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
-			_try_place_tower(mb.global_position)
+			_try_place_tower(mb.position)
 
 func _try_place_tower(click_pos: Vector2) -> void:
 	if _pulse_cannon_def == null:
