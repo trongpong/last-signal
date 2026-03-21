@@ -21,6 +21,7 @@ config/icon="res://assets/sprites/icon.png"
 GameManager="*res://core/game_manager.gd"
 EconomyManager="*res://core/economy/economy_manager.gd"
 SaveManager="*res://core/save/save_manager.gd"
+AudioManager="*res://core/audio/audio_manager.gd"
 
 [display]
 
