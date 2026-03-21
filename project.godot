@@ -19,7 +19,6 @@ config/description="A sci-fi tower defense game where you defend the last signal
 config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="res://assets/sprites/icon.png"
 
 [autoload]
 
@@ -42,10 +41,6 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="Last Signal"
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gut/plugin.cfg")
-
 [internationalization]
 
-locale/translations=PackedStringArray()
+locale/translations=PackedStringArray("res://content/translations/ui.en.translation")

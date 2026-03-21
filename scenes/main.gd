@@ -59,13 +59,14 @@ func _show_main_menu() -> void:
 
 func _show_campaign_map() -> void:
 	var map := CampaignMap.new()
+	map.level_chosen.connect(_on_level_chosen)
+	map.back_pressed.connect(_show_main_menu)
+	_switch_screen(map)
+	# populate after adding to tree so _ready() creates child nodes first
 	var all_levels: Array = []
 	for region in range(1, _campaign_manager._registry.get_region_count() + 1):
 		all_levels.append_array(_campaign_manager._registry.get_levels_for_region(region))
 	map.populate(all_levels, SaveManager.data["campaign"])
-	map.level_chosen.connect(_on_level_chosen)
-	map.back_pressed.connect(_show_main_menu)
-	_switch_screen(map)
 
 
 func _on_level_chosen(level_id: String, difficulty: int) -> void:
