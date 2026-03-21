@@ -145,7 +145,7 @@ func test_diamond_doubler_doubles_ad_reward() -> void:
 func test_diamond_doubler_doubles_level_reward() -> void:
 	em.diamond_doubler = true
 	var constants := Constants.new()
-	var base_reward := int(10.0 * constants.DIFFICULTY_DIAMOND_REWARD_MULT[Enums.Difficulty.HARD])
+	var base_reward := int(10.0 * constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.HARD])
 	constants.free()
 	em.add_diamonds(base_reward)
 	assert_eq(em.diamonds, base_reward * 2)
@@ -231,7 +231,7 @@ func test_full_nightmare_run_with_diamond_reward() -> void:
 	assert_eq(gm.calculate_stars(), 2)
 
 	# Diamond reward is higher on nightmare
-	var nightmare_mult: float = constants.DIFFICULTY_DIAMOND_REWARD_MULT[Enums.Difficulty.NIGHTMARE]
+	var nightmare_mult: float = constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.NIGHTMARE]
 	constants.free()
 	var base_diamond_reward := 10
 	var expected_diamonds := int(float(base_diamond_reward) * nightmare_mult)

@@ -31,9 +31,9 @@ func test_gold_multipliers() -> void:
 	assert_almost_eq(constants.DIFFICULTY_GOLD_MULT[Enums.Difficulty.NIGHTMARE], 0.7, 0.001)
 
 func test_starting_lives() -> void:
-	assert_eq(constants.DIFFICULTY_STARTING_LIVES[Enums.Difficulty.NORMAL], 20)
-	assert_eq(constants.DIFFICULTY_STARTING_LIVES[Enums.Difficulty.HARD], 10)
-	assert_eq(constants.DIFFICULTY_STARTING_LIVES[Enums.Difficulty.NIGHTMARE], 5)
+	assert_eq(constants.DIFFICULTY_LIVES[Enums.Difficulty.NORMAL], 20)
+	assert_eq(constants.DIFFICULTY_LIVES[Enums.Difficulty.HARD], 10)
+	assert_eq(constants.DIFFICULTY_LIVES[Enums.Difficulty.NIGHTMARE], 5)
 
 func test_adaptation_thresholds() -> void:
 	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.NORMAL], 0.4, 0.001)
@@ -41,9 +41,9 @@ func test_adaptation_thresholds() -> void:
 	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.NIGHTMARE], 0.25, 0.001)
 
 func test_diamond_reward_multipliers() -> void:
-	assert_eq(constants.DIFFICULTY_DIAMOND_REWARD_MULT[Enums.Difficulty.NORMAL], 1.0)
-	assert_almost_eq(constants.DIFFICULTY_DIAMOND_REWARD_MULT[Enums.Difficulty.HARD], 1.5, 0.001)
-	assert_almost_eq(constants.DIFFICULTY_DIAMOND_REWARD_MULT[Enums.Difficulty.NIGHTMARE], 2.5, 0.001)
+	assert_eq(constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.NORMAL], 1.0)
+	assert_almost_eq(constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.HARD], 1.5, 0.001)
+	assert_almost_eq(constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.NIGHTMARE], 2.5, 0.001)
 
 # ---------------------------------------------------------------------------
 # Economy tests
@@ -66,29 +66,29 @@ func test_adaptation_check_interval() -> void:
 	assert_eq(Constants.ADAPTATION_CHECK_INTERVAL, 3)
 
 func test_max_resistance() -> void:
-	assert_almost_eq(Constants.MAX_RESISTANCE, 0.6, 0.001)
+	assert_almost_eq(Constants.ADAPTATION_MAX_RESISTANCE, 0.6, 0.001)
 
 func test_max_resistance_endless() -> void:
-	assert_almost_eq(Constants.MAX_RESISTANCE_ENDLESS, 0.75, 0.001)
+	assert_almost_eq(Constants.ADAPTATION_MAX_RESISTANCE_ENDLESS, 0.75, 0.001)
 
 func test_endless_threshold() -> void:
-	assert_almost_eq(Constants.ENDLESS_THRESHOLD, 0.3, 0.001)
+	assert_almost_eq(Constants.ADAPTATION_ENDLESS_THRESHOLD, 0.3, 0.001)
 
 func test_resistance_increment() -> void:
-	assert_almost_eq(Constants.RESISTANCE_INCREMENT, 0.1, 0.001)
+	assert_almost_eq(Constants.ADAPTATION_RESISTANCE_INCREMENT, 0.1, 0.001)
 
 func test_decay_rate() -> void:
-	assert_almost_eq(Constants.DECAY_RATE, 0.05, 0.001)
+	assert_almost_eq(Constants.ADAPTATION_DECAY_RATE, 0.05, 0.001)
 
 # ---------------------------------------------------------------------------
 # Star rating tests
 # ---------------------------------------------------------------------------
 
 func test_star_two_threshold() -> void:
-	assert_eq(Constants.STAR_TWO_MAX_LIVES_LOST, 5)
+	assert_eq(Constants.STAR_2_MAX_LIVES_LOST, 5)
 
 func test_star_three_threshold() -> void:
-	assert_eq(Constants.STAR_THREE_MAX_LIVES_LOST, 0)
+	assert_eq(Constants.STAR_3_MAX_LIVES_LOST, 0)
 
 # ---------------------------------------------------------------------------
 # Wave & speed tests

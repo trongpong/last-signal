@@ -103,7 +103,7 @@ func test_load_returns_true_when_file_exists() -> void:
 	assert_true(result)
 
 func test_round_trip_preserves_language() -> void:
-	sm._data["profile"]["language"] = "fr"
+	sm.data["profile"]["language"] = "fr"
 	sm.save_game()
 	var sm2 := SaveManager.new()
 	sm2.save_path = sm.save_path
@@ -176,11 +176,11 @@ func test_sync_economy_stores_diamonds() -> void:
 	add_child(eco)
 	eco.add_diamonds(500)
 	sm.sync_economy(eco)
-	assert_eq(sm._data["economy"]["diamonds"], 500)
+	assert_eq(sm.data["economy"]["diamonds"], 500)
 	eco.queue_free()
 
 func test_apply_economy_sets_diamonds() -> void:
-	sm._data["economy"]["diamonds"] = 250
+	sm.data["economy"]["diamonds"] = 250
 	var eco := EconomyManager.new()
 	add_child(eco)
 	sm.apply_economy(eco)
@@ -188,7 +188,7 @@ func test_apply_economy_sets_diamonds() -> void:
 	eco.queue_free()
 
 func test_apply_economy_sets_diamond_doubler() -> void:
-	sm._data["economy"]["diamond_doubler"] = true
+	sm.data["economy"]["diamond_doubler"] = true
 	var eco := EconomyManager.new()
 	add_child(eco)
 	sm.apply_economy(eco)

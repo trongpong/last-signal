@@ -23,7 +23,7 @@ var save_path: String = "user://last_signal_save.json"
 # In-memory save data
 # ---------------------------------------------------------------------------
 
-var _data: Dictionary = {}
+var data: Dictionary = {}
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -31,7 +31,7 @@ var _data: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_data = get_default_save_data()
+	data = get_default_save_data()
 
 # ---------------------------------------------------------------------------
 # Default Save Structure
@@ -45,8 +45,11 @@ func get_default_save_data() -> Dictionary:
 		"profile": {
 			"language": "en",
 			"settings": {
-				"music_volume": 1.0,
-				"sfx_volume": 1.0,
+				"music_vol": 1.0,
+				"sfx_vol": 1.0,
+				"ui_vol": 1.0,
+				"speed_pref": 1.0,
+				"graphics": "medium",
 				"show_damage_numbers": true,
 				"show_range_on_hover": true
 			}
@@ -96,26 +99,26 @@ func get_default_save_data() -> Dictionary:
 
 ## Returns a copy of the current in-memory save data.
 func get_data() -> Dictionary:
-	return _data.duplicate(true)
+	return data.duplicate(true)
 
 ## Direct access to a top-level section for reading.
 func get_section(section: String) -> Dictionary:
-	if _data.has(section):
-		return _data[section].duplicate(true)
+	if data.has(section):
+		return data[section].duplicate(true)
 	return {}
 
 # ---------------------------------------------------------------------------
 # Save
 # ---------------------------------------------------------------------------
 
-## Saves current _data to disk with backup rotation.
+## Saves current data to disk with backup rotation.
 func save_game() -> void:
 	_rotate_backups()
 	var file := FileAccess.open(save_path, FileAccess.WRITE)
 	if file == null:
 		push_error("SaveManager: cannot open save file for writing: %s" % save_path)
 		return
-	file.store_string(JSON.stringify(_data, "\t"))
+	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
 	game_saved.emit(save_path)
 
@@ -157,13 +160,13 @@ func _rotate_backups() -> void:
 ## Returns true on success, false on failure (fresh default data is used).
 func load_game() -> bool:
 	if not FileAccess.file_exists(save_path):
-		_data = get_default_save_data()
+		data = get_default_save_data()
 		return false
 
 	var file := FileAccess.open(save_path, FileAccess.READ)
 	if file == null:
 		push_error("SaveManager: cannot open save file for reading: %s" % save_path)
-		_data = get_default_save_data()
+		data = get_default_save_data()
 		return false
 
 	var raw := file.get_as_text()
@@ -173,11 +176,11 @@ func load_game() -> bool:
 	var err := json.parse(raw)
 	if err != OK:
 		push_error("SaveManager: JSON parse error in save file: %s" % json.get_error_message())
-		_data = get_default_save_data()
+		data = get_default_save_data()
 		return false
 
 	var loaded: Dictionary = json.get_data()
-	_data = _deep_merge(get_default_save_data(), loaded)
+	data = _deep_merge(get_default_save_data(), loaded)
 	game_loaded.emit(save_path)
 	return true
 
@@ -199,7 +202,7 @@ func _deep_merge(dst: Dictionary, src: Dictionary) -> Dictionary:
 ## Records level completion, keeping the best stars and best difficulty seen.
 ## difficulty is an Enums.Difficulty int.
 func set_level_complete(level_id: String, stars: int, difficulty: int) -> void:
-	var levels: Dictionary = _data["campaign"]["levels_completed"]
+	var levels: Dictionary = data["campaign"]["levels_completed"]
 	if not levels.has(level_id):
 		levels[level_id] = {
 			"best_stars": stars,
@@ -216,7 +219,7 @@ func set_level_complete(level_id: String, stars: int, difficulty: int) -> void:
 
 ## Returns the completion record for a level, or empty dict if not completed.
 func get_level_record(level_id: String) -> Dictionary:
-	var levels: Dictionary = _data["campaign"]["levels_completed"]
+	var levels: Dictionary = data["campaign"]["levels_completed"]
 	return levels.get(level_id, {}).duplicate(true)
 
 # ---------------------------------------------------------------------------
@@ -225,13 +228,13 @@ func get_level_record(level_id: String) -> Dictionary:
 
 ## Syncs diamond economy data from EconomyManager into save data.
 func sync_economy(economy_manager: EconomyManager) -> void:
-	_data["economy"]["diamonds"] = economy_manager.diamonds
-	_data["economy"]["diamond_doubler"] = economy_manager.diamond_doubler
-	_data["economy"]["total_diamonds_earned"] = economy_manager.total_diamonds_earned
+	data["economy"]["diamonds"] = economy_manager.diamonds
+	data["economy"]["diamond_doubler"] = economy_manager.diamond_doubler
+	data["economy"]["total_diamonds_earned"] = economy_manager.total_diamonds_earned
 
 ## Applies saved economy data into an EconomyManager instance.
 func apply_economy(economy_manager: EconomyManager) -> void:
-	var eco: Dictionary = _data.get("economy", {})
+	var eco: Dictionary = data.get("economy", {})
 	economy_manager.diamonds = eco.get("diamonds", 0)
 	economy_manager.diamond_doubler = eco.get("diamond_doubler", false)
 	economy_manager.total_diamonds_earned = eco.get("total_diamonds_earned", 0)

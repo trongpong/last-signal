@@ -30,7 +30,7 @@ var DIFFICULTY_GOLD_MULT: Dictionary = {
 }
 
 ## Starting lives per difficulty
-var DIFFICULTY_STARTING_LIVES: Dictionary = {
+var DIFFICULTY_LIVES: Dictionary = {
 	Enums.Difficulty.NORMAL: 20,
 	Enums.Difficulty.HARD: 10,
 	Enums.Difficulty.NIGHTMARE: 5
@@ -45,7 +45,7 @@ var DIFFICULTY_ADAPTATION_THRESHOLD: Dictionary = {
 }
 
 ## Diamond reward multiplier per difficulty
-var DIFFICULTY_DIAMOND_REWARD_MULT: Dictionary = {
+var DIFFICULTY_DIAMOND_MULT: Dictionary = {
 	Enums.Difficulty.NORMAL: 1.0,
 	Enums.Difficulty.HARD: 1.5,
 	Enums.Difficulty.NIGHTMARE: 2.5
@@ -72,33 +72,36 @@ const EARLY_SEND_GOLD_BONUS: int = 50
 const ADAPTATION_CHECK_INTERVAL: int = 3
 
 ## Maximum resistance a tower type can accumulate (normal/hard)
-const MAX_RESISTANCE: float = 0.6
+const ADAPTATION_MAX_RESISTANCE: float = 0.6
 
 ## Maximum resistance in endless mode
-const MAX_RESISTANCE_ENDLESS: float = 0.75
+const ADAPTATION_MAX_RESISTANCE_ENDLESS: float = 0.75
 
 ## Threshold (fraction of total enemies) at which a composition triggers adaptation
-const ENDLESS_THRESHOLD: float = 0.3
+const ADAPTATION_ENDLESS_THRESHOLD: float = 0.3
 
 ## How much resistance increases per adaptation tick
-const RESISTANCE_INCREMENT: float = 0.1
+const ADAPTATION_RESISTANCE_INCREMENT: float = 0.1
 
 ## How much resistance decays per adaptation tick when not triggered
-const DECAY_RATE: float = 0.05
+const ADAPTATION_DECAY_RATE: float = 0.05
 
 # ---------------------------------------------------------------------------
 # Star Rating
 # ---------------------------------------------------------------------------
 
 ## Lives lost threshold for 2-star rating (must lose 5 or fewer)
-const STAR_TWO_MAX_LIVES_LOST: int = 5
+const STAR_2_MAX_LIVES_LOST: int = 5
 
 ## Lives lost threshold for 3-star rating (must lose 0)
-const STAR_THREE_MAX_LIVES_LOST: int = 0
+const STAR_3_MAX_LIVES_LOST: int = 0
 
 # ---------------------------------------------------------------------------
 # Wave & Speed
 # ---------------------------------------------------------------------------
+
+## Default interval between enemy spawns in seconds
+const DEFAULT_SPAWN_INTERVAL := 0.5
 
 ## Duration of the break between waves in seconds
 const WAVE_BREAK_DURATION: float = 6.0

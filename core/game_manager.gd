@@ -69,7 +69,7 @@ func start_level(level_id: String, difficulty: int) -> void:
 	set_difficulty(difficulty)
 
 	var constants := Constants.new()
-	lives = constants.DIFFICULTY_STARTING_LIVES.get(difficulty, 20)
+	lives = constants.DIFFICULTY_LIVES.get(difficulty, 20)
 	constants.free()
 
 	lives_lost = 0
@@ -109,9 +109,9 @@ func lose_life() -> void:
 
 ## Returns 1, 2, or 3 stars based on lives lost during the level.
 func calculate_stars() -> int:
-	if lives_lost <= Constants.STAR_THREE_MAX_LIVES_LOST:
+	if lives_lost <= Constants.STAR_3_MAX_LIVES_LOST:
 		return 3
-	elif lives_lost <= Constants.STAR_TWO_MAX_LIVES_LOST:
+	elif lives_lost <= Constants.STAR_2_MAX_LIVES_LOST:
 		return 2
 	return 1
 
@@ -135,7 +135,9 @@ func set_game_speed(speed: float) -> void:
 ## Toggles pause. Saves/restores pre-pause state.
 func toggle_pause() -> void:
 	if current_state == Enums.GameState.PAUSED:
+		get_tree().paused = false
 		change_state(_state_before_pause)
 	else:
 		_state_before_pause = current_state
 		change_state(Enums.GameState.PAUSED)
+		get_tree().paused = true
