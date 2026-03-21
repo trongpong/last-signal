@@ -16,7 +16,7 @@ signal ad_failed
 # ---------------------------------------------------------------------------
 
 ## Returns true if the player can still watch an ad today.
-func can_watch_ad(save: SaveManager) -> bool:
+func can_watch_ad(save) -> bool:
 	if save == null:
 		return false
 	_check_date_reset(save)
@@ -24,7 +24,7 @@ func can_watch_ad(save: SaveManager) -> bool:
 	return watched < Constants.MAX_ADS_PER_DAY
 
 ## Returns the number of ads remaining today.
-func get_remaining_ads(save: SaveManager) -> int:
+func get_remaining_ads(save) -> int:
 	if save == null:
 		return 0
 	_check_date_reset(save)
@@ -34,7 +34,7 @@ func get_remaining_ads(save: SaveManager) -> int:
 ## Attempt to watch a rewarded ad.
 ## Grants DIAMONDS_PER_AD diamonds if within the daily limit.
 ## Emits ad_reward_granted on success or ad_failed if limit reached.
-func request_ad(economy: EconomyManager, save: SaveManager) -> void:
+func request_ad(economy, save) -> void:
 	if not can_watch_ad(save):
 		ad_failed.emit()
 		return
@@ -58,7 +58,7 @@ func request_ad(economy: EconomyManager, save: SaveManager) -> void:
 # ---------------------------------------------------------------------------
 
 ## Resets the daily ad counter if the calendar date has changed since last reset.
-func _check_date_reset(save: SaveManager) -> void:
+func _check_date_reset(save) -> void:
 	if save == null:
 		return
 

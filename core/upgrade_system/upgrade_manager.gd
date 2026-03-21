@@ -18,7 +18,7 @@ signal tower_upgraded(tower: Tower, new_tier: int)
 ## Attempt to purchase the next upgrade for tower via the given branch choice.
 ## economy must be an EconomyManager (or compatible object with spend_gold()).
 ## Returns true if the upgrade was purchased successfully, false otherwise.
-func try_upgrade(tower: Tower, choice: int, economy: EconomyManager) -> bool:
+func try_upgrade(tower: Tower, choice: int, economy) -> bool:
 	if tower == null or economy == null:
 		return false
 

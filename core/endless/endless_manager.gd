@@ -64,7 +64,7 @@ func get_milestone_diamonds(wave: int) -> int:
 
 ## Records the current wave as the player's high score for the active difficulty.
 ## Emits milestone_reached if the current wave is a milestone.
-func record_high_score(save_manager: SaveManager) -> void:
+func record_high_score(save_manager) -> void:
 	if save_manager == null:
 		push_warning("EndlessManager.record_high_score: no SaveManager provided")
 		return
@@ -82,7 +82,7 @@ func record_high_score(save_manager: SaveManager) -> void:
 		milestone_reached.emit(_current_wave, diamonds)
 
 ## Returns the recorded high score for the given difficulty.
-func get_high_score(difficulty: int, save_manager: SaveManager) -> int:
+func get_high_score(difficulty: int, save_manager) -> int:
 	if save_manager == null:
 		return 0
 	var key: String = _difficulty_key(difficulty)

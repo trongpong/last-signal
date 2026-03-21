@@ -16,8 +16,8 @@ signal hero_unlocked(tower_type: int)
 # Dependencies
 # ---------------------------------------------------------------------------
 
-var _economy_manager: EconomyManager
-var _save_manager: SaveManager
+var _economy_manager
+var _save_manager
 
 # ---------------------------------------------------------------------------
 # Runtime State
@@ -56,7 +56,7 @@ const GLOBAL_UPGRADES: Dictionary = {
 # ---------------------------------------------------------------------------
 
 ## Injects EconomyManager and SaveManager references, then loads saved state.
-func setup(em: EconomyManager, sm: SaveManager) -> void:
+func setup(em, sm) -> void:
 	_economy_manager = em
 	_save_manager = sm
 	_load_from_save()

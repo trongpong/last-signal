@@ -29,7 +29,7 @@ const STARTING_TOWERS: Array = [
 # Private state
 # ---------------------------------------------------------------------------
 
-var _save_manager: SaveManager = null
+var _save_manager = null
 var _registry: LevelRegistry = null
 
 # ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ var _registry: LevelRegistry = null
 
 ## Inject a SaveManager and build the level registry.
 ## Call once before any other method.
-func setup(sm: SaveManager) -> void:
+func setup(sm) -> void:
 	_save_manager = sm
 	_registry = LevelRegistry.new()
 	_registry.register_levels()

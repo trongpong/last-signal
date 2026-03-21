@@ -30,7 +30,7 @@ const PACKS: Dictionary = {
 ## Simulate a purchase of the given pack.
 ## On success: credits diamonds to economy, sets doubler flag if applicable,
 ## syncs save, and emits purchase_complete.
-func request_purchase(pack_id: String, economy: EconomyManager, save: SaveManager) -> void:
+func request_purchase(pack_id: String, economy, save) -> void:
 	if not PACKS.has(pack_id):
 		push_warning("IAPManager: unknown pack '%s'" % pack_id)
 		purchase_failed.emit(pack_id)
@@ -59,7 +59,7 @@ func request_purchase(pack_id: String, economy: EconomyManager, save: SaveManage
 	purchase_complete.emit(pack_id, diamonds)
 
 ## Returns true if the diamond doubler has been purchased.
-func has_doubler(save: SaveManager) -> bool:
+func has_doubler(save) -> bool:
 	if save == null:
 		return false
 	return save.data["economy"].get("diamond_doubler", false) as bool

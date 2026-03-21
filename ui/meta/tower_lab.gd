@@ -17,7 +17,7 @@ signal back_pressed
 # ---------------------------------------------------------------------------
 
 var _progression_manager: ProgressionManager = null
-var _economy_manager: EconomyManager = null
+var _economy_manager = null
 
 # ---------------------------------------------------------------------------
 # Node refs
@@ -106,7 +106,7 @@ func _build_layout() -> void:
 # ---------------------------------------------------------------------------
 
 ## Inject managers and populate all panels.
-func setup(pm: ProgressionManager, em: EconomyManager) -> void:
+func setup(pm: ProgressionManager, em) -> void:
 	_progression_manager = pm
 	_economy_manager = em
 

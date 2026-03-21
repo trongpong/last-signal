@@ -25,8 +25,8 @@ signal level_defeat(level_id: String)
 # Private references
 # ---------------------------------------------------------------------------
 
-var _gm: GameManager = null
-var _em: EconomyManager = null
+var _gm = null
+var _em = null
 var _wm: WaveManager = null
 var _am: AdaptationManager = null
 
@@ -45,8 +45,8 @@ var _waves_since_adaptation_check: int = 0
 ## Wires the four manager references and connects WaveManager signals.
 ## Call once before start_level.
 func setup(
-	gm: GameManager,
-	em: EconomyManager,
+	gm,
+	em,
 	wm: WaveManager,
 	am: AdaptationManager
 ) -> void:

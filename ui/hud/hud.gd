@@ -85,7 +85,7 @@ func _build_hud() -> void:
 
 ## Connect HUD to manager signals.
 ## gm: GameManager, em: EconomyManager, wm: WaveManager
-func bind_signals(gm: GameManager, em: EconomyManager, wm: WaveManager) -> void:
+func bind_signals(gm, em, wm: WaveManager) -> void:
 	# GameManager
 	gm.lives_changed.connect(_on_lives_changed)
 	gm.state_changed.connect(_on_state_changed)

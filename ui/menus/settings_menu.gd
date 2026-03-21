@@ -118,7 +118,7 @@ func _build_layout() -> void:
 func _load_settings() -> void:
 	if not Engine.has_singleton("SaveManager"):
 		return
-	var sm: SaveManager = Engine.get_singleton("SaveManager") as SaveManager
+	var sm = Engine.get_singleton("SaveManager")
 	if sm == null:
 		return
 	var settings: Dictionary = sm.data.get("profile", {}).get("settings", {})
@@ -140,7 +140,7 @@ func _load_settings() -> void:
 func _save_settings() -> void:
 	if not Engine.has_singleton("SaveManager"):
 		return
-	var sm: SaveManager = Engine.get_singleton("SaveManager") as SaveManager
+	var sm = Engine.get_singleton("SaveManager")
 	if sm == null:
 		return
 	var settings: Dictionary = sm.data["profile"]["settings"]
@@ -175,7 +175,7 @@ func _on_language_selected(index: int) -> void:
 	TranslationServer.set_locale(locale)
 
 	if Engine.has_singleton("SaveManager"):
-		var sm: SaveManager = Engine.get_singleton("SaveManager") as SaveManager
+		var sm = Engine.get_singleton("SaveManager")
 		if sm != null:
 			sm.data["profile"]["language"] = locale
 			sm.save_game()
