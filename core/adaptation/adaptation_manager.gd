@@ -45,7 +45,6 @@ func setup(difficulty: int, is_endless: bool) -> void:
 	_threshold = constants.DIFFICULTY_ADAPTATION_THRESHOLD.get(
 		difficulty, Constants.ADAPTATION_ENDLESS_THRESHOLD
 	)
-	constants.free()
 
 	_max_resistance = (
 		Constants.ADAPTATION_MAX_RESISTANCE_ENDLESS

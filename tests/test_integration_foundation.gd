@@ -92,7 +92,6 @@ func test_hard_difficulty_gold_modifier() -> void:
 	em.reset_match_economy()
 	var constants := Constants.new()
 	em.set_gold_modifier(constants.DIFFICULTY_GOLD_MULT[Enums.Difficulty.HARD])
-	constants.free()
 	em.add_gold(100)
 	assert_eq(em.gold, 85, "Hard difficulty should give 85 gold per 100 earned")
 
@@ -100,7 +99,6 @@ func test_nightmare_difficulty_gold_modifier() -> void:
 	em.reset_match_economy()
 	var constants := Constants.new()
 	em.set_gold_modifier(constants.DIFFICULTY_GOLD_MULT[Enums.Difficulty.NIGHTMARE])
-	constants.free()
 	em.add_gold(100)
 	assert_eq(em.gold, 70, "Nightmare difficulty should give 70 gold per 100 earned")
 
@@ -118,7 +116,6 @@ func test_nightmare_defeat_at_zero_lives() -> void:
 func test_hard_hp_multiplier() -> void:
 	var constants := Constants.new()
 	var hp_mult: float = constants.DIFFICULTY_HP_MULT[Enums.Difficulty.HARD]
-	constants.free()
 	# An enemy with base 100 HP should have 180 on Hard
 	var base_hp := 100.0
 	var expected_hp := base_hp * hp_mult
@@ -127,7 +124,6 @@ func test_hard_hp_multiplier() -> void:
 func test_nightmare_hp_multiplier() -> void:
 	var constants := Constants.new()
 	var hp_mult: float = constants.DIFFICULTY_HP_MULT[Enums.Difficulty.NIGHTMARE]
-	constants.free()
 	var base_hp := 100.0
 	var expected_hp := base_hp * hp_mult
 	assert_almost_eq(expected_hp, 300.0, 0.001)
@@ -146,7 +142,6 @@ func test_diamond_doubler_doubles_level_reward() -> void:
 	em.diamond_doubler = true
 	var constants := Constants.new()
 	var base_reward := int(10.0 * constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.HARD])
-	constants.free()
 	em.add_diamonds(base_reward)
 	assert_eq(em.diamonds, base_reward * 2)
 
@@ -232,7 +227,6 @@ func test_full_nightmare_run_with_diamond_reward() -> void:
 
 	# Diamond reward is higher on nightmare
 	var nightmare_mult: float = constants.DIFFICULTY_DIAMOND_MULT[Enums.Difficulty.NIGHTMARE]
-	constants.free()
 	var base_diamond_reward := 10
 	var expected_diamonds := int(float(base_diamond_reward) * nightmare_mult)
 	em.add_diamonds(expected_diamonds)

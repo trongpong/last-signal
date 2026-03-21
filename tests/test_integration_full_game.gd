@@ -61,7 +61,6 @@ func test_complete_level_flow_earn_diamonds() -> void:
 	# Simulate the diamond award logic from main.gd
 	var constants := Constants.new()
 	var mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(Enums.Difficulty.NORMAL, 1.0) as float
-	constants.free()
 	var stars: int = 3
 	var diamonds: int = int(float(stars * 10) * mult)
 	economy_manager.add_diamonds(diamonds)
@@ -102,7 +101,6 @@ func test_complete_level_flow_region_boss_awards_tower() -> void:
 func test_complete_level_flow_difficulty_multiplier_hard() -> void:
 	var constants := Constants.new()
 	var mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(Enums.Difficulty.HARD, 1.5) as float
-	constants.free()
 	var diamonds_hard: int = int(float(3 * 10) * mult)
 	# Hard should give more diamonds than normal (1.5x)
 	assert_gt(diamonds_hard, 30)

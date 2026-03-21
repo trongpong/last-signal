@@ -69,7 +69,6 @@ func start_level(level_id: String, difficulty: int) -> void:
 
 	var constants := Constants.new()
 	lives = constants.DIFFICULTY_LIVES.get(difficulty, 20)
-	constants.free()
 
 	lives_lost = 0
 	lives_changed.emit(lives, lives_lost)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cj0e1f2a3b4c5"]
+[gd_scene format=3 uid="uid://cj0e1f2a3b4c5"]
 
 [ext_resource type="Script" path="res://ui/menus/level_complete.gd" id="1"]
 

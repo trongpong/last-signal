@@ -67,7 +67,6 @@ func start_level(level_id: String, difficulty: int, waves: Array) -> void:
 
 	var constants := Constants.new()
 	var gold_mult: float = constants.DIFFICULTY_GOLD_MULT.get(difficulty, 1.0)
-	constants.free()
 
 	_em.reset_match_economy()
 	_em.set_gold_modifier(gold_mult)
@@ -129,7 +128,6 @@ func _on_all_waves_complete() -> void:
 	var stars: int = _gm.calculate_stars()
 	var constants := Constants.new()
 	var diamond_mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(_difficulty, 1.0)
-	constants.free()
 
 	var base_diamonds: int = 50 + stars * 25
 	var diamonds: int = int(float(base_diamonds) * diamond_mult)

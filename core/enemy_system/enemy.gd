@@ -42,7 +42,6 @@ func initialize(def: EnemyDefinition, difficulty: int) -> void:
 	var constants := Constants.new()
 	var hp_mult: float = constants.DIFFICULTY_HP_MULT.get(difficulty, 1.0) as float
 	var spd_mult: float = constants.DIFFICULTY_SPEED_MULT.get(difficulty, 1.0) as float
-	constants.free()
 
 	# Health component
 	_health = EnemyHealth.new()

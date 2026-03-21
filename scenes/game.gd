@@ -35,9 +35,7 @@ func _ready() -> void:
 func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) -> void:
 	# Reset match economy and apply difficulty gold modifier
 	EconomyManager.reset_match_economy()
-	var constants := Constants.new()
-	var gold_modifier: float = constants.DIFFICULTY_GOLD_MULT.get(difficulty, 1.0)
-	constants.free()
+	var gold_modifier: float = Constants.DIFFICULTY_GOLD_MULT.get(difficulty, 1.0)
 	EconomyManager.set_gold_modifier(gold_modifier)
 
 	# Delegate level start to GameManager

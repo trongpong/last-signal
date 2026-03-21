@@ -163,7 +163,6 @@ func _on_campaign_level_complete(level_id: String, stars: int) -> void:
 	var constants := Constants.new()
 	var mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(
 		GameManager.current_difficulty, 1.0) as float
-	constants.free()
 	var diamonds: int = int(float(stars * 10) * mult)
 	EconomyManager.add_diamonds(diamonds)
 	SaveManager.sync_economy(EconomyManager)
