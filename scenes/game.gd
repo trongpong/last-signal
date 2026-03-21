@@ -343,6 +343,7 @@ func _on_enemy_reached_exit(enemy: Enemy) -> void:
 func _build_hud() -> void:
 	_hud = Control.new()
 	_hud.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(_hud)
 
 	# Dark background for sci-fi feel
@@ -358,6 +359,7 @@ func _build_hud() -> void:
 	top_bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	top_bar.offset_bottom = 50
 	top_bar.add_theme_constant_override("separation", 30)
+	top_bar.mouse_filter = Control.MOUSE_FILTER_PASS
 	_hud.add_child(top_bar)
 
 	var lives_label := Label.new()
@@ -398,6 +400,7 @@ func _build_hud() -> void:
 	info_label.set_anchors_preset(Control.PRESET_CENTER)
 	info_label.add_theme_font_size_override("font_size", 24)
 	info_label.add_theme_color_override("font_color", Color.CYAN)
+	info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud.add_child(info_label)
 
 	# Bottom bar with placement hint and back button
@@ -406,6 +409,7 @@ func _build_hud() -> void:
 	bottom_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	bottom_bar.offset_top = -50
 	bottom_bar.add_theme_constant_override("separation", 10)
+	bottom_bar.mouse_filter = Control.MOUSE_FILTER_PASS
 	_hud.add_child(bottom_bar)
 
 	var hint_label := Label.new()
