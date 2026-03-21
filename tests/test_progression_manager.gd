@@ -3,8 +3,8 @@ extends GutTest
 ## Tests for core/progression/progression_manager.gd
 
 var _pm: ProgressionManager
-var _em: EconomyManager
-var _sm: SaveManager
+var _em
+var _sm
 
 func before_each() -> void:
 	_em = EconomyManager.new()

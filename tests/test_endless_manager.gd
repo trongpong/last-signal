@@ -3,7 +3,7 @@ extends GutTest
 ## Tests for core/endless/endless_manager.gd
 
 var em: EndlessManager
-var sm: SaveManager
+var sm
 
 func before_each() -> void:
 	sm = SaveManager.new()

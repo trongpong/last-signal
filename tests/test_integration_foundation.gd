@@ -4,9 +4,9 @@ extends GutTest
 ## Tests full level flow, difficulty modifiers, and diamond doubler working together.
 ## Run in Godot editor with GUT addon installed.
 
-var gm: GameManager
-var em: EconomyManager
-var sm: SaveManager
+var gm
+var em
+var sm
 
 func before_each() -> void:
 	gm = GameManager.new()

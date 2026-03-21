@@ -3,7 +3,7 @@ extends GutTest
 ## Tests for core/game_manager.gd
 ## Run in Godot editor with GUT addon installed.
 
-var gm: GameManager
+var gm
 
 func before_each() -> void:
 	gm = GameManager.new()

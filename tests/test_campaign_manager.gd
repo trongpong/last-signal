@@ -3,7 +3,7 @@ extends GutTest
 ## Tests for core/campaign/campaign_manager.gd
 
 var cm: CampaignManager
-var sm: SaveManager
+var sm
 
 func before_each() -> void:
 	sm = SaveManager.new()

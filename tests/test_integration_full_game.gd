@@ -6,8 +6,8 @@ extends GutTest
 # Shared setup / teardown
 # ---------------------------------------------------------------------------
 
-var save_manager: SaveManager
-var economy_manager: EconomyManager
+var save_manager
+var economy_manager
 var campaign_manager: CampaignManager
 var endless_manager: EndlessManager
 

@@ -3,7 +3,7 @@ extends GutTest
 ## Tests for core/save/save_manager.gd
 ## Run in Godot editor with GUT addon installed.
 
-var sm: SaveManager
+var sm
 
 func before_each() -> void:
 	sm = SaveManager.new()

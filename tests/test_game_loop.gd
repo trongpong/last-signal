@@ -3,8 +3,8 @@ extends GutTest
 ## Tests for core/game_loop.gd
 
 var gl: GameLoop
-var gm: GameManager
-var em: EconomyManager
+var gm
+var em
 var wm: WaveManager
 var am: AdaptationManager
 

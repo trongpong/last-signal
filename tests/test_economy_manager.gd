@@ -3,7 +3,7 @@ extends GutTest
 ## Tests for core/economy/economy_manager.gd
 ## Run in Godot editor with GUT addon installed.
 
-var em: EconomyManager
+var em
 
 func before_each() -> void:
 	em = EconomyManager.new()
