@@ -1,4 +1,3 @@
-class_name SaveManager
 extends Node
 
 ## Singleton managing persistent game data via JSON save files.
@@ -227,13 +226,13 @@ func get_level_record(level_id: String) -> Dictionary:
 # ---------------------------------------------------------------------------
 
 ## Syncs diamond economy data from EconomyManager into save data.
-func sync_economy(economy_manager: EconomyManager) -> void:
+func sync_economy(economy_manager) -> void:
 	data["economy"]["diamonds"] = economy_manager.diamonds
 	data["economy"]["diamond_doubler"] = economy_manager.diamond_doubler
 	data["economy"]["total_diamonds_earned"] = economy_manager.total_diamonds_earned
 
 ## Applies saved economy data into an EconomyManager instance.
-func apply_economy(economy_manager: EconomyManager) -> void:
+func apply_economy(economy_manager) -> void:
 	var eco: Dictionary = data.get("economy", {})
 	economy_manager.diamonds = eco.get("diamonds", 0)
 	economy_manager.diamond_doubler = eco.get("diamond_doubler", false)

@@ -1,4 +1,3 @@
-class_name EconomyManager
 extends Node
 
 ## Singleton managing gold (match currency) and diamonds (premium currency).

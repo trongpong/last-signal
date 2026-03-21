@@ -1,4 +1,3 @@
-class_name GameManager
 extends Node
 
 ## Singleton that manages the global game state, difficulty, lives, and level flow.

@@ -1,0 +1,12 @@
+# Godot editor
+.godot/
+.superpowers/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Exports
+*.export
+export_presets.cfg
