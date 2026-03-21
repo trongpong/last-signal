@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cd4e5f6a7b8c9"]
+
+[ext_resource type="Script" path="res://ui/hud/ability_bar.gd" id="1"]
+
+[node name="AbilityBar" type="HBoxContainer"]
+script = ExtResource("1")

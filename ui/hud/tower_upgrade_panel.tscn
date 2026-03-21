@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cc3d4e5f6a7b8"]
+
+[ext_resource type="Script" path="res://ui/hud/tower_upgrade_panel.gd" id="1"]
+
+[node name="TowerUpgradePanel" type="PanelContainer"]
+script = ExtResource("1")

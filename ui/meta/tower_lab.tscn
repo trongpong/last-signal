@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cm3b4c5d6e7f8"]
+
+[ext_resource type="Script" path="res://ui/meta/tower_lab.gd" id="1"]
+
+[node name="TowerLab" type="Control"]
+script = ExtResource("1")
