@@ -2,8 +2,8 @@ class_name AdManager
 extends Node
 
 ## Manages rewarded-ad viewing with a per-day cap.
-## Uses Poing-Studios godot-admob-plugin when available, falls back to
-## instant simulation for desktop/editor development.
+## Uses Poing-Studios godot-admob-plugin v4.1.0 when the native plugin is
+## present on Android/iOS. Falls back to instant simulation on desktop/editor.
 ## Uses Constants.MAX_ADS_PER_DAY and Constants.DIAMONDS_PER_AD.
 
 # ---------------------------------------------------------------------------
@@ -26,8 +26,8 @@ signal ad_failed
 # State
 # ---------------------------------------------------------------------------
 
-var _admob_available: bool = false
-var _rewarded_ad_loaded: bool = false
+var _rewarded_ad: RewardedAd = null
+var _ad_loading: bool = false
 var _pending_economy = null
 var _pending_save = null
 
@@ -36,66 +36,52 @@ var _pending_save = null
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	_admob_available = Engine.has_singleton("AdMob")
-	if _admob_available:
-		_init_admob()
+	if _is_mobile():
+		MobileAds.initialize()
+		_load_rewarded_ad()
 
-func _init_admob() -> void:
-	var admob = Engine.get_singleton("AdMob")
-	if admob == null:
-		_admob_available = false
-		return
-
-	# Initialize AdMob — use test ads in debug builds
-	var is_debug: bool = OS.is_debug_build()
-	admob.initialize(is_debug)
-
-	# Connect rewarded ad signals
-	if admob.has_signal("rewarded_ad_loaded"):
-		admob.rewarded_ad_loaded.connect(_on_rewarded_ad_loaded)
-	if admob.has_signal("rewarded_ad_failed_to_load"):
-		admob.rewarded_ad_failed_to_load.connect(_on_rewarded_ad_failed_to_load)
-	if admob.has_signal("user_earned_reward"):
-		admob.user_earned_reward.connect(_on_user_earned_reward)
-	if admob.has_signal("rewarded_ad_closed"):
-		admob.rewarded_ad_closed.connect(_on_rewarded_ad_closed)
-
-	# Pre-load the first rewarded ad
-	_load_rewarded_ad()
+func _is_mobile() -> bool:
+	return OS.get_name() in ["Android", "iOS"]
 
 func _get_ad_unit_id() -> String:
 	if OS.is_debug_build():
 		return AD_UNIT_ID_TEST
 	return AD_UNIT_ID_ANDROID
 
+# ---------------------------------------------------------------------------
+# Ad loading
+# ---------------------------------------------------------------------------
+
 func _load_rewarded_ad() -> void:
-	if not _admob_available:
+	if _ad_loading:
 		return
-	var admob = Engine.get_singleton("AdMob")
-	if admob != null and admob.has_method("load_rewarded_ad"):
-		admob.load_rewarded_ad(_get_ad_unit_id())
+	_ad_loading = true
 
-# ---------------------------------------------------------------------------
-# AdMob signal callbacks
-# ---------------------------------------------------------------------------
+	var loader := RewardedAdLoader.new()
+	var callback := RewardedAdLoadCallback.new()
+	callback.on_ad_loaded = _on_rewarded_ad_loaded
+	callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
+	loader.load(_get_ad_unit_id(), AdRequest.new(), callback)
 
-func _on_rewarded_ad_loaded() -> void:
-	_rewarded_ad_loaded = true
+func _on_rewarded_ad_loaded(ad: RewardedAd) -> void:
+	_rewarded_ad = ad
+	_ad_loading = false
 
-func _on_rewarded_ad_failed_to_load(_error_code: int = 0) -> void:
-	_rewarded_ad_loaded = false
-	# Retry after a delay
-	get_tree().create_timer(10.0).timeout.connect(_load_rewarded_ad)
+	# Wire close callback to pre-load next ad
+	ad.full_screen_content_callback.on_ad_dismissed_full_screen_content = _on_ad_dismissed
 
-func _on_user_earned_reward(_currency: String = "", _amount: int = 0) -> void:
-	# Reward is granted here — the ad was watched successfully
-	if _pending_economy != null and _pending_save != null:
-		_grant_reward(_pending_economy, _pending_save)
-	_pending_economy = null
-	_pending_save = null
+func _on_rewarded_ad_failed_to_load(_error) -> void:
+	_rewarded_ad = null
+	_ad_loading = false
+	# Retry after delay
+	if is_inside_tree():
+		get_tree().create_timer(10.0).timeout.connect(_load_rewarded_ad)
 
-func _on_rewarded_ad_closed() -> void:
-	# Pre-load the next ad
+func _on_ad_dismissed() -> void:
+	# Destroy old ad and pre-load next one
+	if _rewarded_ad != null:
+		_rewarded_ad.destroy()
+		_rewarded_ad = null
 	_load_rewarded_ad()
 
 # ---------------------------------------------------------------------------
@@ -129,27 +115,34 @@ func has_no_ads(save) -> bool:
 	return save.data["monetization"].get("no_ads_purchased", false) as bool
 
 ## Attempt to watch a rewarded ad.
-## On Android with AdMob: shows a real ad, reward granted on completion.
+## On mobile with AdMob plugin: shows a real ad, reward granted on completion.
 ## On desktop/editor: simulates instantly (no actual ad shown).
 func request_ad(economy, save) -> void:
 	if not can_watch_ad(save):
 		ad_failed.emit()
 		return
 
-	if _admob_available and _rewarded_ad_loaded:
+	if _is_mobile() and _rewarded_ad != null:
 		# Show real AdMob rewarded ad — reward granted via callback
 		_pending_economy = economy
 		_pending_save = save
-		var admob = Engine.get_singleton("AdMob")
-		if admob != null and admob.has_method("show_rewarded_ad"):
-			admob.show_rewarded_ad()
-			return
-		# Fallback if show failed
-		_pending_economy = null
-		_pending_save = null
+		var reward_listener := OnUserEarnedRewardListener.new()
+		reward_listener.on_user_earned_reward = _on_user_earned_reward
+		_rewarded_ad.show(reward_listener)
+		return
 
 	# Simulation fallback (desktop/editor or ad not loaded)
 	_grant_reward(economy, save)
+
+# ---------------------------------------------------------------------------
+# Reward callback
+# ---------------------------------------------------------------------------
+
+func _on_user_earned_reward(_rewarded_item) -> void:
+	if _pending_economy != null and _pending_save != null:
+		_grant_reward(_pending_economy, _pending_save)
+	_pending_economy = null
+	_pending_save = null
 
 # ---------------------------------------------------------------------------
 # Private helpers
