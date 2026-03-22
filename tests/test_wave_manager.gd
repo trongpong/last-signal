@@ -142,13 +142,13 @@ func test_enemy_spawn_requested_emitted_for_zero_delay() -> void:
 func test_spawn_uses_correct_enemy_id() -> void:
 	var wd := WaveDefinition.new()
 	wd.wave_number = 1
-	wd.sub_waves.append(SubWaveDefinition.new("scout_fast", 1, 0.0, 0.0))
+	wd.sub_waves.append(SubWaveDefinition.new("scout_basic", 1, 0.0, 0.0))
 	wm.load_waves([wd])
 	watch_signals(wm)
 	wm.start_next_wave()
 	wm._process(0.1)
 	var args: Array = get_signal_parameters(wm, "enemy_spawn_requested")
-	assert_eq(args[0], "scout_fast")
+	assert_eq(args[0], "scout_basic")
 
 # ---------------------------------------------------------------------------
 # Wave clear / wave_complete
