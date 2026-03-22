@@ -1,100 +1,102 @@
-key,en
-UI_PLAY_CAMPAIGN,Play Campaign
-UI_ENDLESS_MODE,Endless Mode
-UI_TOWER_LAB,Tower Lab
-UI_SETTINGS,Settings
-UI_MAIN_MENU,Main Menu
-UI_DIAMOND_SHOP,Diamond Shop
-UI_BACK,Back
-UI_CONFIRM,Confirm
-UI_CANCEL,Cancel
-UI_PAUSE,Pause
-UI_RESUME,Resume
-UI_RESTART,Restart
-UI_QUIT_LEVEL,Quit Level
-UI_WAVE,Wave
-UI_WAVE_OF,Wave {0} of {1}
-UI_LIVES,Lives
-UI_GOLD,Gold
-UI_DIAMONDS,Diamonds
-UI_SPEED,Speed
-UI_SELL,Sell
-UI_UPGRADE,Upgrade
-UI_NEXT_WAVE,Next Wave
-UI_SEND_EARLY,Send Early (+{0} Gold)
-UI_VICTORY,Victory!
-UI_DEFEAT,Defeated!
-UI_STARS,Stars
-UI_CONTINUE,Continue
-UI_SCORE,Score
-UI_HIGH_SCORE,High Score
-UI_BEST,Best
-UI_LOCKED,Locked
-UI_UNLOCK,Unlock
-UI_LEVEL_SELECT,Level Select
-UI_REGION,Region
-UI_COMPLETED,Completed
-TOWER_PULSE_CANNON,Pulse Cannon
-TOWER_ARC_EMITTER,Arc Emitter
-TOWER_CRYO_ARRAY,Cryo Array
-TOWER_MISSILE_POD,Missile Pod
-TOWER_BEAM_SPIRE,Beam Spire
-TOWER_NANO_HIVE,Nano Hive
-TOWER_HARVESTER,Harvester
-DIFFICULTY_NORMAL,Normal
-DIFFICULTY_HARD,Hard
-DIFFICULTY_NIGHTMARE,Nightmare
-HUD_WAVE,Wave
-HUD_SEND_WAVE,Send Wave
-HUD_SELL,Sell
-HUD_UPGRADE,Upgrade
-HUD_LIVES,Lives
-HUD_GOLD,Gold
-HUD_SPEED,Speed
-HUD_WAVE_COMPLETE,Wave Complete!
-HUD_BUILDING_PHASE,Build Phase
-HUD_PREPARE,Prepare Defenses
-HUD_INCOMING,Incoming!
-HUD_ENEMIES_REMAINING,Enemies: {0}
-HUD_TARGETING,Targeting
-TARGETING_NEAREST,Nearest
-TARGETING_STRONGEST,Strongest
-TARGETING_WEAKEST,Weakest
-TARGETING_FIRST,First
-TARGETING_LAST,Last
-ENEMY_SCOUT,Scout
-ENEMY_DRONE,Drone
-ENEMY_TANK,Tank
-ENEMY_FLYER,Flyer
-ENEMY_SHIELDER,Shielder
-ENEMY_HEALER,Healer
-STAR_RATING_1,1 Star
-STAR_RATING_2,2 Stars
-STAR_RATING_3,3 Stars
-STAR_CONDITION_3,No lives lost
-STAR_CONDITION_2,5 or fewer lives lost
-STAR_CONDITION_1,Complete the level
-ABILITY_ORBITAL_STRIKE,Orbital Strike
-ABILITY_EMP_BURST,EMP Burst
-ABILITY_REPAIR_WAVE,Repair Wave
-ABILITY_SHIELD_MATRIX,Shield Matrix
-ABILITY_OVERCLOCK,Overclock
-ABILITY_SCRAP_SALVAGE,Scrap Salvage
-ABILITY_UNLOCK_COST,Unlock: {0} Diamonds
-ABILITY_UPGRADE,Upgrade Ability
-ABILITY_COOLDOWN,Cooldown: {0}s
-SETTINGS_MUSIC_VOLUME,Music Volume
-SETTINGS_SFX_VOLUME,SFX Volume
-SETTINGS_DAMAGE_NUMBERS,Damage Numbers
-SETTINGS_RANGE_ON_HOVER,Show Range on Hover
-SETTINGS_LANGUAGE,Language
-GLOBAL_UPGRADES,Global Upgrades
-SKILL_TREE,Skill Tree
-TIER,Tier {0}
-SELL_VALUE,Sell Value: {0}
-REFUND,Refund: {0}%
-ENDLESS_WAVE,Endless Wave {0}
-ENDLESS_RESISTANCE,Resistance Active
-ADS_REMAINING,Ads Today: {0}/{1}
-WATCH_AD,Watch Ad (+{0} Diamonds)
-NO_ADS,Remove Ads
+key,en,vi
+UI_PLAY_CAMPAIGN,Play Campaign,Chơi Chiến dịch
+UI_ENDLESS_MODE,Endless Mode,Chế độ Vô tận
+UI_TOWER_LAB,Tower Lab,Phòng thí nghiệm Tháp
+UI_SETTINGS,Settings,Cài đặt
+UI_MAIN_MENU,Main Menu,Menu chính
+UI_DIAMOND_SHOP,Diamond Shop,Cửa hàng Kim cương
+UI_BACK,Back,Quay lại
+UI_CONFIRM,Confirm,Xác nhận
+UI_CANCEL,Cancel,Hủy
+UI_PAUSE,Pause,Tạm dừng
+UI_RESUME,Resume,Tiếp tục
+UI_RESTART,Restart,Chơi lại
+UI_QUIT_LEVEL,Quit Level,Thoát màn
+UI_WAVE,Wave,Đợt
+UI_WAVE_OF,Wave {0} of {1},Đợt {0} / {1}
+UI_LIVES,Lives,Mạng
+UI_GOLD,Gold,Vàng
+UI_DIAMONDS,Diamonds,Kim cương
+UI_SPEED,Speed,Tốc độ
+UI_SELL,Sell,Bán
+UI_UPGRADE,Upgrade,Nâng cấp
+UI_NEXT_WAVE,Next Wave,Đợt tiếp theo
+UI_SEND_EARLY,Send Early (+{0} Gold),Gọi sớm (+{0} Vàng)
+UI_VICTORY,Victory!,Chiến thắng!
+UI_DEFEAT,Defeated!,Thất bại!
+UI_STARS,Stars,Sao
+UI_CONTINUE,Continue,Tiếp tục
+UI_SCORE,Score,Điểm
+UI_HIGH_SCORE,High Score,Điểm cao
+UI_BEST,Best,Tốt nhất
+UI_LOCKED,Locked,Đã khóa
+UI_UNLOCK,Unlock,Mở khóa
+UI_LEVEL_SELECT,Level Select,Chọn màn
+UI_REGION,Region,Khu vực
+UI_COMPLETED,Completed,Hoàn thành
+TOWER_PULSE_CANNON,Pulse Cannon,Pháo Xung
+TOWER_ARC_EMITTER,Arc Emitter,Pháo Hồ Quang
+TOWER_CRYO_ARRAY,Cryo Array,Tháp Băng Giá
+TOWER_MISSILE_POD,Missile Pod,Bệ Tên Lửa
+TOWER_BEAM_SPIRE,Beam Spire,Tháp Tia sáng
+TOWER_NANO_HIVE,Nano Hive,Tổ Nano
+TOWER_HARVESTER,Harvester,Tháp Thu Hoạch
+DIFFICULTY_NORMAL,Normal,Bình thường
+DIFFICULTY_HARD,Hard,Khó
+DIFFICULTY_NIGHTMARE,Nightmare,Ác mộng
+HUD_WAVE,Wave,Đợt
+HUD_SEND_WAVE,Send Wave,Gọi đợt
+HUD_SELL,Sell,Bán
+HUD_UPGRADE,Upgrade,Nâng cấp
+HUD_LIVES,Lives,Mạng
+HUD_GOLD,Gold,Vàng
+HUD_SPEED,Speed,Tốc độ
+HUD_WAVE_COMPLETE,Wave Complete!,Hoàn thành đợt!
+HUD_BUILDING_PHASE,Build Phase,Giai đoạn xây dựng
+HUD_PREPARE,Prepare Defenses,Chuẩn bị phòng thủ
+HUD_INCOMING,Incoming!,Địch tới!
+HUD_ENEMIES_REMAINING,Enemies: {0},Kẻ địch: {0}
+HUD_TARGETING,Targeting,Ngắm mục tiêu
+TARGETING_NEAREST,Nearest,Gần nhất
+TARGETING_STRONGEST,Strongest,Mạnh nhất
+TARGETING_WEAKEST,Weakest,Yếu nhất
+TARGETING_FIRST,First,Đầu tiên
+TARGETING_LAST,Last,Cuối cùng
+ENEMY_SCOUT,Scout,Trinh sát
+ENEMY_DRONE,Drone,Drone
+ENEMY_TANK,Tank,Xe tăng
+ENEMY_FLYER,Flyer,Phi Cơ
+ENEMY_SHIELDER,Shielder,Khiên Vệ
+ENEMY_HEALER,Healer,Hồi Phục
+STAR_RATING_1,1 Star,1 Sao
+STAR_RATING_2,2 Stars,2 Sao
+STAR_RATING_3,3 Stars,3 Sao
+STAR_CONDITION_3,No lives lost,Không mất mạng nào
+STAR_CONDITION_2,5 or fewer lives lost,Mất 5 mạng trở xuống
+STAR_CONDITION_1,Complete the level,Hoàn thành màn chơi
+ABILITY_ORBITAL_STRIKE,Orbital Strike,Không Kích Quỹ Đạo
+ABILITY_EMP_BURST,EMP Burst,Nổ EMP
+ABILITY_REPAIR_WAVE,Repair Wave,Sóng Hồi Phục
+ABILITY_SHIELD_MATRIX,Shield Matrix,Lưới Khiên
+ABILITY_OVERCLOCK,Overclock,Ép xung
+ABILITY_SCRAP_SALVAGE,Scrap Salvage,Thu hồi Phế liệu
+ABILITY_UNLOCK_COST,Unlock: {0} Diamonds,Mở khóa: {0} Kim cương
+ABILITY_UPGRADE,Upgrade Ability,Nâng cấp Kỹ năng
+ABILITY_COOLDOWN,Cooldown: {0}s,Hồi chiêu: {0}s
+SETTINGS_MUSIC_VOLUME,Music Volume,Âm lượng Nhạc
+SETTINGS_SFX_VOLUME,SFX Volume,Âm lượng Hiệu ứng
+SETTINGS_DAMAGE_NUMBERS,Damage Numbers,Số sát thương
+SETTINGS_RANGE_ON_HOVER,Show Range on Hover,Hiện tầm bắn khi rê chuột
+SETTINGS_LANGUAGE,Language,Ngôn ngữ
+GLOBAL_UPGRADES,Global Upgrades,Nâng cấp Toàn cục
+SKILL_TREE,Skill Tree,Cây Kỹ năng
+TIER,Tier {0},Cấp {0}
+SELL_VALUE,Sell Value: {0},Giá bán: {0}
+REFUND,Refund: {0}%,Hoàn lại: {0}%
+ENDLESS_WAVE,Endless Wave {0},Đợt Vô tận {0}
+ENDLESS_RESISTANCE,Resistance Active,Kháng Cự Đang Hoạt Động
+ADS_REMAINING,Ads Today: {0}/{1},Quảng cáo hôm nay: {0}/{1}
+WATCH_AD,Watch Ad (+{0} Diamonds),Xem quảng cáo (+{0} Kim cương)
+NO_ADS,Remove Ads,Xóa quảng cáo
+DIAMOND_DOUBLER,Diamond Doubler,Nhân đôi Kim cương
+UI_PURCHASED,Purchased,Đã mua

@@ -173,8 +173,11 @@ func _show_diamond_shop() -> void:
 	shop.update_diamonds(EconomyManager.diamonds)
 	if _ad_manager.has_no_ads(SaveManager):
 		shop.update_ad_button(-1)
+		shop.mark_purchased("no_ads")
 	else:
 		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+	if _iap_manager.has_doubler(SaveManager):
+		shop.mark_purchased("doubler")
 
 
 func _on_shop_purchase(pack_id: String) -> void:
@@ -185,6 +188,9 @@ func _on_shop_purchase(pack_id: String) -> void:
 		shop.update_diamonds(EconomyManager.diamonds)
 		if pack_id == "no_ads":
 			shop.update_ad_button(-1)
+			shop.mark_purchased("no_ads")
+		elif pack_id == "doubler":
+			shop.mark_purchased("doubler")
 
 
 func _on_shop_watch_ad() -> void:
