@@ -7,6 +7,11 @@
 .DS_Store
 Thumbs.db
 
+# Android
+android/
+*.keystore
+*.jks
+
 # Exports
 *.export
 export_presets.cfg
