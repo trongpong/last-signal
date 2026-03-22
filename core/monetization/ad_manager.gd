@@ -5,6 +5,15 @@ extends Node
 ## Uses Constants.MAX_ADS_PER_DAY and Constants.DIAMONDS_PER_AD.
 
 # ---------------------------------------------------------------------------
+# Ad Unit IDs
+# ---------------------------------------------------------------------------
+
+## Production AdMob rewarded ad unit ID (Android)
+const AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4258670828"
+## Test ad unit ID — use during development
+const AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5224354917"
+
+# ---------------------------------------------------------------------------
 # Signals
 # ---------------------------------------------------------------------------
 
@@ -19,6 +28,8 @@ signal ad_failed
 func can_watch_ad(save) -> bool:
 	if save == null:
 		return false
+	if has_no_ads(save):
+		return false
 	_check_date_reset(save)
 	var watched: int = save.data["monetization"].get("ads_watched_today", 0) as int
 	return watched < Constants.MAX_ADS_PER_DAY
@@ -27,9 +38,17 @@ func can_watch_ad(save) -> bool:
 func get_remaining_ads(save) -> int:
 	if save == null:
 		return 0
+	if has_no_ads(save):
+		return 0
 	_check_date_reset(save)
 	var watched: int = save.data["monetization"].get("ads_watched_today", 0) as int
 	return max(0, Constants.MAX_ADS_PER_DAY - watched)
+
+## Returns true if the player has purchased the no-ads upgrade.
+func has_no_ads(save) -> bool:
+	if save == null:
+		return false
+	return save.data["monetization"].get("no_ads_purchased", false) as bool
 
 ## Attempt to watch a rewarded ad.
 ## Grants DIAMONDS_PER_AD diamonds if within the daily limit.
