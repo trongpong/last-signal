@@ -2,7 +2,7 @@ class_name TowerLab
 extends Control
 
 ## Meta-progression screen: skill trees per tower and global stat upgrades.
-## Requires ProgressionManager and EconomyManager references via setup().
+## Production-quality mobile layout with sidebar navigation and polished visuals.
 
 # ---------------------------------------------------------------------------
 # Signals
@@ -11,6 +11,30 @@ extends Control
 signal skill_unlock_requested(tower_type: int, node_index: int)
 signal global_upgrade_requested(upgrade_id: String)
 signal back_pressed
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+const _TOWER_COLORS: Dictionary = {
+	0: Color(0.0, 0.9, 1.0),    # Pulse Cannon - cyan
+	1: Color(1.0, 0.9, 0.0),    # Arc Emitter - yellow
+	2: Color(0.5, 0.8, 1.0),    # Cryo Array - ice blue
+	3: Color(1.0, 0.4, 0.1),    # Missile Pod - orange
+	4: Color(1.0, 1.0, 1.0),    # Beam Spire - white
+	5: Color(0.2, 1.0, 0.3),    # Nano Hive - green
+	6: Color(1.0, 0.85, 0.0),   # Harvester - gold
+}
+
+const _TOWER_KEYS: Array = [
+	[0, "TOWER_PULSE_CANNON"],
+	[1, "TOWER_ARC_EMITTER"],
+	[2, "TOWER_CRYO_ARRAY"],
+	[3, "TOWER_MISSILE_POD"],
+	[4, "TOWER_BEAM_SPIRE"],
+	[5, "TOWER_NANO_HIVE"],
+	[6, "TOWER_HARVESTER"],
+]
 
 # ---------------------------------------------------------------------------
 # References
@@ -23,11 +47,21 @@ var _economy_manager = null
 # Node refs
 # ---------------------------------------------------------------------------
 
-var _tower_list: VBoxContainer
+var _tower_buttons: Array[Button] = []
 var _skill_tree_panel: VBoxContainer
 var _global_upgrades_panel: VBoxContainer
 var _diamonds_label: Label
+var _skill_detail_panel: PanelContainer
+var _detail_title: Label
+var _detail_desc: Label
+var _detail_cost: Label
 var _selected_tower_type: int = -1
+var _content_title: Label
+var _tab_skills_btn: Button
+var _tab_globals_btn: Button
+var _skill_scroll: ScrollContainer
+var _global_scroll: ScrollContainer
+var _current_tab: int = 0  # 0 = skills, 1 = globals
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -40,117 +74,366 @@ func _ready() -> void:
 func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var hbox := HBoxContainer.new()
-	hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(hbox)
+	# Full dark background
+	var bg := ColorRect.new()
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.03, 0.06, 0.95)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
 
-	# Left panel: tower list
-	var left_panel := PanelContainer.new()
-	left_panel.custom_minimum_size = Vector2(180, 0)
-	hbox.add_child(left_panel)
+	var main_hbox := HBoxContainer.new()
+	main_hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	main_hbox.add_theme_constant_override("separation", 0)
+	add_child(main_hbox)
 
-	var left_vbox := VBoxContainer.new()
-	left_panel.add_child(left_vbox)
+	# ---- LEFT SIDEBAR: tower list ----
+	_build_sidebar(main_hbox)
 
-	var towers_title := Label.new()
-	towers_title.text = tr("UI_TOWER_LAB")
-	left_vbox.add_child(towers_title)
+	# Vertical divider
+	var vsep := ColorRect.new()
+	vsep.custom_minimum_size = Vector2(1, 0)
+	vsep.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vsep.color = Color(0.3, 0.3, 0.3, 0.3)
+	vsep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_hbox.add_child(vsep)
 
-	_tower_list = VBoxContainer.new()
-	left_vbox.add_child(_tower_list)
+	# ---- RIGHT: content area ----
+	_build_content_area(main_hbox)
 
-	# Centre panel: skill tree for selected tower
-	var centre_panel := PanelContainer.new()
-	centre_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(centre_panel)
 
-	var centre_vbox := VBoxContainer.new()
-	centre_panel.add_child(centre_vbox)
+func _build_sidebar(parent: HBoxContainer) -> void:
+	var sidebar := VBoxContainer.new()
+	sidebar.custom_minimum_size = Vector2(200, 0)
+	sidebar.add_theme_constant_override("separation", 0)
+	parent.add_child(sidebar)
 
-	var skill_title := Label.new()
-	skill_title.text = tr("SKILL_TREE")
-	centre_vbox.add_child(skill_title)
+	# Sidebar background
+	var sidebar_bg := ColorRect.new()
+	sidebar_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sidebar_bg.color = Color(0.04, 0.05, 0.1, 0.9)
+	sidebar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sidebar.add_child(sidebar_bg)
+	sidebar.move_child(sidebar_bg, 0)
 
-	_skill_tree_panel = VBoxContainer.new()
-	centre_vbox.add_child(_skill_tree_panel)
+	# Margin wrapper for sidebar content padding
+	var sidebar_margin := MarginContainer.new()
+	sidebar_margin.add_theme_constant_override("margin_left", 10)
+	sidebar_margin.add_theme_constant_override("margin_right", 10)
+	sidebar_margin.add_theme_constant_override("margin_top", 4)
+	sidebar_margin.add_theme_constant_override("margin_bottom", 4)
+	sidebar_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sidebar.add_child(sidebar_margin)
 
-	# Right panel: global upgrades
-	var right_panel := PanelContainer.new()
-	right_panel.custom_minimum_size = Vector2(200, 0)
-	hbox.add_child(right_panel)
+	var inner := VBoxContainer.new()
+	inner.add_theme_constant_override("separation", 2)
+	inner.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sidebar_margin.add_child(inner)
 
-	var right_vbox := VBoxContainer.new()
-	right_panel.add_child(right_vbox)
+	# Header row matching content area height (44px)
+	var header_row := HBoxContainer.new()
+	header_row.custom_minimum_size = Vector2(0, 44)
+	header_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	inner.add_child(header_row)
 
-	var global_title := Label.new()
-	global_title.text = tr("GLOBAL_UPGRADES")
-	right_vbox.add_child(global_title)
+	var title := Label.new()
+	title.text = tr("UI_TOWER_LAB")
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header_row.add_child(title)
 
+	# Diamond count (right side of header)
 	_diamonds_label = Label.new()
-	_diamonds_label.text = tr("UI_DIAMONDS") + ": 0"
-	right_vbox.add_child(_diamonds_label)
+	_diamonds_label.text = "◆ 0"
+	_diamonds_label.add_theme_font_size_override("font_size", 14)
+	_diamonds_label.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
+	header_row.add_child(_diamonds_label)
 
-	_global_upgrades_panel = VBoxContainer.new()
-	right_vbox.add_child(_global_upgrades_panel)
+	inner.add_child(HSeparator.new())
 
-	# Back button at the bottom
-	var footer := HBoxContainer.new()
-	# Re-parent footer outside hbox — add to self
+	# Section label
+	var towers_lbl := Label.new()
+	towers_lbl.text = "TOWERS"
+	towers_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	towers_lbl.add_theme_font_size_override("font_size", 11)
+	towers_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+	inner.add_child(towers_lbl)
+
+	# Tower buttons — card-style to match skill tree and global upgrade cards
+	for pair in _TOWER_KEYS:
+		var tower_type: int = pair[0] as int
+		var key: String = pair[1] as String
+		var color: Color = _TOWER_COLORS.get(tower_type, Color.WHITE)
+
+		var btn := Button.new()
+		btn.text = "  " + tr(key)
+		btn.custom_minimum_size = Vector2(0, 40)
+		btn.add_theme_font_size_override("font_size", 14)
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		# Default card-style background
+		var default_style := StyleBoxFlat.new()
+		default_style.bg_color = Color(0.06, 0.06, 0.1, 0.6)
+		default_style.border_color = Color(0.2, 0.2, 0.3, 0.4)
+		default_style.set_border_width_all(1)
+		default_style.set_corner_radius_all(4)
+		default_style.set_content_margin_all(8)
+		default_style.content_margin_left = 12
+		btn.add_theme_stylebox_override("normal", default_style)
+		# Hover style
+		var hover_style := StyleBoxFlat.new()
+		hover_style.bg_color = Color(color.r * 0.1, color.g * 0.1, color.b * 0.1, 0.5)
+		hover_style.border_color = Color(color.r, color.g, color.b, 0.3)
+		hover_style.set_border_width_all(1)
+		hover_style.set_corner_radius_all(4)
+		hover_style.set_content_margin_all(8)
+		hover_style.content_margin_left = 12
+		btn.add_theme_stylebox_override("hover", hover_style)
+		btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		var tt := tower_type
+		btn.pressed.connect(func() -> void: _on_tower_selected(tt))
+		inner.add_child(btn)
+		_tower_buttons.append(btn)
+
+	# Spacer
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	inner.add_child(spacer)
+
+	inner.add_child(HSeparator.new())
+
+	# Back button
 	var back_btn := Button.new()
 	back_btn.text = tr("UI_BACK")
+	back_btn.custom_minimum_size = Vector2(0, 48)
+	back_btn.add_theme_font_size_override("font_size", 18)
+	back_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	back_btn.pressed.connect(func() -> void: back_pressed.emit())
-	right_vbox.add_child(back_btn)
+	inner.add_child(back_btn)
+
+
+func _build_content_area(parent: HBoxContainer) -> void:
+	# Margin wrapper for content area padding
+	var content_margin := MarginContainer.new()
+	content_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_margin.add_theme_constant_override("margin_left", 12)
+	content_margin.add_theme_constant_override("margin_right", 12)
+	content_margin.add_theme_constant_override("margin_top", 4)
+	content_margin.add_theme_constant_override("margin_bottom", 4)
+	parent.add_child(content_margin)
+
+	var right_vbox := VBoxContainer.new()
+	right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_vbox.add_theme_constant_override("separation", 4)
+	content_margin.add_child(right_vbox)
+
+	# Header with title + tab buttons
+	var header := HBoxContainer.new()
+	header.custom_minimum_size = Vector2(0, 44)
+	header.add_theme_constant_override("separation", 8)
+	right_vbox.add_child(header)
+
+	_content_title = Label.new()
+	_content_title.text = "Select a tower"
+	_content_title.add_theme_font_size_override("font_size", 22)
+	_content_title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	_content_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(_content_title)
+
+	# Tab buttons
+	_tab_skills_btn = Button.new()
+	_tab_skills_btn.text = tr("SKILL_TREE")
+	_tab_skills_btn.custom_minimum_size = Vector2(100, 36)
+	_tab_skills_btn.add_theme_font_size_override("font_size", 14)
+	_tab_skills_btn.pressed.connect(func() -> void: _switch_tab(0))
+	header.add_child(_tab_skills_btn)
+
+	_tab_globals_btn = Button.new()
+	_tab_globals_btn.text = tr("GLOBAL_UPGRADES")
+	_tab_globals_btn.custom_minimum_size = Vector2(120, 36)
+	_tab_globals_btn.add_theme_font_size_override("font_size", 14)
+	_tab_globals_btn.pressed.connect(func() -> void: _switch_tab(1))
+	header.add_child(_tab_globals_btn)
+
+	right_vbox.add_child(HSeparator.new())
+
+	# Skill tree scroll area
+	_skill_scroll = ScrollContainer.new()
+	_skill_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_skill_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_vbox.add_child(_skill_scroll)
+
+	_skill_tree_panel = VBoxContainer.new()
+	_skill_tree_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_skill_tree_panel.add_theme_constant_override("separation", 6)
+	_skill_scroll.add_child(_skill_tree_panel)
+
+	# Global upgrades scroll area (hidden by default)
+	_global_scroll = ScrollContainer.new()
+	_global_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_global_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_global_scroll.visible = false
+	right_vbox.add_child(_global_scroll)
+
+	_global_upgrades_panel = VBoxContainer.new()
+	_global_upgrades_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_global_upgrades_panel.add_theme_constant_override("separation", 6)
+	_global_scroll.add_child(_global_upgrades_panel)
+
+	# Skill detail panel at bottom
+	_skill_detail_panel = PanelContainer.new()
+	_skill_detail_panel.custom_minimum_size = Vector2(0, 70)
+	var detail_style := StyleBoxFlat.new()
+	detail_style.bg_color = Color(0.06, 0.07, 0.12, 0.9)
+	detail_style.border_color = Color(0.3, 0.3, 0.4, 0.5)
+	detail_style.set_border_width_all(1)
+	detail_style.set_content_margin_all(8)
+	_skill_detail_panel.add_theme_stylebox_override("panel", detail_style)
+	right_vbox.add_child(_skill_detail_panel)
+
+	var detail_vbox := VBoxContainer.new()
+	_skill_detail_panel.add_child(detail_vbox)
+
+	_detail_title = Label.new()
+	_detail_title.text = "Hover a skill to see details"
+	_detail_title.add_theme_font_size_override("font_size", 16)
+	_detail_title.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	detail_vbox.add_child(_detail_title)
+
+	_detail_desc = Label.new()
+	_detail_desc.text = ""
+	_detail_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_desc.add_theme_font_size_override("font_size", 14)
+	_detail_desc.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	detail_vbox.add_child(_detail_desc)
+
+	_detail_cost = Label.new()
+	_detail_cost.text = ""
+	_detail_cost.add_theme_font_size_override("font_size", 14)
+	_detail_cost.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
+	detail_vbox.add_child(_detail_cost)
+
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-## Inject managers and populate all panels.
 func setup(pm: ProgressionManager, em) -> void:
 	_progression_manager = pm
 	_economy_manager = em
 
 	if em != null:
 		em.diamonds_changed.connect(_on_diamonds_changed)
-		_diamonds_label.text = tr("UI_DIAMONDS") + ": " + str(em.diamonds)
+		if _diamonds_label != null:
+			_diamonds_label.text = "◆ " + str(em.diamonds)
 
-	_populate_tower_list()
 	_populate_global_upgrades()
+	_switch_tab(0)
+	# Auto-select first tower
+	if _TOWER_KEYS.size() > 0:
+		_on_tower_selected(_TOWER_KEYS[0][0] as int)
+
 
 # ---------------------------------------------------------------------------
-# Internal: tower list
+# Tab switching
 # ---------------------------------------------------------------------------
 
-func _populate_tower_list() -> void:
-	for child in _tower_list.get_children():
-		child.queue_free()
+func _switch_tab(tab: int) -> void:
+	_current_tab = tab
+	_skill_scroll.visible = (tab == 0)
+	_global_scroll.visible = (tab == 1)
+	_skill_detail_panel.visible = (tab == 0)
 
-	# Show all tower types; label comes from translation key
-	var tower_types: Array = [
-		[Enums.TowerType.PULSE_CANNON,  "TOWER_PULSE_CANNON"],
-		[Enums.TowerType.ARC_EMITTER,   "TOWER_ARC_EMITTER"],
-		[Enums.TowerType.CRYO_ARRAY,    "TOWER_CRYO_ARRAY"],
-		[Enums.TowerType.MISSILE_POD,   "TOWER_MISSILE_POD"],
-		[Enums.TowerType.BEAM_SPIRE,    "TOWER_BEAM_SPIRE"],
-		[Enums.TowerType.NANO_HIVE,     "TOWER_NANO_HIVE"],
-		[Enums.TowerType.HARVESTER,     "TOWER_HARVESTER"],
-	]
-	for pair in tower_types:
-		var tower_type: int = pair[0] as int
-		var key: String = pair[1] as String
-		var btn := Button.new()
-		btn.text = tr(key)
-		var tt := tower_type  # capture
-		btn.pressed.connect(func() -> void: _on_tower_selected(tt))
-		_tower_list.add_child(btn)
+	# Style tab buttons
+	if tab == 0:
+		_style_tab_active(_tab_skills_btn)
+		_style_tab_inactive(_tab_globals_btn)
+	else:
+		_style_tab_inactive(_tab_skills_btn)
+		_style_tab_active(_tab_globals_btn)
+
+
+func _style_tab_active(btn: Button) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.25, 0.8)
+	style.border_color = Color(0.9, 0.8, 0.2, 0.6)
+	style.border_width_bottom = 2
+	style.set_content_margin_all(6)
+	btn.add_theme_stylebox_override("normal", style)
+	btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+
+
+func _style_tab_inactive(btn: Button) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.05, 0.1, 0.5)
+	style.set_content_margin_all(6)
+	btn.add_theme_stylebox_override("normal", style)
+	btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+
 
 # ---------------------------------------------------------------------------
-# Internal: skill tree
+# Tower sidebar selection
+# ---------------------------------------------------------------------------
+
+func _on_tower_selected(tower_type: int) -> void:
+	_selected_tower_type = tower_type
+	_show_skill_tree(tower_type)
+	_switch_tab(0)
+
+	# Update header
+	for pair in _TOWER_KEYS:
+		if pair[0] as int == tower_type:
+			var color: Color = _TOWER_COLORS.get(tower_type, Color.WHITE)
+			_content_title.text = tr(pair[1] as String)
+			_content_title.add_theme_color_override("font_color", color)
+			break
+
+	# Style sidebar buttons — card-style with rounded corners
+	for i in _tower_buttons.size():
+		var tt: int = _TOWER_KEYS[i][0] as int
+		var color: Color = _TOWER_COLORS.get(tt, Color.WHITE)
+		if tt == tower_type:
+			_tower_buttons[i].add_theme_color_override("font_color", Color.WHITE)
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(color.r * 0.2, color.g * 0.2, color.b * 0.2, 0.7)
+			style.border_color = Color(color.r, color.g, color.b, 0.6)
+			style.set_border_width_all(1)
+			style.border_width_left = 3
+			style.set_corner_radius_all(4)
+			style.set_content_margin_all(8)
+			style.content_margin_left = 12
+			_tower_buttons[i].add_theme_stylebox_override("normal", style)
+			_tower_buttons[i].add_theme_stylebox_override("hover", style)
+		else:
+			_tower_buttons[i].add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+			var style := StyleBoxFlat.new()
+			style.bg_color = Color(0.06, 0.06, 0.1, 0.6)
+			style.border_color = Color(0.2, 0.2, 0.3, 0.4)
+			style.set_border_width_all(1)
+			style.set_corner_radius_all(4)
+			style.set_content_margin_all(8)
+			style.content_margin_left = 12
+			_tower_buttons[i].add_theme_stylebox_override("normal", style)
+			var hover := StyleBoxFlat.new()
+			hover.bg_color = Color(color.r * 0.1, color.g * 0.1, color.b * 0.1, 0.5)
+			hover.border_color = Color(color.r, color.g, color.b, 0.3)
+			hover.set_border_width_all(1)
+			hover.set_corner_radius_all(4)
+			hover.set_content_margin_all(8)
+			hover.content_margin_left = 12
+			_tower_buttons[i].add_theme_stylebox_override("hover", hover)
+
+
+# ---------------------------------------------------------------------------
+# Skill tree display
 # ---------------------------------------------------------------------------
 
 func _show_skill_tree(tower_type: int) -> void:
 	for child in _skill_tree_panel.get_children():
 		child.queue_free()
+
+	_clear_skill_detail()
 
 	if _progression_manager == null:
 		return
@@ -159,38 +442,126 @@ func _show_skill_tree(tower_type: int) -> void:
 	if tree == null:
 		return
 
-	var unlocked: Array = _progression_manager._get_unlocked_nodes(tower_type)
+	var unlocked: Dictionary = _progression_manager._get_unlocked_nodes(tower_type)
+	var color: Color = _TOWER_COLORS.get(tower_type, Color.WHITE)
 
 	for node in tree.nodes:
 		var sn: SkillNode = node as SkillNode
-		var row := HBoxContainer.new()
-		_skill_tree_panel.add_child(row)
+		var current_level: int = unlocked.get(sn.node_index, 0) as int
+		var is_maxed: bool = current_level >= sn.max_level
+		var has_levels: bool = current_level > 0
 
-		var lbl := Label.new()
-		lbl.text = sn.display_name
-		lbl.custom_minimum_size = Vector2(120, 0)
-		row.add_child(lbl)
-
-		var cost_lbl := Label.new()
-		cost_lbl.text = str(sn.cost)
-		row.add_child(cost_lbl)
-
-		var btn := Button.new()
-		if unlocked.has(sn.node_index):
-			btn.text = tr("UI_COMPLETED")
-			btn.disabled = true
+		# Card-style row
+		var card := PanelContainer.new()
+		var card_style := StyleBoxFlat.new()
+		card_style.set_content_margin_all(8)
+		card_style.set_corner_radius_all(4)
+		if is_maxed:
+			card_style.bg_color = Color(color.r * 0.2, color.g * 0.2, color.b * 0.2, 0.7)
+			card_style.border_color = Color(color.r, color.g, color.b, 0.6)
+		elif has_levels:
+			card_style.bg_color = Color(color.r * 0.15, color.g * 0.15, color.b * 0.15, 0.6)
+			card_style.border_color = Color(color.r, color.g, color.b, 0.4)
 		else:
-			btn.text = tr("UI_UNLOCK")
+			card_style.bg_color = Color(0.06, 0.06, 0.1, 0.6)
+			card_style.border_color = Color(0.2, 0.2, 0.3, 0.4)
+		card_style.set_border_width_all(1)
+		card.add_theme_stylebox_override("panel", card_style)
+		_skill_tree_panel.add_child(card)
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		card.add_child(row)
+
+		# Node index badge
+		var badge := Label.new()
+		badge.text = str(sn.node_index + 1)
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		badge.custom_minimum_size = Vector2(28, 28)
+		badge.add_theme_font_size_override("font_size", 14)
+		if has_levels:
+			badge.add_theme_color_override("font_color", color)
+		else:
+			badge.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+		row.add_child(badge)
+
+		# Skill name + bonuses + level
+		var info_vbox := VBoxContainer.new()
+		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info_vbox)
+
+		# Name row with level indicator
+		var name_row := HBoxContainer.new()
+		name_row.add_theme_constant_override("separation", 8)
+		info_vbox.add_child(name_row)
+
+		var name_lbl := Label.new()
+		name_lbl.text = sn.display_name
+		name_lbl.add_theme_font_size_override("font_size", 16)
+		if has_levels:
+			name_lbl.add_theme_color_override("font_color", Color.WHITE)
+		else:
+			name_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		name_row.add_child(name_lbl)
+
+		var level_lbl := Label.new()
+		level_lbl.text = "Level %d/%d" % [current_level, sn.max_level]
+		level_lbl.add_theme_font_size_override("font_size", 12)
+		if is_maxed:
+			level_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+		elif has_levels:
+			level_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))
+		else:
+			level_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+		name_row.add_child(level_lbl)
+
+		# Compact bonus summary (per level)
+		var bonus_parts: PackedStringArray = PackedStringArray()
+		if sn.damage_bonus != 0.0:
+			bonus_parts.append("Damage +%.1f/lvl" % sn.damage_bonus)
+		if sn.fire_rate_bonus != 0.0:
+			bonus_parts.append("Fire Rate +%.2f/lvl" % sn.fire_rate_bonus)
+		if sn.range_bonus != 0.0:
+			bonus_parts.append("Range +%.0f/lvl" % sn.range_bonus)
+		if sn.special != "":
+			bonus_parts.append("Special: %s" % sn.special)
+
+		if bonus_parts.size() > 0:
+			var bonus_lbl := Label.new()
+			bonus_lbl.text = "  ".join(bonus_parts)
+			bonus_lbl.add_theme_font_size_override("font_size", 12)
+			if has_levels:
+				bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))
+			else:
+				bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			info_vbox.add_child(bonus_lbl)
+
+		# Action button
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(90, 40)
+		btn.add_theme_font_size_override("font_size", 14)
+		if is_maxed:
+			btn.text = "MAX"
+			btn.disabled = true
+			btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+		else:
+			var next_cost: int = tree.get_node_cost(sn.node_index, unlocked)
+			btn.text = "◆ %d" % next_cost
+			btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
 			var idx: int = sn.node_index
-			btn.pressed.connect(func() -> void: _on_skill_unlock(tower_type, idx))
-
-		if sn.is_hero_unlock:
-			btn.text += " (Hero)"
-
+			var tt: int = tower_type
+			btn.pressed.connect(func() -> void: _on_skill_unlock(tt, idx))
 		row.add_child(btn)
 
+		# Hover for details
+		var skill_ref := sn
+		var cur_level_ref := current_level
+		card.mouse_entered.connect(func() -> void: _show_skill_detail(skill_ref, cur_level_ref))
+		card.mouse_exited.connect(func() -> void: _clear_skill_detail())
+
+
 # ---------------------------------------------------------------------------
-# Internal: global upgrades
+# Global upgrades display
 # ---------------------------------------------------------------------------
 
 func _populate_global_upgrades() -> void:
@@ -201,48 +572,219 @@ func _populate_global_upgrades() -> void:
 		return
 
 	for upgrade_id in ProgressionManager.GLOBAL_UPGRADES.keys():
-		var row := HBoxContainer.new()
-		_global_upgrades_panel.add_child(row)
-
 		var tier: int = _progression_manager.get_global_upgrade_tier(upgrade_id)
-		var lbl := Label.new()
-		lbl.text = upgrade_id + " (T%d)" % tier
-		lbl.custom_minimum_size = Vector2(160, 0)
-		row.add_child(lbl)
+		var is_maxed: bool = tier >= 10
 
-		var cost_idx: int = mini(tier, Constants.GLOBAL_UPGRADE_COSTS.size() - 1)
-		var cost: int = Constants.GLOBAL_UPGRADE_COSTS[cost_idx] as int
-
-		var btn := Button.new()
-		if tier >= 10:
-			btn.text = tr("UI_COMPLETED")
-			btn.disabled = true
+		# Card
+		var card := PanelContainer.new()
+		var card_style := StyleBoxFlat.new()
+		card_style.set_content_margin_all(8)
+		card_style.set_corner_radius_all(4)
+		if is_maxed:
+			card_style.bg_color = Color(0.1, 0.12, 0.05, 0.6)
+			card_style.border_color = Color(0.6, 0.5, 0.0, 0.4)
 		else:
-			btn.text = tr("UI_UPGRADE") + " (%d♦)" % cost
-			var uid: String = upgrade_id  # capture
+			card_style.bg_color = Color(0.06, 0.06, 0.1, 0.6)
+			card_style.border_color = Color(0.2, 0.2, 0.3, 0.4)
+		card_style.set_border_width_all(1)
+		card.add_theme_stylebox_override("panel", card_style)
+		_global_upgrades_panel.add_child(card)
+
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		card.add_child(row)
+
+		# Info
+		var info_vbox := VBoxContainer.new()
+		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(info_vbox)
+
+		# Upgrade name (prettified)
+		var display_name: String = upgrade_id.replace("_", " ").capitalize()
+		var name_lbl := Label.new()
+		name_lbl.text = display_name
+		name_lbl.add_theme_font_size_override("font_size", 16)
+		name_lbl.add_theme_color_override("font_color", Color.WHITE if not is_maxed else Color(0.9, 0.8, 0.2))
+		info_vbox.add_child(name_lbl)
+
+		# Description and current value
+		var per_tier: float = ProgressionManager.GLOBAL_UPGRADES[upgrade_id] as float
+		var desc_text: String = _get_upgrade_description(upgrade_id, per_tier, tier)
+		var desc_lbl := Label.new()
+		desc_lbl.text = desc_text
+		desc_lbl.add_theme_font_size_override("font_size", 11)
+		desc_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.5) if tier > 0 else Color(0.4, 0.4, 0.5))
+		info_vbox.add_child(desc_lbl)
+
+		# Progress bar (tier X/10)
+		var progress_row := HBoxContainer.new()
+		progress_row.add_theme_constant_override("separation", 4)
+		info_vbox.add_child(progress_row)
+
+		var tier_lbl := Label.new()
+		tier_lbl.text = "Tier %d/10" % tier
+		tier_lbl.add_theme_font_size_override("font_size", 12)
+		tier_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		progress_row.add_child(tier_lbl)
+
+		# Visual progress dots
+		var dots_lbl := Label.new()
+		var filled: String = "●".repeat(tier)
+		var empty: String = "○".repeat(10 - tier)
+		dots_lbl.text = filled + empty
+		dots_lbl.add_theme_font_size_override("font_size", 10)
+		dots_lbl.clip_text = true
+		dots_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if is_maxed:
+			dots_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+		else:
+			dots_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+		progress_row.add_child(dots_lbl)
+
+		# Action button
+		var btn := Button.new()
+		btn.custom_minimum_size = Vector2(90, 40)
+		btn.add_theme_font_size_override("font_size", 14)
+		if is_maxed:
+			btn.text = "MAX"
+			btn.disabled = true
+			btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+		else:
+			var cost_idx: int = mini(tier, Constants.GLOBAL_UPGRADE_COSTS.size() - 1)
+			var cost: int = Constants.GLOBAL_UPGRADE_COSTS[cost_idx] as int
+			btn.text = "◆ %d" % cost
+			btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
+			var uid: String = upgrade_id
 			btn.pressed.connect(func() -> void: _on_global_upgrade(uid))
 		row.add_child(btn)
+
+
+func _get_upgrade_description(upgrade_id: String, per_tier: float, current_tier: int) -> String:
+	var current_val: float = per_tier * float(current_tier)
+	var next_val: float = per_tier * float(current_tier + 1)
+	var is_maxed: bool = current_tier >= 10
+	match upgrade_id:
+		"starting_gold":
+			if is_maxed:
+				return "+%d starting gold" % int(current_val)
+			return "+%d gold  →  +%d gold" % [int(current_val), int(next_val)]
+		"tower_cost_reduction":
+			if is_maxed:
+				return "-%d%% tower cost" % int(current_val)
+			return "-%d%% cost  →  -%d%% cost" % [int(current_val), int(next_val)]
+		"extra_lives":
+			if is_maxed:
+				return "+%d extra lives" % int(current_val)
+			return "+%d lives  →  +%d lives" % [int(current_val), int(next_val)]
+		"ability_cooldown":
+			if is_maxed:
+				return "-%.1fs ability cooldown" % current_val
+			return "-%.1fs CD  →  -%.1fs CD" % [current_val, next_val]
+		"adaptation_slowdown":
+			if is_maxed:
+				return "+%d%% adaptation delay" % int(current_val)
+			return "+%d%% delay  →  +%d%% delay" % [int(current_val), int(next_val)]
+		"gold_per_kill":
+			if is_maxed:
+				return "+%d gold per kill" % int(current_val)
+			return "+%d gold/kill  →  +%d gold/kill" % [int(current_val), int(next_val)]
+		"tower_sell_refund":
+			if is_maxed:
+				return "+%d%% sell refund" % int(current_val)
+			return "+%d%% refund  →  +%d%% refund" % [int(current_val), int(next_val)]
+		"hero_duration":
+			if is_maxed:
+				return "+%.1fs hero duration" % current_val
+			return "+%.1fs duration  →  +%.1fs duration" % [current_val, next_val]
+	return "+%.1f per tier" % per_tier
+
+
+# ---------------------------------------------------------------------------
+# Skill detail panel
+# ---------------------------------------------------------------------------
+
+func _show_skill_detail(sn: SkillNode, current_level: int) -> void:
+	if _detail_title == null:
+		return
+	var is_maxed: bool = current_level >= sn.max_level
+	_detail_title.text = "%s  (Level %d/%d)" % [sn.display_name, current_level, sn.max_level]
+	if is_maxed:
+		_detail_title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	elif current_level > 0:
+		_detail_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
+	else:
+		_detail_title.add_theme_color_override("font_color", Color.WHITE)
+
+	var parts: PackedStringArray = PackedStringArray()
+	if sn.damage_bonus != 0.0:
+		parts.append("Damage +%.1f per level" % sn.damage_bonus)
+	if sn.fire_rate_bonus != 0.0:
+		parts.append("Fire Rate +%.2f per level" % sn.fire_rate_bonus)
+	if sn.range_bonus != 0.0:
+		parts.append("Range +%.0f per level" % sn.range_bonus)
+	if sn.special != "":
+		parts.append("Special: %s" % sn.special)
+	if sn.description != "":
+		parts.append(sn.description)
+	# Show current total bonuses if any levels invested
+	if current_level > 0:
+		var total_parts: PackedStringArray = PackedStringArray()
+		if sn.damage_bonus != 0.0:
+			total_parts.append("Damage +%.1f" % (sn.damage_bonus * float(current_level)))
+		if sn.fire_rate_bonus != 0.0:
+			total_parts.append("Fire Rate +%.2f" % (sn.fire_rate_bonus * float(current_level)))
+		if sn.range_bonus != 0.0:
+			total_parts.append("Range +%.0f" % (sn.range_bonus * float(current_level)))
+		if total_parts.size() > 0:
+			parts.append("Current total: " + ", ".join(total_parts))
+	_detail_desc.text = " | ".join(parts) if parts.size() > 0 else "No bonuses"
+
+	if is_maxed:
+		_detail_cost.text = "MAX LEVEL"
+		_detail_cost.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	else:
+		# Show cost for next level
+		var unlocked: Dictionary = {}
+		if _progression_manager != null and _selected_tower_type >= 0:
+			unlocked = _progression_manager._get_unlocked_nodes(_selected_tower_type)
+		var tree: SkillTree = null
+		if _progression_manager != null and _selected_tower_type >= 0:
+			tree = _progression_manager._get_skill_tree(_selected_tower_type)
+		var next_cost: int = 0
+		if tree != null:
+			next_cost = tree.get_node_cost(sn.node_index, unlocked)
+		_detail_cost.text = "Next level cost: %d ◆" % next_cost
+		_detail_cost.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
+
+
+func _clear_skill_detail() -> void:
+	if _detail_title != null:
+		_detail_title.text = "Hover a skill to see details"
+		_detail_title.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+	if _detail_desc != null:
+		_detail_desc.text = ""
+	if _detail_cost != null:
+		_detail_cost.text = ""
+
 
 # ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
 
-func _on_tower_selected(tower_type: int) -> void:
-	_selected_tower_type = tower_type
-	_show_skill_tree(tower_type)
-
-
 func _on_skill_unlock(tower_type: int, node_index: int) -> void:
+	if _progression_manager != null:
+		_progression_manager.unlock_skill_node(tower_type, node_index)
 	skill_unlock_requested.emit(tower_type, node_index)
-	# Refresh tree view
 	_show_skill_tree(tower_type)
 
 
 func _on_global_upgrade(upgrade_id: String) -> void:
+	if _progression_manager != null:
+		_progression_manager.upgrade_global(upgrade_id)
 	global_upgrade_requested.emit(upgrade_id)
-	# Refresh panel
 	_populate_global_upgrades()
 
 
 func _on_diamonds_changed(new_diamonds: int, _delta: int) -> void:
-	_diamonds_label.text = tr("UI_DIAMONDS") + ": " + str(new_diamonds)
+	if _diamonds_label != null:
+		_diamonds_label.text = "◆ " + str(new_diamonds)
