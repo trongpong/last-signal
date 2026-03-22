@@ -25,6 +25,7 @@ var _upgrade_panel: TowerUpgradePanel
 var _ability_bar: AbilityBar
 var _send_wave_btn: Button
 var _adaptation_warning: Label
+var _root: Control
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -36,7 +37,8 @@ func _ready() -> void:
 
 func _build_hud() -> void:
 	# Root control that fills the viewport
-	var root := Control.new()
+	_root = Control.new()
+	var root := _root
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
@@ -63,6 +65,7 @@ func _build_hud() -> void:
 	_top_bar.offset_right = -4.0
 	root.add_child(_top_bar)
 	_top_bar.speed_changed.connect(_on_speed_changed)
+	_top_bar.toast_requested.connect(_show_toast)
 
 	# Gold border line under top bar (1px)
 	var top_bar_border := ColorRect.new()
@@ -209,6 +212,25 @@ func hide_upgrade_panel() -> void:
 func show_adaptation_warning(visible: bool) -> void:
 	if _adaptation_warning != null:
 		_adaptation_warning.visible = visible
+
+
+## Show a temporary toast message at the top-center of the screen.
+func _show_toast(message: String) -> void:
+	var toast := Label.new()
+	toast.text = message
+	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast.add_theme_font_size_override("font_size", 16)
+	toast.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	toast.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	toast.offset_top = 70.0
+	toast.offset_bottom = 100.0
+	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(toast)
+	var tw := create_tween()
+	tw.tween_interval(1.5)
+	tw.tween_property(toast, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(toast.queue_free)
 
 # ---------------------------------------------------------------------------
 # Tower / Ability bar control

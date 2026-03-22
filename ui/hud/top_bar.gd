@@ -9,6 +9,7 @@ extends HBoxContainer
 # ---------------------------------------------------------------------------
 
 signal speed_changed(speed: float)
+signal toast_requested(message: String)
 
 # ---------------------------------------------------------------------------
 # Node references (set in _ready or via assign_nodes)
@@ -25,6 +26,8 @@ var _speed_btn: Button
 
 var _current_speed_index: int = 0
 var _available_speeds: Array = [1.0]
+var _has_x2: bool = false
+var _has_x3: bool = false
 var _previous_gold: int = -1
 var _previous_lives: int = -1
 
@@ -197,6 +200,8 @@ func _flash_lives_lost() -> void:
 
 ## Set which speed options are available based on unlocks.
 func set_available_speeds(has_x2: bool, has_x3: bool) -> void:
+	_has_x2 = has_x2
+	_has_x3 = has_x3
 	_available_speeds = [1.0]
 	if has_x2:
 		_available_speeds.append(2.0)
@@ -207,6 +212,15 @@ func set_available_speeds(has_x2: bool, has_x3: bool) -> void:
 		_speed_btn.text = tr("HUD_SPEED") + " x1"
 
 func _cycle_speed() -> void:
+	# At max available speed, show toast about locked next tier
+	var current_speed: float = _available_speeds[_current_speed_index] as float
+	if _current_speed_index == _available_speeds.size() - 1:
+		if not _has_x2:
+			toast_requested.emit(tr("TOAST_UNLOCK_X2"))
+			return
+		elif not _has_x3 and current_speed >= 2.0:
+			toast_requested.emit(tr("TOAST_UNLOCK_X3"))
+			return
 	_current_speed_index = (_current_speed_index + 1) % _available_speeds.size()
 	var new_speed: float = _available_speeds[_current_speed_index] as float
 	if _speed_btn != null:
