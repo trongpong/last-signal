@@ -515,26 +515,53 @@ func _show_skill_tree(tower_type: int) -> void:
 			level_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
 		name_row.add_child(level_lbl)
 
-		# Compact bonus summary (per level)
-		var bonus_parts: PackedStringArray = PackedStringArray()
-		if sn.damage_bonus != 0.0:
-			bonus_parts.append("Damage +%.1f/lvl" % sn.damage_bonus)
-		if sn.fire_rate_bonus != 0.0:
-			bonus_parts.append("Fire Rate +%.2f/lvl" % sn.fire_rate_bonus)
-		if sn.range_bonus != 0.0:
-			bonus_parts.append("Range +%.0f/lvl" % sn.range_bonus)
-		if sn.special != "":
-			bonus_parts.append("Special: %s" % sn.special)
-
-		if bonus_parts.size() > 0:
-			var bonus_lbl := Label.new()
-			bonus_lbl.text = "  ".join(bonus_parts)
-			bonus_lbl.add_theme_font_size_override("font_size", 12)
-			if has_levels:
-				bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))
-			else:
-				bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		# Bonus description with current → next or total at max
+		var bonus_lbl := Label.new()
+		bonus_lbl.add_theme_font_size_override("font_size", 12)
+		if is_maxed:
+			# Show total effect at max level
+			var total_parts: PackedStringArray = PackedStringArray()
+			if sn.damage_bonus != 0.0:
+				total_parts.append("Damage +%.1f" % (sn.damage_bonus * float(sn.max_level)))
+			if sn.fire_rate_bonus != 0.0:
+				total_parts.append("Fire Rate +%.2f" % (sn.fire_rate_bonus * float(sn.max_level)))
+			if sn.range_bonus != 0.0:
+				total_parts.append("Range +%.0f" % (sn.range_bonus * float(sn.max_level)))
+			if sn.special != "":
+				total_parts.append("Special: %s" % sn.special)
+			bonus_lbl.text = "  ".join(total_parts) if total_parts.size() > 0 else "Max level reached"
+			bonus_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 			info_vbox.add_child(bonus_lbl)
+		elif has_levels:
+			# Show current total → next total
+			var parts: PackedStringArray = PackedStringArray()
+			if sn.damage_bonus != 0.0:
+				parts.append("Dmg +%.1f → +%.1f" % [sn.damage_bonus * float(current_level), sn.damage_bonus * float(current_level + 1)])
+			if sn.fire_rate_bonus != 0.0:
+				parts.append("Rate +%.2f → +%.2f" % [sn.fire_rate_bonus * float(current_level), sn.fire_rate_bonus * float(current_level + 1)])
+			if sn.range_bonus != 0.0:
+				parts.append("Range +%.0f → +%.0f" % [sn.range_bonus * float(current_level), sn.range_bonus * float(current_level + 1)])
+			if sn.special != "":
+				parts.append("Special: %s" % sn.special)
+			bonus_lbl.text = "  ".join(parts) if parts.size() > 0 else ""
+			bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))
+			if bonus_lbl.text != "":
+				info_vbox.add_child(bonus_lbl)
+		else:
+			# Show per-level info for unstarted skills
+			var parts: PackedStringArray = PackedStringArray()
+			if sn.damage_bonus != 0.0:
+				parts.append("Damage +%.1f/lvl (max +%.1f)" % [sn.damage_bonus, sn.damage_bonus * float(sn.max_level)])
+			if sn.fire_rate_bonus != 0.0:
+				parts.append("Fire Rate +%.2f/lvl (max +%.2f)" % [sn.fire_rate_bonus, sn.fire_rate_bonus * float(sn.max_level)])
+			if sn.range_bonus != 0.0:
+				parts.append("Range +%.0f/lvl (max +%.0f)" % [sn.range_bonus, sn.range_bonus * float(sn.max_level)])
+			if sn.special != "":
+				parts.append("Special: %s" % sn.special)
+			bonus_lbl.text = "  ".join(parts) if parts.size() > 0 else ""
+			bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			if bonus_lbl.text != "":
+				info_vbox.add_child(bonus_lbl)
 
 		# Action button
 		var btn := Button.new()
