@@ -619,8 +619,11 @@ func _on_enemy_reached_exit(enemy: Enemy) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
+	_hud.hide_upgrade_panel()
+	_selected_tower = null
 	var screen := LevelComplete.new()
 	screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	screen.z_index = 200
 	ui.add_child(screen)
 	screen.show_results(stars, diamonds)
 	screen.continue_pressed.connect(func() -> void:
@@ -631,11 +634,14 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 	)
 
 func _on_level_failed(level_id: String) -> void:
+	_hud.hide_upgrade_panel()
+	_selected_tower = null
 	var wave_reached: int = 0
 	if _wave_manager:
 		wave_reached = _wave_manager.current_wave_index + 1
 	var screen := LevelFailed.new()
 	screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	screen.z_index = 200
 	ui.add_child(screen)
 	screen.show_results(wave_reached)
 	screen.retry_pressed.connect(func() -> void:
