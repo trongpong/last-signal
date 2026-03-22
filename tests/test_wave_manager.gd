@@ -280,3 +280,26 @@ func test_sub_wave_path_index_default() -> void:
 func test_sub_wave_path_index_explicit() -> void:
 	var sw := SubWaveDefinition.new("scout_basic", 5, 0.5, 0.0, 2)
 	assert_eq(sw.path_index, 2, "Explicit path_index should be 2")
+
+# ---------------------------------------------------------------------------
+# path_index propagation through signal
+# ---------------------------------------------------------------------------
+
+func test_spawn_signal_includes_path_index() -> void:
+	var wm := WaveManager.new()
+	add_child(wm)
+	var wd := WaveDefinition.new()
+	wd.wave_number = 1
+	var sw := SubWaveDefinition.new("scout_basic", 1, 0.1, 0.0, 1)
+	wd.sub_waves = [sw]
+	wm.load_waves([wd])
+
+	var received_path_index: int = -1
+	wm.enemy_spawn_requested.connect(func(eid: String, pi: int) -> void:
+		received_path_index = pi
+	)
+	wm.start_next_wave()
+	for i in range(20):
+		wm._process(0.1)
+	assert_eq(received_path_index, 1, "Signal should include path_index from sub-wave")
+	wm.queue_free()

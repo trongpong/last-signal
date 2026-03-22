@@ -18,10 +18,14 @@ signal wave_complete(wave_number: int)
 signal all_waves_complete
 
 ## Emitted when the spawner wants to create an enemy instance.
-signal enemy_spawn_requested(enemy_id: String)
+signal enemy_spawn_requested(enemy_id: String, path_index: int)
 
 ## Emitted at the start of a break period between waves.
 signal break_started(duration: float)
+
+## Emitted when the break timer expires, requesting the next wave be sent.
+## The game loop should handle this to ensure proper orchestration.
+signal break_send_requested
 
 # ---------------------------------------------------------------------------
 # Public state
@@ -72,7 +76,7 @@ func _process(delta: float) -> void:
 		if _break_timer <= 0.0:
 			_in_break = false
 			if has_more_waves():
-				start_next_wave()
+				break_send_requested.emit()
 	elif is_wave_active:
 		_process_spawn_queue(delta)
 
@@ -100,6 +104,10 @@ func start_next_wave() -> void:
 		return
 	if not has_more_waves():
 		return
+
+	# Clear break state so the timer doesn't fire after wave is manually sent
+	_in_break = false
+	_break_timer = 0.0
 
 	current_wave_index += 1
 	var wave: WaveDefinition = _waves[current_wave_index]
@@ -153,6 +161,7 @@ func _build_spawn_queue(wave: WaveDefinition) -> void:
 			_spawn_queue.append({
 				"enemy_id": sw.enemy_id,
 				"delay_remaining": accumulated_delay,
+				"path_index": sw.path_index,
 			})
 			accumulated_delay += sw.spawn_interval
 
@@ -170,7 +179,7 @@ func _process_spawn_queue(delta: float) -> void:
 		if _spawn_timer >= entry["delay_remaining"]:
 			_spawn_queue.pop_front()
 			_enemies_to_spawn -= 1
-			enemy_spawn_requested.emit(entry["enemy_id"])
+			enemy_spawn_requested.emit(entry["enemy_id"], entry["path_index"])
 		else:
 			break
 
