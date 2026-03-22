@@ -16,14 +16,19 @@ var spawn_interval: float = Constants.DEFAULT_SPAWN_INTERVAL
 ## Delay in seconds before this sub-wave begins (relative to wave start)
 var delay: float = 0.0
 
+## Index of the path this sub-wave's enemies should follow (0-based)
+var path_index: int = 0
+
 
 func _init(
 	p_enemy_id: String = "",
 	p_count: int = 1,
 	p_spawn_interval: float = Constants.DEFAULT_SPAWN_INTERVAL,
-	p_delay: float = 0.0
+	p_delay: float = 0.0,
+	p_path_index: int = 0
 ) -> void:
 	enemy_id = p_enemy_id
 	count = p_count
 	spawn_interval = p_spawn_interval
 	delay = p_delay
+	path_index = p_path_index

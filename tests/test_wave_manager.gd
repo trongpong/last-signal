@@ -215,16 +215,16 @@ func test_break_started_emitted_between_waves() -> void:
 # Break + auto-start
 # ---------------------------------------------------------------------------
 
-func test_break_timer_auto_starts_next_wave() -> void:
+func test_break_timer_emits_send_request() -> void:
 	wm.load_waves(_make_two_wave_list())
 	wm.start_next_wave()
 	wm._process(0.5)
 	wm.on_enemy_died()
 	wm.on_enemy_died()
-	# Fast-forward through the break
+	# Fast-forward through the break — should emit break_send_requested
+	watch_signals(wm)
 	wm._process(Constants.WAVE_BREAK_DURATION + 0.1)
-	assert_true(wm.is_wave_active)
-	assert_eq(wm.current_wave_index, 1)
+	assert_signal_emitted(wm, "break_send_requested")
 
 # ---------------------------------------------------------------------------
 # on_enemy_reached_exit
@@ -268,3 +268,15 @@ func test_get_early_send_bonus_max_at_break_start() -> void:
 	# Immediately after break starts bonus should be ~max
 	var bonus: int = wm.get_early_send_bonus()
 	assert_almost_eq(float(bonus), float(Constants.EARLY_SEND_GOLD_BONUS), 5.0)
+
+# ---------------------------------------------------------------------------
+# SubWaveDefinition path_index
+# ---------------------------------------------------------------------------
+
+func test_sub_wave_path_index_default() -> void:
+	var sw := SubWaveDefinition.new("scout_basic", 5, 0.5, 0.0)
+	assert_eq(sw.path_index, 0, "Default path_index should be 0")
+
+func test_sub_wave_path_index_explicit() -> void:
+	var sw := SubWaveDefinition.new("scout_basic", 5, 0.5, 0.0, 2)
+	assert_eq(sw.path_index, 2, "Explicit path_index should be 2")
