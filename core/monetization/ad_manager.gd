@@ -2,17 +2,16 @@ class_name AdManager
 extends Node
 
 ## Manages rewarded-ad viewing with a per-day cap.
-## Uses Poing-Studios godot-admob-plugin v4.1.0 when the native plugin is
-## present on Android/iOS. Falls back to instant simulation on desktop/editor.
-## Uses Constants.MAX_ADS_PER_DAY and Constants.DIAMONDS_PER_AD.
+## Uses Poing-Studios godot-admob-plugin v4.1.0 on Android/iOS at runtime.
+## All plugin references are dynamic (no static typing) so the editor
+## doesn't error when the plugin isn't loaded.
+## Falls back to instant simulation on desktop/editor.
 
 # ---------------------------------------------------------------------------
 # Ad Unit IDs
 # ---------------------------------------------------------------------------
 
-## Production AdMob rewarded ad unit ID (Android)
 const AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4258670828"
-## Test ad unit ID — use during development
 const AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5224354917"
 
 # ---------------------------------------------------------------------------
@@ -26,7 +25,7 @@ signal ad_failed
 # State
 # ---------------------------------------------------------------------------
 
-var _rewarded_ad: RewardedAd = null
+var _rewarded_ad = null  # RewardedAd instance (dynamic)
 var _ad_loading: bool = false
 var _pending_economy = null
 var _pending_save = null
@@ -37,7 +36,9 @@ var _pending_save = null
 
 func _ready() -> void:
 	if _is_mobile():
-		MobileAds.initialize()
+		# MobileAds is a class_name from the plugin — check it exists at runtime
+		if ClassDB.class_exists("MobileAds"):
+			MobileAds.initialize()
 		_load_rewarded_ad()
 
 func _is_mobile() -> bool:
@@ -49,36 +50,38 @@ func _get_ad_unit_id() -> String:
 	return AD_UNIT_ID_ANDROID
 
 # ---------------------------------------------------------------------------
-# Ad loading
+# Ad loading (all plugin types accessed dynamically)
 # ---------------------------------------------------------------------------
 
 func _load_rewarded_ad() -> void:
 	if _ad_loading:
 		return
-	_ad_loading = true
+	if not _is_mobile():
+		return
 
-	var loader := RewardedAdLoader.new()
-	var callback := RewardedAdLoadCallback.new()
+	# Check if the plugin classes are available
+	if not ClassDB.class_exists("RewardedAdLoader"):
+		return
+
+	_ad_loading = true
+	var loader = RewardedAdLoader.new()
+	var callback = RewardedAdLoadCallback.new()
 	callback.on_ad_loaded = _on_rewarded_ad_loaded
 	callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
 	loader.load(_get_ad_unit_id(), AdRequest.new(), callback)
 
-func _on_rewarded_ad_loaded(ad: RewardedAd) -> void:
+func _on_rewarded_ad_loaded(ad) -> void:
 	_rewarded_ad = ad
 	_ad_loading = false
-
-	# Wire close callback to pre-load next ad
 	ad.full_screen_content_callback.on_ad_dismissed_full_screen_content = _on_ad_dismissed
 
 func _on_rewarded_ad_failed_to_load(_error) -> void:
 	_rewarded_ad = null
 	_ad_loading = false
-	# Retry after delay
 	if is_inside_tree():
 		get_tree().create_timer(10.0).timeout.connect(_load_rewarded_ad)
 
 func _on_ad_dismissed() -> void:
-	# Destroy old ad and pre-load next one
 	if _rewarded_ad != null:
 		_rewarded_ad.destroy()
 		_rewarded_ad = null
@@ -88,7 +91,6 @@ func _on_ad_dismissed() -> void:
 # Public API
 # ---------------------------------------------------------------------------
 
-## Returns true if the player can still watch an ad today.
 func can_watch_ad(save) -> bool:
 	if save == null:
 		return false
@@ -98,7 +100,6 @@ func can_watch_ad(save) -> bool:
 	var watched: int = save.data["monetization"].get("ads_watched_today", 0) as int
 	return watched < Constants.MAX_ADS_PER_DAY
 
-## Returns the number of ads remaining today.
 func get_remaining_ads(save) -> int:
 	if save == null:
 		return 0
@@ -108,25 +109,20 @@ func get_remaining_ads(save) -> int:
 	var watched: int = save.data["monetization"].get("ads_watched_today", 0) as int
 	return max(0, Constants.MAX_ADS_PER_DAY - watched)
 
-## Returns true if the player has purchased the no-ads upgrade.
 func has_no_ads(save) -> bool:
 	if save == null:
 		return false
 	return save.data["monetization"].get("no_ads_purchased", false) as bool
 
-## Attempt to watch a rewarded ad.
-## On mobile with AdMob plugin: shows a real ad, reward granted on completion.
-## On desktop/editor: simulates instantly (no actual ad shown).
 func request_ad(economy, save) -> void:
 	if not can_watch_ad(save):
 		ad_failed.emit()
 		return
 
 	if _is_mobile() and _rewarded_ad != null:
-		# Show real AdMob rewarded ad — reward granted via callback
 		_pending_economy = economy
 		_pending_save = save
-		var reward_listener := OnUserEarnedRewardListener.new()
+		var reward_listener = OnUserEarnedRewardListener.new()
 		reward_listener.on_user_earned_reward = _on_user_earned_reward
 		_rewarded_ad.show(reward_listener)
 		return
@@ -148,28 +144,21 @@ func _on_user_earned_reward(_rewarded_item) -> void:
 # Private helpers
 # ---------------------------------------------------------------------------
 
-## Grants the ad reward: increments watch count, adds diamonds, saves.
 func _grant_reward(economy, save) -> void:
 	save.data["monetization"]["ads_watched_today"] += 1
-
 	var reward: int = Constants.DIAMONDS_PER_AD
 	if economy != null:
 		economy.add_diamonds(reward)
-
 	if save != null and economy != null:
 		save.sync_economy(economy)
 		save.save_game()
-
 	ad_reward_granted.emit(reward)
 
-## Resets the daily ad counter if the calendar date has changed since last reset.
 func _check_date_reset(save) -> void:
 	if save == null:
 		return
-
 	var today: String = Time.get_date_string_from_system()
 	var last_reset: String = save.data["monetization"].get("ads_last_reset_date", "") as String
-
 	if today != last_reset:
 		save.data["monetization"]["ads_watched_today"] = 0
 		save.data["monetization"]["ads_last_reset_date"] = today
