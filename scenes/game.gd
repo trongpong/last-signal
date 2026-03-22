@@ -365,12 +365,9 @@ func _input(event: InputEvent) -> void:
 	if mb.position.x > vp_size.x - 140.0 and mb.position.y > vp_size.y - 72.0 - 56.0:
 		return
 
-	# Ignore clicks in the upgrade panel area when it's visible
-	if _hud._upgrade_panel.visible:
-		var panel: Control = _hud._upgrade_panel
-		var panel_rect := Rect2(panel.global_position, panel.size)
-		if panel_rect.has_point(mb.position):
-			return
+	# Ignore clicks on any visible HUD overlay (upgrade panel, ability bar, etc.)
+	if _is_click_on_hud_overlay(mb.position):
+		return
 
 	if mb.pressed:
 		_touch_start_time = Time.get_ticks_msec() / 1000.0
@@ -769,6 +766,21 @@ func _toggle_pause() -> void:
 	else:
 		GameManager.toggle_pause()
 		_pause_menu.show_animated()
+
+
+## Returns true if the viewport-space position hits a visible HUD overlay with buttons.
+func _is_click_on_hud_overlay(pos: Vector2) -> bool:
+	var overlays: Array[Control] = [
+		_hud._upgrade_panel,
+		_hud._ability_bar,
+		_hud._send_wave_btn,
+	]
+	for overlay in overlays:
+		if overlay != null and overlay.visible:
+			var rect := Rect2(overlay.global_position, overlay.size)
+			if rect.has_point(pos):
+				return true
+	return false
 
 
 ## Returns true if the position is too close to any existing tower.
