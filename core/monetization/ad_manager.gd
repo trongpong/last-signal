@@ -3,8 +3,8 @@ extends Node
 
 ## Manages rewarded-ad viewing with a per-day cap.
 ## Uses Poing-Studios godot-admob-plugin v4.1.0 on Android/iOS at runtime.
-## All plugin references are dynamic (no static typing) so the editor
-## doesn't error when the plugin isn't loaded.
+## All plugin access is fully dynamic via ClassDB to avoid parse errors
+## in the editor where plugin classes don't exist.
 ## Falls back to instant simulation on desktop/editor.
 
 # ---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ signal ad_failed
 # State
 # ---------------------------------------------------------------------------
 
-var _rewarded_ad = null  # RewardedAd instance (dynamic)
+var _rewarded_ad = null
 var _ad_loading: bool = false
 var _pending_economy = null
 var _pending_save = null
@@ -35,11 +35,13 @@ var _pending_save = null
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	if _is_mobile():
-		# MobileAds is a class_name from the plugin — check it exists at runtime
-		if ClassDB.class_exists("MobileAds"):
-			MobileAds.initialize()
-		_load_rewarded_ad()
+	if not _is_mobile():
+		return
+	# Initialize AdMob via dynamic call
+	var mobile_ads_class = _get_class("MobileAds")
+	if mobile_ads_class != null and mobile_ads_class.has_method("initialize"):
+		mobile_ads_class.initialize()
+	_load_rewarded_ad()
 
 func _is_mobile() -> bool:
 	return OS.get_name() in ["Android", "iOS"]
@@ -49,26 +51,51 @@ func _get_ad_unit_id() -> String:
 		return AD_UNIT_ID_TEST
 	return AD_UNIT_ID_ANDROID
 
+## Safely get a GDScript class by name from the global scope.
+## Returns null if the class doesn't exist (e.g., plugin not loaded).
+func _get_class(class_name_str: String):
+	var script = ResourceLoader.load("res://addons/admob/src/api/%s.gd" % class_name_str, "GDScript", ResourceLoader.CACHE_MODE_REUSE)
+	if script != null:
+		return script
+	return null
+
+func _new_instance(class_name_str: String):
+	var script = _get_class(class_name_str)
+	if script != null:
+		return script.new()
+	return null
+
+func _new_instance_from(path: String):
+	var script = ResourceLoader.load(path, "GDScript", ResourceLoader.CACHE_MODE_REUSE)
+	if script != null:
+		return script.new()
+	return null
+
 # ---------------------------------------------------------------------------
-# Ad loading (all plugin types accessed dynamically)
+# Ad loading
 # ---------------------------------------------------------------------------
 
 func _load_rewarded_ad() -> void:
-	if _ad_loading:
-		return
-	if not _is_mobile():
+	if _ad_loading or not _is_mobile():
 		return
 
-	# Check if the plugin classes are available
-	if not ClassDB.class_exists("RewardedAdLoader"):
+	var loader = _new_instance("RewardedAdLoader")
+	if loader == null:
 		return
 
 	_ad_loading = true
-	var loader = RewardedAdLoader.new()
-	var callback = RewardedAdLoadCallback.new()
+	var callback = _new_instance_from("res://addons/admob/src/api/listeners/RewardedAdLoadCallback.gd")
+	if callback == null:
+		_ad_loading = false
+		return
 	callback.on_ad_loaded = _on_rewarded_ad_loaded
 	callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
-	loader.load(_get_ad_unit_id(), AdRequest.new(), callback)
+
+	var ad_request = _new_instance_from("res://addons/admob/src/api/core/AdRequest.gd")
+	if ad_request == null:
+		_ad_loading = false
+		return
+	loader.load(_get_ad_unit_id(), ad_request, callback)
 
 func _on_rewarded_ad_loaded(ad) -> void:
 	_rewarded_ad = ad
@@ -122,12 +149,13 @@ func request_ad(economy, save) -> void:
 	if _is_mobile() and _rewarded_ad != null:
 		_pending_economy = economy
 		_pending_save = save
-		var reward_listener = OnUserEarnedRewardListener.new()
-		reward_listener.on_user_earned_reward = _on_user_earned_reward
-		_rewarded_ad.show(reward_listener)
-		return
+		var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
+		if reward_listener != null:
+			reward_listener.on_user_earned_reward = _on_user_earned_reward
+			_rewarded_ad.show(reward_listener)
+			return
 
-	# Simulation fallback (desktop/editor or ad not loaded)
+	# Simulation fallback
 	_grant_reward(economy, save)
 
 # ---------------------------------------------------------------------------
