@@ -59,6 +59,9 @@ var _tower_placer: TowerPlacer
 ## Progression manager for skill bonuses and global upgrades
 var _progression_manager: ProgressionManager
 
+## Camera for panning/zooming on maps with map_scale > 1.0
+var _game_camera: GameCamera = null
+
 # ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
@@ -107,6 +110,29 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 
 	# Build enemy paths for this level (must happen after _level_id is set)
 	_setup_enemy_paths()
+
+	# Create GameCamera for maps larger than 1x viewport
+	var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
+	var map_scale: float = level_def.get("map_scale", 1.0)
+	if map_scale > 1.0:
+		_game_camera = GameCamera.new()
+		_game_camera.name = "GameCamera"
+		add_child(_game_camera)
+		var world_size := Vector2(1280.0 * map_scale, 720.0 * map_scale)
+		_game_camera.setup(map_scale, world_size)
+
+	# Scale background, grid overlay, and field border to world size
+	var ws := Vector2(1280.0 * map_scale, 720.0 * map_scale)
+	for child in map.get_children():
+		if child is _GridOverlay:
+			child.world_size = ws
+			child.queue_redraw()
+		elif child is _FieldBorder:
+			child.world_size = ws
+			child.queue_redraw()
+		elif child is ColorRect:
+			child.set_anchors_preset(Control.PRESET_FULL_RECT)
+			child.size = ws
 
 	# Apply extra lives from global upgrades (after start_level sets base lives)
 	var extra_lives: int = _progression_manager.get_extra_lives()
@@ -344,7 +370,15 @@ func _input(event: InputEvent) -> void:
 			if elapsed < Constants.LONG_PRESS_DURATION:
 				_handle_tap(mb.position)
 
-func _handle_tap(pos: Vector2) -> void:
+## Convert viewport-space coordinates to world-space coordinates.
+## When no camera is active (map_scale = 1.0), returns the position unchanged.
+func _viewport_to_world(viewport_pos: Vector2) -> Vector2:
+	if _game_camera == null:
+		return viewport_pos
+	return get_canvas_transform().affine_inverse() * viewport_pos
+
+func _handle_tap(viewport_pos: Vector2) -> void:
+	var pos: Vector2 = _viewport_to_world(viewport_pos)
 	# If in build mode (tower type selected, no tower inspected), prioritize placement
 	if _selected_tower_type >= 0 and _selected_tower == null:
 		_try_place_tower(pos)
@@ -421,7 +455,8 @@ func _process(delta: float) -> void:
 		var elapsed: float = (Time.get_ticks_msec() / 1000.0) - _touch_start_time
 		if elapsed > Constants.LONG_PRESS_DURATION:
 			_is_touching = false
-			var tower_at: Tower = _find_tower_at(_touch_start_pos)
+			var world_pos: Vector2 = _viewport_to_world(_touch_start_pos)
+			var tower_at: Tower = _find_tower_at(world_pos)
 			if tower_at:
 				_hide_tower_range()
 				_selected_tower = tower_at
@@ -887,30 +922,34 @@ class _OccupyIndicator extends Node2D:
 class _FieldBorder extends Node2D:
 	## Draws subtle border lines at the edges of the tower-placeable area
 	## to visually separate it from the HUD (top bar and tower bar).
+	var world_size: Vector2 = Vector2(1280, 720)
+
 	func _draw() -> void:
 		var top_y: float = 57.0  # just below top bar
-		var bottom_y: float = 648.0  # just above tower bar (720 - 72)
+		var bottom_y: float = world_size.y - 72.0  # just above tower bar
 		var border_color := Color(0.2, 0.4, 0.7, 0.2)
 		# Top edge of play field
-		draw_line(Vector2(0, top_y), Vector2(1280, top_y), border_color, 1.0)
+		draw_line(Vector2(0, top_y), Vector2(world_size.x, top_y), border_color, 1.0)
 		# Bottom edge of play field
-		draw_line(Vector2(0, bottom_y), Vector2(1280, bottom_y), border_color, 1.0)
+		draw_line(Vector2(0, bottom_y), Vector2(world_size.x, bottom_y), border_color, 1.0)
 
 
 class _GridOverlay extends Node2D:
+	var world_size: Vector2 = Vector2(1280, 720)
+
 	func _draw() -> void:
 		var grid_size: float = 64.0
 		var color := Color(0.1, 0.15, 0.25, 0.15)
 		# Only draw grid in the playable area (between top bar and tower bar)
 		var top_y: float = 57.0
-		var bottom_y: float = 648.0
+		var bottom_y: float = world_size.y - 72.0
 		# Vertical lines
 		var x: float = 0.0
-		while x <= 1280.0:
+		while x <= world_size.x:
 			draw_line(Vector2(x, top_y), Vector2(x, bottom_y), color, 1.0)
 			x += grid_size
 		# Horizontal lines
 		var y: float = top_y
 		while y <= bottom_y:
-			draw_line(Vector2(0, y), Vector2(1280, y), color, 1.0)
+			draw_line(Vector2(0, y), Vector2(world_size.x, y), color, 1.0)
 			y += grid_size
