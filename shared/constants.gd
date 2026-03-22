@@ -64,6 +64,9 @@ const SELL_REFUND_PER_UPGRADE_TIER: float = 0.02
 ## Gold bonus for sending the next wave early
 const EARLY_SEND_GOLD_BONUS: int = 50
 
+## Gold bonus awarded when a wave is cleared
+const WAVE_CLEAR_BONUS: int = 25
+
 # ---------------------------------------------------------------------------
 # Adaptation System
 # ---------------------------------------------------------------------------
@@ -90,11 +93,11 @@ const ADAPTATION_DECAY_RATE: float = 0.05
 # Star Rating
 # ---------------------------------------------------------------------------
 
-## Lives lost threshold for 2-star rating (must lose 5 or fewer)
-const STAR_2_MAX_LIVES_LOST: int = 5
+## Fraction of starting lives that can be lost and still earn 2 stars
+var STAR_2_MAX_LIVES_LOST_FRACTION: float = 0.25
 
-## Lives lost threshold for 3-star rating (must lose 0)
-const STAR_3_MAX_LIVES_LOST: int = 0
+## Fraction of starting lives that can be lost and still earn 3 stars (0 = perfect only)
+var STAR_3_MAX_LIVES_LOST_FRACTION: float = 0.0
 
 # ---------------------------------------------------------------------------
 # Wave & Speed
@@ -134,7 +137,7 @@ const ABILITY_UPGRADE_COSTS: Array = [100, 150, 250, 400, 600]
 # ---------------------------------------------------------------------------
 
 ## Maximum ad views rewarded per day
-const MAX_ADS_PER_DAY: int = 5
+const MAX_ADS_PER_DAY: int = 10
 
 ## Diamonds earned per ad view
 const DIAMONDS_PER_AD: int = 10
@@ -148,3 +151,16 @@ const HERO_BASE_COOLDOWN: float = 150.0
 
 ## Duration bonus added per upgrade tier for hero abilities
 const HERO_DURATION_PER_UPGRADE_TIER: float = 1.0
+
+# ---------------------------------------------------------------------------
+# Mobile / Touch
+# ---------------------------------------------------------------------------
+
+## Minimum touch target size in pixels
+const MIN_TOUCH_TARGET: float = 56.0
+
+## Tower selection radius for touch input
+const TOUCH_SELECT_RADIUS: float = 56.0
+
+## Long press duration in seconds for showing info
+const LONG_PRESS_DURATION: float = 0.5

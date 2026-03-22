@@ -83,11 +83,11 @@ func test_decay_rate() -> void:
 # Star rating tests
 # ---------------------------------------------------------------------------
 
-func test_star_two_threshold() -> void:
-	assert_eq(Constants.STAR_2_MAX_LIVES_LOST, 5)
+func test_star_two_fraction_threshold() -> void:
+	assert_almost_eq(Constants.new().STAR_2_MAX_LIVES_LOST_FRACTION, 0.25, 0.001)
 
-func test_star_three_threshold() -> void:
-	assert_eq(Constants.STAR_3_MAX_LIVES_LOST, 0)
+func test_star_three_fraction_threshold() -> void:
+	assert_almost_eq(Constants.new().STAR_3_MAX_LIVES_LOST_FRACTION, 0.0, 0.001)
 
 # ---------------------------------------------------------------------------
 # Wave & speed tests
@@ -128,7 +128,7 @@ func test_ability_upgrade_costs_count() -> void:
 # ---------------------------------------------------------------------------
 
 func test_max_ads_per_day() -> void:
-	assert_eq(Constants.MAX_ADS_PER_DAY, 5)
+	assert_eq(Constants.MAX_ADS_PER_DAY, 10)
 
 func test_diamonds_per_ad() -> void:
 	assert_eq(Constants.DIAMONDS_PER_AD, 10)
