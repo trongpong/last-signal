@@ -17,11 +17,11 @@ signal back_pressed
 # ---------------------------------------------------------------------------
 
 const PACKS: Array = [
-	{"id": "small",   "diamonds": 100, "price_label": "$0.99"},
-	{"id": "medium",  "diamonds": 550, "price_label": "$4.99"},
-	{"id": "large",   "diamonds": 1200, "price_label": "$9.99"},
-	{"id": "doubler", "diamonds": 0,   "price_label": "$2.99"},  # Diamond doubler
-	{"id": "no_ads",  "diamonds": 0,   "price_label": "$1.99"},  # Remove ads
+	{"id": "small",   "diamonds": 500,  "price_label": "$0.99"},
+	{"id": "medium",  "diamonds": 2000, "price_label": "$3.99"},
+	{"id": "large",   "diamonds": 5000, "price_label": "$7.99"},
+	{"id": "doubler", "diamonds": 0,    "price_label": "$4.99"},  # Diamond doubler
+	{"id": "no_ads",  "diamonds": 0,    "price_label": "$1.99"},  # Remove ads
 ]
 
 # ---------------------------------------------------------------------------
