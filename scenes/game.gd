@@ -33,11 +33,11 @@ var _wave_manager: WaveManager
 var _adaptation_manager: AdaptationManager
 var _game_loop: GameLoop
 
-## The Path2D that enemies follow across the screen
-var _enemy_path: Path2D
+## Path2D nodes that enemies follow (one per lane)
+var _enemy_paths: Array[Path2D] = []
 
-## Line2D that visually displays the enemy path
-var _path_line: Line2D
+## Cached level registry for wave count lookups and path generation
+var _level_registry: LevelRegistry
 
 ## All tower definitions keyed by Enums.TowerType
 var _tower_defs: Dictionary = {}
@@ -67,8 +67,9 @@ func _ready() -> void:
 	# Build the HUD using the proper HUD class
 	_setup_hud()
 
-	# Create and draw the enemy path
-	_setup_enemy_path()
+	# Cache the level registry for wave count lookups and path generation
+	_level_registry = LevelRegistry.new()
+	_level_registry.register_levels()
 
 	# Load all tower definitions
 	_load_tower_definitions()
@@ -103,6 +104,9 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 
 	# Start level in GameManager
 	GameManager.start_level(level_id, difficulty)
+
+	# Build enemy paths for this level (must happen after _level_id is set)
+	_setup_enemy_paths()
 
 	# Apply extra lives from global upgrades (after start_level sets base lives)
 	var extra_lives: int = _progression_manager.get_extra_lives()
@@ -166,62 +170,74 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 # Enemy path setup
 # ---------------------------------------------------------------------------
 
-func _setup_enemy_path() -> void:
-	# Create the Path2D with a winding route across the screen
-	_enemy_path = Path2D.new()
-	_enemy_path.name = "EnemyPath"
-	map.add_child(_enemy_path)
+func _setup_enemy_paths() -> void:
+	var LevelDataClass = load("res://content/levels/level_data.gd")
+	var level_paths: Dictionary = {}
+	if LevelDataClass and LevelDataClass.has_method("get_level_paths"):
+		level_paths = LevelDataClass.get_level_paths(_level_id)
 
-	var curve := Curve2D.new()
-	# Path points: off-screen left → across screen → off-screen right
-	# Try to load path from level data; fall back to default
-	var LevelDataPath = load("res://content/levels/level_data.gd")
-	var path_points: Array = []
-	if LevelDataPath and LevelDataPath.has_method("get_path_points"):
-		path_points = LevelDataPath.get_path_points(_level_id)
-	if path_points.is_empty():
-		# Default path scaled for 1280x720 viewport
-		path_points = [
-			Vector2(-33, 360),
-			Vector2(200, 200),
-			Vector2(467, 400),
-			Vector2(733, 167),
-			Vector2(1000, 333),
-			Vector2(1314, 360),
-		]
-	for pt in path_points:
-		curve.add_point(pt)
-	_enemy_path.curve = curve
+	if level_paths.is_empty():
+		# Try procedural generation via PathGenerator
+		var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
+		if level_def.is_empty() or level_def.get("map_mode", 0) == Enums.MapMode.GRID_MAZE:
+			return
+		var gen := PathGenerator.new()
+		var path_type: String = level_def.get("path_type", "zigzag")
+		var ms: float = level_def.get("map_scale", 1.0)
+		level_paths = gen.generate(path_type, ms, level_def.get("level_number", 1), _level_id.hash())
 
-	# Glow line behind the main path for depth
+	if level_paths.is_empty():
+		return
+
+	var path_colors: Array = [
+		Color(0.2, 0.5, 0.9, 0.6),
+		Color(0.9, 0.5, 0.2, 0.6),
+		Color(0.2, 0.9, 0.3, 0.6),
+	]
+	var glow_colors: Array = [
+		Color(0.2, 0.4, 0.8, 0.15),
+		Color(0.8, 0.4, 0.2, 0.15),
+		Color(0.2, 0.8, 0.3, 0.15),
+	]
+	for i in range(level_paths["paths"].size()):
+		var points: Array = level_paths["paths"][i]
+		var path2d := Path2D.new()
+		var curve := Curve2D.new()
+		for pt in points:
+			curve.add_point(pt)
+		path2d.curve = curve
+		map.add_child(path2d)
+		_enemy_paths.append(path2d)
+
+		var color_idx: int = mini(i, path_colors.size() - 1)
+		_draw_path_visual(points, path_colors[color_idx], glow_colors[color_idx])
+
+func _draw_path_visual(points: Array, color: Color, glow_color: Color) -> void:
 	var glow_line := Line2D.new()
-	glow_line.name = "PathGlow"
 	glow_line.width = 20.0
-	glow_line.default_color = Color(0.2, 0.4, 0.8, 0.15)
+	glow_line.default_color = glow_color
 	glow_line.joint_mode = Line2D.LINE_JOINT_ROUND
 	glow_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	glow_line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	for pt in path_points:
+	for pt in points:
 		glow_line.add_point(pt)
 	map.add_child(glow_line)
 
-	# Draw the path visually with a Line2D
-	_path_line = Line2D.new()
-	_path_line.name = "PathLine"
-	_path_line.width = 8.0
-	_path_line.default_color = Color(0.2, 0.5, 0.9, 0.6)
-	_path_line.joint_mode = Line2D.LINE_JOINT_ROUND
-	_path_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	_path_line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	for pt in path_points:
-		_path_line.add_point(pt)
-	map.add_child(_path_line)
+	var path_line := Line2D.new()
+	path_line.width = 8.0
+	path_line.default_color = color
+	path_line.joint_mode = Line2D.LINE_JOINT_ROUND
+	path_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	path_line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	for pt in points:
+		path_line.add_point(pt)
+	map.add_child(path_line)
 
-	# Draw arrow/directional markers along the path
-	_draw_path_markers(path_points)
+	_draw_path_markers(points, color)
 
 # Draw small tick marks to indicate travel direction
-func _draw_path_markers(path_points: Array) -> void:
+func _draw_path_markers(path_points: Array, color: Color) -> void:
+	var marker_color := Color(color.r, color.g, color.b, 0.8)
 	for i in range(path_points.size() - 1):
 		var from: Vector2 = path_points[i]
 		var to: Vector2 = path_points[i + 1]
@@ -231,7 +247,7 @@ func _draw_path_markers(path_points: Array) -> void:
 
 		var marker := Line2D.new()
 		marker.width = 3.0
-		marker.default_color = Color(0.3, 0.7, 1.0, 0.8)
+		marker.default_color = marker_color
 		marker.add_point(mid - dir * 10.0 + perp)
 		marker.add_point(mid + dir * 10.0)
 		marker.add_point(mid - dir * 10.0 - perp)
@@ -253,12 +269,17 @@ func _on_enemy_spawn_requested(enemy_id: String, path_index: int = 0) -> void:
 		push_warning("game.gd: failed to load enemy definition: %s" % def_path)
 		return
 
-	# Create a PathFollow2D for this enemy to follow the shared path
+	# Use path_index to pick the correct Path2D
+	if _enemy_paths.is_empty():
+		return
+	var path: Path2D = _enemy_paths[clampi(path_index, 0, _enemy_paths.size() - 1)]
+
+	# Create a PathFollow2D for this enemy to follow the selected path
 	var path_follow := PathFollow2D.new()
 	path_follow.rotates = false
 	path_follow.loop = false
 	path_follow.progress = 0.0
-	_enemy_path.add_child(path_follow)
+	path.add_child(path_follow)
 
 	# Create and wire up the FixedPathProvider
 	var provider := FixedPathProvider.new()
@@ -639,12 +660,10 @@ func _setup_hud() -> void:
 
 ## Returns wave count for a level from the registry, or a default of 10.
 func _get_level_wave_count(level_id: String) -> int:
-	var registry := LevelRegistry.new()
-	registry.register_levels()
 	var id: String = level_id
 	if id.begins_with("level_"):
 		id = id.substr(6)
-	var level_def: Dictionary = registry.get_level(id)
+	var level_def: Dictionary = _level_registry.get_level(id)
 	if level_def.is_empty():
 		return 10
 	return level_def.get("wave_count", 10) as int
