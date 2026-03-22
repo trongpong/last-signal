@@ -699,9 +699,7 @@ func _setup_hud() -> void:
 		get_tree().paused = false
 		get_tree().change_scene_to_file("res://scenes/main.tscn")
 	)
-	_pause_menu.settings_requested.connect(func() -> void:
-		print("Settings from pause not yet implemented")
-	)
+	_pause_menu.settings_requested.connect(_on_pause_settings)
 
 	# Connect HUD signals to game logic
 	_hud.build_tower_requested.connect(_on_build_tower_requested)
@@ -914,6 +912,17 @@ func _on_upgrade_tower_requested(tower: Tower, choice: int) -> void:
 
 func _on_ability_used(slot: int) -> void:
 	pass  # Ability system not yet fully implemented
+
+func _on_pause_settings() -> void:
+	var settings := SettingsMenu.new()
+	settings.process_mode = Node.PROCESS_MODE_ALWAYS
+	settings.z_index = 100
+	settings.back_pressed.connect(func() -> void:
+		settings.queue_free()
+		_pause_menu.show_animated()
+	)
+	_pause_menu.hide()
+	ui.add_child(settings)
 
 func _on_adaptation_changed(resistances: Dictionary) -> void:
 	var resisted_types: PackedStringArray = PackedStringArray()
