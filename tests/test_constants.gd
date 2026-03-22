@@ -131,7 +131,7 @@ func test_max_ads_per_day() -> void:
 	assert_eq(Constants.MAX_ADS_PER_DAY, 10)
 
 func test_diamonds_per_ad() -> void:
-	assert_eq(Constants.DIAMONDS_PER_AD, 10)
+	assert_eq(Constants.DIAMONDS_PER_AD, 100)
 
 # ---------------------------------------------------------------------------
 # Hero tests

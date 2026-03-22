@@ -140,7 +140,7 @@ const ABILITY_UPGRADE_COSTS: Array = [100, 150, 250, 400, 600]
 const MAX_ADS_PER_DAY: int = 10
 
 ## Diamonds earned per ad view
-const DIAMONDS_PER_AD: int = 10
+const DIAMONDS_PER_AD: int = 100
 
 # ---------------------------------------------------------------------------
 # Hero Abilities
