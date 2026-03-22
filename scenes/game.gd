@@ -365,6 +365,13 @@ func _input(event: InputEvent) -> void:
 	if mb.position.x > vp_size.x - 140.0 and mb.position.y > vp_size.y - 72.0 - 56.0:
 		return
 
+	# Ignore clicks in the upgrade panel area when it's visible
+	if _hud._upgrade_panel.visible:
+		var panel: Control = _hud._upgrade_panel
+		var panel_rect := Rect2(panel.global_position, panel.size)
+		if panel_rect.has_point(mb.position):
+			return
+
 	if mb.pressed:
 		_touch_start_time = Time.get_ticks_msec() / 1000.0
 		_touch_start_pos = mb.position
