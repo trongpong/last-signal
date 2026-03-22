@@ -110,3 +110,23 @@ func test_get_level_unknown_returns_empty() -> void:
 
 func test_get_levels_for_unknown_region() -> void:
 	assert_eq(registry.get_levels_for_region(99).size(), 0)
+
+# ---------------------------------------------------------------------------
+# map_scale and path_type (map variety system)
+# ---------------------------------------------------------------------------
+
+func test_level_registry_map_scale() -> void:
+	var reg := LevelRegistry.new()
+	reg.register_levels()
+	var level_1_1: Dictionary = reg.get_level("1_1")
+	assert_eq(level_1_1["map_scale"], 1.0, "Region 1 map_scale should be 1.0")
+	var level_3_1: Dictionary = reg.get_level("3_1")
+	assert_eq(level_3_1["map_scale"], 2.0, "Region 3 map_scale should be 2.0")
+	var level_5_1: Dictionary = reg.get_level("5_1")
+	assert_eq(level_5_1["map_scale"], 3.0, "Region 5 map_scale should be 3.0")
+
+func test_level_registry_path_type() -> void:
+	var reg := LevelRegistry.new()
+	reg.register_levels()
+	var level: Dictionary = reg.get_level("1_1")
+	assert_true(level.has("path_type"), "Level should have path_type field")

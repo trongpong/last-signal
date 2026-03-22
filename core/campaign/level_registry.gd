@@ -65,6 +65,8 @@ func register_levels() -> void:
 				"wave_count": wave_count,
 				"is_boss_level": is_boss,
 				"has_final_boss": has_final,
+				"map_scale": 1.0 + float(region - 1) * 0.5,
+				"path_type": _get_path_type(level_id, region, map_mode),
 			}
 			_levels[level_id] = level_dict
 			ids.append(level_id)
@@ -101,3 +103,31 @@ func get_total_level_count() -> int:
 ## Returns the tower_id unlocked by completing a region, or "" if none.
 func get_tower_unlock_for_region(region: int) -> String:
 	return REGION_TOWER_UNLOCKS.get(region, "") as String
+
+# ---------------------------------------------------------------------------
+# Private helpers
+# ---------------------------------------------------------------------------
+
+## Determines the path_type for a level based on milestone overrides, map_mode,
+## and procedural selection by region.
+func _get_path_type(level_id: String, region: int, map_mode: int) -> String:
+	# Hand-crafted milestone levels
+	var milestones: Dictionary = {
+		"1_5": "branching", "1_10": "spiral",
+		"3_1": "spiral", "3_9": "multi_entry",
+		"4_1": "branching", "4_9": "multi_entry",
+		"5_8": "multi_entry",
+	}
+	if milestones.has(level_id):
+		return milestones[level_id]
+	# Grid maze levels ignore path_type
+	if map_mode == Enums.MapMode.GRID_MAZE:
+		return "grid_maze"
+	# Procedural selection by region
+	var types_by_region: Dictionary = {
+		1: ["zigzag"],
+		3: ["zigzag", "spiral", "branching"],
+		4: ["zigzag", "spiral", "branching", "multi_entry"],
+	}
+	var available: Array = types_by_region.get(region, ["zigzag"])
+	return available[level_id.hash() % available.size()]
