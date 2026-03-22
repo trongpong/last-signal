@@ -212,16 +212,18 @@ func set_available_speeds(has_x2: bool, has_x3: bool) -> void:
 		_speed_btn.text = tr("HUD_SPEED") + " x1"
 
 func _cycle_speed() -> void:
-	# At max available speed, show toast about locked next tier
-	var current_speed: float = _available_speeds[_current_speed_index] as float
+	# At max available speed, show toast about locked next tier and reset to x1
 	if _current_speed_index == _available_speeds.size() - 1:
 		if not _has_x2:
 			toast_requested.emit(tr("TOAST_UNLOCK_X2"))
-			return
-		elif not _has_x3 and current_speed >= 2.0:
+		elif not _has_x3:
 			toast_requested.emit(tr("TOAST_UNLOCK_X3"))
-			return
-	_current_speed_index = (_current_speed_index + 1) % _available_speeds.size()
+		_current_speed_index = 0
+		if _speed_btn != null:
+			_speed_btn.text = tr("HUD_SPEED") + " x1"
+		speed_changed.emit(1.0)
+		return
+	_current_speed_index += 1
 	var new_speed: float = _available_speeds[_current_speed_index] as float
 	if _speed_btn != null:
 		_speed_btn.text = tr("HUD_SPEED") + " x%s" % str(new_speed)
