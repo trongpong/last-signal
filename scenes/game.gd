@@ -287,15 +287,22 @@ func _on_enemy_spawn_requested(enemy_id: String, path_index: int = 0) -> void:
 	var def_path: String = "res://content/enemies/%s.tres" % enemy_id
 	if not ResourceLoader.exists(def_path):
 		push_warning("game.gd: enemy definition not found: %s" % def_path)
+		# Notify wave manager so the wave can still clear
+		if _wave_manager:
+			_wave_manager.on_enemy_died()
 		return
 
 	var def: EnemyDefinition = load(def_path) as EnemyDefinition
 	if def == null:
 		push_warning("game.gd: failed to load enemy definition: %s" % def_path)
+		if _wave_manager:
+			_wave_manager.on_enemy_died()
 		return
 
 	# Use path_index to pick the correct Path2D
 	if _enemy_paths.is_empty():
+		if _wave_manager:
+			_wave_manager.on_enemy_died()
 		return
 	var path: Path2D = _enemy_paths[clampi(path_index, 0, _enemy_paths.size() - 1)]
 

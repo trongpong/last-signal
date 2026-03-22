@@ -17,7 +17,7 @@ const ENEMY_POOL: Array = [
 	"tank_heavy",
 	"scout_armored",
 	"flyer_light",
-	"shielder_basic",
+	"shielder",
 	"drone_swarm",
 	"tank_boss",
 	"healer_support",
@@ -34,7 +34,7 @@ const UNLOCK_WAVE: Array = [
 	5,   # tank_heavy
 	7,   # scout_armored
 	8,   # flyer_light
-	10,  # shielder_basic
+	10,  # shielder
 	12,  # drone_swarm
 	15,  # tank_boss
 	18,  # healer_support
@@ -102,6 +102,9 @@ func _get_available_enemies(wave_number: int) -> Array:
 ## Calculates the total enemy count for a wave.
 func _calculate_total_count(wave_number: int, difficulty: int) -> int:
 	var base: int = BASE_ENEMY_COUNT + (wave_number - 1) * ENEMIES_PER_WAVE
+	# Exponential scaling after wave 20 for endless mode
+	if wave_number > 20:
+		base += int(pow(float(wave_number - 20) / 10.0, 1.5) * 10.0)
 	var multiplier: float = _difficulty_count_multiplier(difficulty)
 	# Boss waves have 50% more enemies
 	if _is_boss_wave(wave_number):
@@ -162,7 +165,7 @@ func _build_boss_sub_waves(available: Array, total_count: int, wave_number: int)
 
 	# Choose a boss-type enemy: prefer the last available (strongest)
 	var boss_id: String = available[available.size() - 1]
-	var boss_count: int = maxi(1, wave_number / BOSS_WAVE_INTERVAL)
+	var boss_count: int = clampi(wave_number / BOSS_WAVE_INTERVAL, 1, 5)
 
 	var boss_sw := SubWaveDefinition.new(boss_id, boss_count, 2.0, 0.0)
 	result.append(boss_sw)
