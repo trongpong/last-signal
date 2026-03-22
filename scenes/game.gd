@@ -707,6 +707,7 @@ func _setup_hud() -> void:
 	_hud.build_tower_requested.connect(_on_build_tower_requested)
 	_hud.send_wave_requested.connect(_on_send_wave_requested)
 	_hud.sell_tower_requested.connect(_on_sell_tower_requested)
+	_hud.pause_requested.connect(_toggle_pause)
 	_hud.upgrade_tower_requested.connect(_on_upgrade_tower_requested)
 	_hud.ability_used.connect(_on_ability_used)
 

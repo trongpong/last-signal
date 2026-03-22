@@ -10,6 +10,7 @@ extends HBoxContainer
 
 signal speed_changed(speed: float)
 signal toast_requested(message: String)
+signal pause_requested
 
 # ---------------------------------------------------------------------------
 # Node references (set in _ready or via assign_nodes)
@@ -104,6 +105,15 @@ func _build_layout() -> void:
 	_speed_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	_speed_btn.pressed.connect(_cycle_speed)
 	add_child(_speed_btn)
+
+	# Pause button
+	var pause_btn := Button.new()
+	pause_btn.text = "| |"
+	pause_btn.custom_minimum_size = Vector2(44, 0)
+	pause_btn.add_theme_font_size_override("font_size", 16)
+	pause_btn.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	pause_btn.pressed.connect(func() -> void: pause_requested.emit())
+	add_child(pause_btn)
 
 	# Right padding spacer
 	var right_pad := Control.new()

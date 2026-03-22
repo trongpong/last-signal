@@ -14,6 +14,7 @@ signal sell_tower_requested(tower: Tower)
 signal send_wave_requested
 signal ability_used(slot: int)
 signal hero_summon_requested
+signal pause_requested
 
 # ---------------------------------------------------------------------------
 # Child nodes
@@ -66,6 +67,7 @@ func _build_hud() -> void:
 	root.add_child(_top_bar)
 	_top_bar.speed_changed.connect(_on_speed_changed)
 	_top_bar.toast_requested.connect(show_toast)
+	_top_bar.pause_requested.connect(func() -> void: pause_requested.emit())
 
 	# Gold border line under top bar (1px)
 	var top_bar_border := ColorRect.new()
