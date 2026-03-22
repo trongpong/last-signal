@@ -1,4 +1,4 @@
-extends Node
+extends Control
 
 ## Root scene manager for Last Signal.
 ## Handles top-level screen transitions, bootstraps campaign/audio systems,
@@ -9,6 +9,8 @@ extends Node
 # ---------------------------------------------------------------------------
 
 var _campaign_manager: CampaignManager = null
+var _iap_manager: IAPManager = null
+var _ad_manager: AdManager = null
 var _current_screen: Node = null
 
 ## Level id and difficulty selected on the campaign map, used when launching.
@@ -22,6 +24,12 @@ var _pending_difficulty: int = Enums.Difficulty.NORMAL
 func _ready() -> void:
 	# Load saved progress
 	SaveManager.load_game()
+
+	# Restore economy from save data
+	var economy_data: Dictionary = SaveManager.data.get("economy", {})
+	EconomyManager.diamonds = economy_data.get("diamonds", 0) as int
+	EconomyManager.diamond_doubler = economy_data.get("diamond_doubler", false) as bool
+	EconomyManager.total_diamonds_earned = economy_data.get("total_diamonds_earned", 0) as int
 
 	# Apply saved audio settings
 	var settings: Dictionary = SaveManager.data.get("profile", {}).get("settings", {})
@@ -38,8 +46,21 @@ func _ready() -> void:
 	add_child(_campaign_manager)
 	_campaign_manager.setup(SaveManager)
 
-	# Start at main menu
-	_show_main_menu()
+	# Bootstrap monetization managers
+	_iap_manager = IAPManager.new()
+	_iap_manager.name = "IAPManager"
+	add_child(_iap_manager)
+
+	_ad_manager = AdManager.new()
+	_ad_manager.name = "AdManager"
+	add_child(_ad_manager)
+
+	# If returning from a completed/failed level, go to campaign map; otherwise main menu
+	if GameManager.current_state in [Enums.GameState.VICTORY, Enums.GameState.DEFEAT]:
+		GameManager.change_state(Enums.GameState.MENU)
+		_show_campaign_map()
+	else:
+		_show_main_menu()
 
 # ---------------------------------------------------------------------------
 # Screen transitions
@@ -53,6 +74,7 @@ func _show_main_menu() -> void:
 	menu.play_campaign.connect(_show_campaign_map)
 	menu.play_endless.connect(_start_endless)
 	menu.open_tower_lab.connect(_show_tower_lab)
+	menu.open_diamond_shop.connect(_show_diamond_shop)
 	menu.open_settings.connect(_show_settings)
 	_switch_screen(menu)
 
@@ -130,12 +152,48 @@ func _show_tower_lab() -> void:
 	pm.name = "ProgressionManager"
 	add_child(pm)
 	pm.setup(EconomyManager, SaveManager)
-	lab.setup(pm, EconomyManager)
 	lab.back_pressed.connect(func() -> void:
 		pm.queue_free()
 		_show_main_menu()
 	)
 	_switch_screen(lab)
+	# setup() must be called after _switch_screen so _ready() has created child nodes
+	lab.setup(pm, EconomyManager)
+
+
+func _show_diamond_shop() -> void:
+	AudioManager.set_music_state(Enums.GameState.MENU)
+
+	var shop := DiamondShop.new()
+	shop.back_pressed.connect(_show_main_menu)
+	shop.purchase_requested.connect(_on_shop_purchase)
+	shop.watch_ad_requested.connect(_on_shop_watch_ad)
+	_switch_screen(shop)
+	# Update diamond balance display and ad button after adding to tree
+	shop.update_diamonds(EconomyManager.diamonds)
+	if _ad_manager.has_no_ads(SaveManager):
+		shop.update_ad_button(-1)
+	else:
+		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+
+
+func _on_shop_purchase(pack_id: String) -> void:
+	_iap_manager.request_purchase(pack_id, EconomyManager, SaveManager)
+	# Refresh shop UI
+	if _current_screen is DiamondShop:
+		var shop: DiamondShop = _current_screen as DiamondShop
+		shop.update_diamonds(EconomyManager.diamonds)
+		if pack_id == "no_ads":
+			shop.update_ad_button(-1)
+
+
+func _on_shop_watch_ad() -> void:
+	_ad_manager.request_ad(EconomyManager, SaveManager)
+	# Refresh shop UI
+	if _current_screen is DiamondShop:
+		var shop: DiamondShop = _current_screen as DiamondShop
+		shop.update_diamonds(EconomyManager.diamonds)
+		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
 
 
 func _show_settings() -> void:
@@ -159,14 +217,11 @@ func _switch_screen(new_screen: Node) -> void:
 
 func _on_campaign_level_complete(level_id: String, stars: int) -> void:
 	_campaign_manager.on_level_complete(level_id, stars, GameManager.current_difficulty)
-	# Award diamonds: base = stars * 10, scaled by difficulty
-	var constants := Constants.new()
-	var mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(
-		GameManager.current_difficulty, 1.0) as float
-	var diamonds: int = int(float(stars * 10) * mult)
-	EconomyManager.add_diamonds(diamonds)
+	# Diamonds already awarded by GameLoop._on_all_waves_complete()
+	# Just sync and save
 	SaveManager.sync_economy(EconomyManager)
 	SaveManager.save_game()
+	# Navigation happens when user clicks Continue in the victory screen
 
 
 func _on_campaign_level_failed(_level_id: String) -> void:

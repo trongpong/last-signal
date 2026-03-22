@@ -131,7 +131,6 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 			child.world_size = ws
 			child.queue_redraw()
 		elif child is ColorRect:
-			child.set_anchors_preset(Control.PRESET_FULL_RECT)
 			child.size = ws
 
 	# Apply extra lives from global upgrades (after start_level sets base lives)
@@ -614,8 +613,7 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 	ui.add_child(screen)
 	screen.show_results(stars, diamonds)
 	screen.continue_pressed.connect(func() -> void:
-		# main.gd listens to GameManager.level_completed and navigates to campaign map
-		pass
+		get_tree().change_scene_to_file("res://scenes/main.tscn")
 	)
 	screen.restart_pressed.connect(func() -> void:
 		get_tree().reload_current_scene()
