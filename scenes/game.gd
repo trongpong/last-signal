@@ -882,18 +882,21 @@ func _on_ability_used(slot: int) -> void:
 # Damage popup
 # ---------------------------------------------------------------------------
 
-func _show_damage_popup(pos: Vector2, damage: float, damage_type: int) -> void:
+func _show_damage_popup(world_pos: Vector2, damage: float, damage_type: int) -> void:
+	# Convert world position to screen position so popups render correctly with camera zoom
+	var screen_pos: Vector2 = get_canvas_transform() * (world_pos + Vector2(randf_range(-10, 10), -20))
 	var label := Label.new()
 	label.text = str(int(damage))
-	label.global_position = pos + Vector2(randf_range(-10, 10), -20)
+	label.position = screen_pos
 	label.add_theme_font_size_override("font_size", 14)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Color by damage type
 	var colors: Dictionary = {
 		0: Color.CYAN, 1: Color.YELLOW, 2: Color(0.5, 0.8, 1.0),
 		3: Color.ORANGE_RED, 4: Color.WHITE, 5: Color.GREEN, 6: Color.GOLD
 	}
 	label.add_theme_color_override("font_color", colors.get(damage_type, Color.WHITE))
-	add_child(label)
+	ui.add_child(label)
 	var tw := create_tween()
 	tw.tween_property(label, "position:y", label.position.y - 30, 0.6)
 	tw.parallel().tween_property(label, "modulate:a", 0.0, 0.6)

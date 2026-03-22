@@ -6,7 +6,6 @@ var _world_size: Vector2 = Vector2(1280, 720)
 var _min_zoom: float = 1.0
 var _max_zoom: float = 1.0
 var _is_panning: bool = false
-var _pan_start: Vector2 = Vector2.ZERO
 
 func setup(map_scale: float, world_size: Vector2) -> void:
 	_map_scale = map_scale
@@ -43,8 +42,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			zoom_by(-1.0)
 		elif mb.button_index == MOUSE_BUTTON_MIDDLE:
 			_is_panning = mb.pressed
-			if mb.pressed:
-				_pan_start = mb.position
 	elif event is InputEventMouseMotion and _is_panning:
 		var motion := event as InputEventMouseMotion
 		pan_by(motion.relative)

@@ -2,11 +2,13 @@ class_name PathGenerator
 extends RefCounted
 
 var _last_seed: int = 0
+var _retry_count: int = 0
 
 # --- Public API ---
 
 func generate(path_type: String, map_scale: float, level_number: int, path_seed: int) -> Dictionary:
 	_last_seed = path_seed
+	_retry_count = 0
 	seed(path_seed)
 	match path_type:
 		"zigzag":
@@ -14,7 +16,10 @@ func generate(path_type: String, map_scale: float, level_number: int, path_seed:
 		"spiral":
 			return _build_result("spiral", [_gen_spiral(map_scale, level_number)], map_scale)
 		"branching":
-			return _build_result("branching", _gen_branching(map_scale, level_number), map_scale)
+			var branching_data: Dictionary = _gen_branching(map_scale, level_number)
+			var result: Dictionary = _build_result("branching", branching_data["paths"], map_scale)
+			result["merge_point"] = branching_data["merge_point"]
+			return result
 		"multi_entry":
 			return _build_result("multi_entry", _gen_multi_entry(map_scale, level_number, path_seed), map_scale)
 		_:
@@ -159,7 +164,7 @@ func _gen_branching(map_scale: float, level_number: int) -> Array:
 		Vector2(w + 33.0, end_y)
 	]
 
-	return [path_upper, path_lower]
+	return {"paths": [path_upper, path_lower], "merge_point": Vector2(merge_x, merge_y)}
 
 func _gen_multi_entry(map_scale: float, level_number: int, path_seed: int) -> Array:
 	var w: float = _world_width(map_scale)
@@ -217,8 +222,9 @@ func _gen_multi_entry(map_scale: float, level_number: int, path_seed: int) -> Ar
 		]
 		paths.append(path_top_edge)
 
-	# Crossing avoidance: retry with incremented seed if paths cross
-	if _paths_intersect(paths):
+	# Crossing avoidance: retry with incremented seed if paths cross (max 10 attempts)
+	if _paths_intersect(paths) and _retry_count < 10:
+		_retry_count += 1
 		seed(path_seed + 1)
 		return _gen_multi_entry(map_scale, level_number, path_seed + 1)
 
