@@ -65,7 +65,7 @@ func _build_hud() -> void:
 	_top_bar.offset_right = -4.0
 	root.add_child(_top_bar)
 	_top_bar.speed_changed.connect(_on_speed_changed)
-	_top_bar.toast_requested.connect(_show_toast)
+	_top_bar.toast_requested.connect(show_toast)
 
 	# Gold border line under top bar (1px)
 	var top_bar_border := ColorRect.new()
@@ -215,7 +215,7 @@ func show_adaptation_warning(visible: bool) -> void:
 
 
 ## Show a temporary toast message at the top-center of the screen.
-func _show_toast(message: String) -> void:
+func show_toast(message: String) -> void:
 	var toast := Label.new()
 	toast.text = message
 	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

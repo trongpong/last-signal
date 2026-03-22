@@ -163,6 +163,7 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	_adaptation_manager = AdaptationManager.new()
 	add_child(_adaptation_manager)
 	_adaptation_manager.setup(difficulty, false)
+	_adaptation_manager.adaptation_changed.connect(_on_adaptation_changed)
 
 	# Setup game loop orchestrator
 	_game_loop = GameLoop.new()
@@ -912,6 +913,16 @@ func _on_upgrade_tower_requested(tower: Tower, choice: int) -> void:
 
 func _on_ability_used(slot: int) -> void:
 	pass  # Ability system not yet fully implemented
+
+func _on_adaptation_changed(resistances: Dictionary) -> void:
+	# Check if any resistance is active
+	var has_resistance: bool = false
+	for val in resistances.values():
+		if (val as float) > 0.0:
+			has_resistance = true
+			break
+	if has_resistance:
+		_hud.show_toast(tr("TOAST_RESISTANCE_ACTIVE"))
 
 # ---------------------------------------------------------------------------
 # Damage popup
