@@ -162,6 +162,8 @@ func _build_normal_sub_waves(available: Array, total_count: int, wave_number: in
 ## Builds sub-waves for a boss wave: a main boss group + supporting enemies.
 func _build_boss_sub_waves(available: Array, total_count: int, wave_number: int) -> Array:
 	var result: Array = []
+	if available.is_empty():
+		return result
 
 	# Choose a boss-type enemy: prefer the last available (strongest)
 	var boss_id: String = available[available.size() - 1]

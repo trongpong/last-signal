@@ -91,7 +91,7 @@ func test_expired_signal_passes_hero_reference() -> void:
 	_hero.initialize("pulse_hero", 1.0, Vector2.ZERO)
 	watch_signals(_hero)
 	_hero._process(1.5)
-	var args := get_signal_parameters(_hero, "expired")
+	var args = get_signal_parameters(_hero, "expired")
 	assert_eq(args[0], _hero)
 
 func test_expired_signal_not_emitted_before_duration() -> void:

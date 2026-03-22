@@ -9,6 +9,7 @@ extends Control
 
 signal play_campaign
 signal play_endless
+signal open_daily_challenge
 signal open_tower_lab
 signal open_diamond_shop
 signal open_settings
@@ -80,6 +81,16 @@ func _build_layout() -> void:
 	_endless_btn.pressed.connect(func() -> void: play_endless.emit())
 	_endless_btn.disabled = true  # locked until set_endless_unlocked(true)
 	vbox.add_child(_endless_btn)
+
+	# Daily challenge button — green tint
+	var daily_btn := Button.new()
+	daily_btn.text = tr("UI_DAILY_CHALLENGE")
+	daily_btn.focus_mode = Control.FOCUS_ALL
+	daily_btn.custom_minimum_size = Vector2(280, 56)
+	daily_btn.add_theme_font_size_override("font_size", 20)
+	daily_btn.add_theme_color_override("font_color", Color(0.0, 1.0, 0.8))
+	daily_btn.pressed.connect(func() -> void: open_daily_challenge.emit())
+	vbox.add_child(daily_btn)
 
 	# Tower lab button — cyan tint
 	var lab_btn := Button.new()

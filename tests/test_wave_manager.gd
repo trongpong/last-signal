@@ -294,12 +294,11 @@ func test_spawn_signal_includes_path_index() -> void:
 	wd.sub_waves = [sw]
 	wm.load_waves([wd])
 
-	var received_path_index: int = -1
-	wm.enemy_spawn_requested.connect(func(eid: String, pi: int) -> void:
-		received_path_index = pi
-	)
+	watch_signals(wm)
 	wm.start_next_wave()
 	for i in range(20):
 		wm._process(0.1)
-	assert_eq(received_path_index, 1, "Signal should include path_index from sub-wave")
+	assert_signal_emitted(wm, "enemy_spawn_requested")
+	var args = get_signal_parameters(wm, "enemy_spawn_requested")
+	assert_eq(args[1], 1, "Signal should include path_index from sub-wave")
 	wm.queue_free()

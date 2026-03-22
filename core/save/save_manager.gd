@@ -74,7 +74,14 @@ func get_default_save_data() -> Dictionary:
 			"global_upgrades": {},
 			"abilities_unlocked": [],
 			"abilities_upgrade_levels": {},
-			"heroes_unlocked": []
+			"heroes_unlocked": [],
+			"synergies_discovered": []
+		},
+		"tower_mastery": {},
+		"daily_challenges": {
+			"last_completed_date": "",
+			"streak": 0,
+			"history": {}
 		},
 		"endless": {
 			"high_scores": {}

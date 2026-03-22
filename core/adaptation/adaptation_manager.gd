@@ -34,6 +34,9 @@ var _threshold: float = 0.4
 ## The maximum resistance any type can reach.
 var _max_resistance: float = Constants.ADAPTATION_MAX_RESISTANCE
 
+## Decay rate multiplier (increased by Signal Leech wave reward).
+var _decay_multiplier: float = 1.0
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -88,7 +91,7 @@ func check_adaptation() -> void:
 		else:
 			# Decay resistance, floor at 0
 			_resistances[dtype] = maxf(
-				current_res - Constants.ADAPTATION_DECAY_RATE,
+				current_res - Constants.ADAPTATION_DECAY_RATE * _decay_multiplier,
 				0.0
 			)
 			# Remove the entry entirely if it decayed to zero to keep dict clean
@@ -108,6 +111,15 @@ func start_new_wave_window() -> void:
 func get_resistances() -> Dictionary:
 	return _resistances.duplicate()
 
+
+## Increases the adaptation threshold, making it harder for resistance to trigger.
+## bonus: percentage points to add to the threshold (e.g. 0.04 = +4%).
+func apply_threshold_bonus(bonus: float) -> void:
+	_threshold = minf(_threshold + bonus, 0.95)
+
+## Sets the decay rate multiplier (e.g. 2.0 = resistance decays twice as fast).
+func set_decay_multiplier(mult: float) -> void:
+	_decay_multiplier = maxf(mult, 1.0)
 
 ## Fully resets resistances and damage log (e.g. for a new level).
 func reset() -> void:

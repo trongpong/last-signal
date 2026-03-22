@@ -43,13 +43,13 @@ func test_activate_emits_signal() -> void:
 func test_activate_signal_contains_ability_id() -> void:
 	watch_signals(_ability)
 	_ability.activate("target_pos")
-	var args := get_signal_parameters(_ability, "activated")
+	var args = get_signal_parameters(_ability, "activated")
 	assert_eq(args[0], "orbital_strike")
 
 func test_activate_signal_contains_target() -> void:
 	watch_signals(_ability)
 	_ability.activate("my_target")
-	var args := get_signal_parameters(_ability, "activated")
+	var args = get_signal_parameters(_ability, "activated")
 	assert_eq(args[1], "my_target")
 
 func test_not_ready_after_activation() -> void:
@@ -109,7 +109,7 @@ func test_cooldown_complete_signal_contains_id() -> void:
 	_ability.activate()
 	watch_signals(_ability)
 	_ability._process(60.0)
-	var args := get_signal_parameters(_ability, "cooldown_complete")
+	var args = get_signal_parameters(_ability, "cooldown_complete")
 	assert_eq(args[0], "orbital_strike")
 
 func test_cooldown_complete_not_emitted_before_expiry() -> void:

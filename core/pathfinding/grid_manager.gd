@@ -135,6 +135,8 @@ func _cell_to_id(cell: Vector2i) -> int:
 	return cell.y * _grid_size.x + cell.x
 
 func _id_to_cell(id: int) -> Vector2i:
+	if id < 0 or id >= _grid_size.x * _grid_size.y:
+		return Vector2i(-1, -1)
 	return Vector2i(id % _grid_size.x, id / _grid_size.x)
 
 func _populate_astar() -> void:

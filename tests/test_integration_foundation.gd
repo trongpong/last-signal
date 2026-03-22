@@ -9,11 +9,11 @@ var em
 var sm
 
 func before_each() -> void:
-	gm = GameManager.new()
+	gm = load("res://core/game_manager.gd").new()
 	add_child(gm)
-	em = EconomyManager.new()
+	em = load("res://core/economy/economy_manager.gd").new()
 	add_child(em)
-	sm = SaveManager.new()
+	sm = load("res://core/save/save_manager.gd").new()
 	sm.save_path = "user://test_integration_temp.json"
 	add_child(sm)
 
@@ -169,7 +169,7 @@ func test_save_and_load_preserves_level_completion() -> void:
 	sm.save_game()
 
 	# Load in a fresh SaveManager
-	var sm2 := SaveManager.new()
+	var sm2 := load("res://core/save/save_manager.gd").new()
 	sm2.save_path = sm.save_path
 	add_child(sm2)
 	sm2.load_game()
@@ -184,12 +184,12 @@ func test_save_and_load_preserves_diamonds() -> void:
 	sm.sync_economy(em)
 	sm.save_game()
 
-	var sm2 := SaveManager.new()
+	var sm2 := load("res://core/save/save_manager.gd").new()
 	sm2.save_path = sm.save_path
 	add_child(sm2)
 	sm2.load_game()
 
-	var eco2 := EconomyManager.new()
+	var eco2 := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco2)
 	sm2.apply_economy(eco2)
 	assert_eq(eco2.diamonds, 500)

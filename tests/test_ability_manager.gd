@@ -101,7 +101,7 @@ func test_activate_ability_signal_contains_id_and_slot() -> void:
 	_manager.set_loadout(["emp_burst"])
 	watch_signals(_manager)
 	_manager.activate_ability(0, null)
-	var args := get_signal_parameters(_manager, "ability_activated")
+	var args = get_signal_parameters(_manager, "ability_activated")
 	assert_eq(args[0], "emp_burst")
 	assert_eq(args[1], 0)
 

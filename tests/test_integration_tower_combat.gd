@@ -246,7 +246,7 @@ func test_upgrade_manager_deducts_gold() -> void:
 	add_child(tower)
 	tower.initialize(def)
 
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	eco.add_gold(200)
 
@@ -269,7 +269,7 @@ func test_upgrade_manager_fails_when_insufficient_gold() -> void:
 	add_child(tower)
 	tower.initialize(def)
 
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	eco.add_gold(50)  # not enough for rapid (75)
 
@@ -292,7 +292,7 @@ func test_upgrade_manager_emits_signal_on_success() -> void:
 	add_child(tower)
 	tower.initialize(def)
 
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	eco.add_gold(500)
 

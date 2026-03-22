@@ -164,3 +164,103 @@ const TOUCH_SELECT_RADIUS: float = 56.0
 
 ## Long press duration in seconds for showing info
 const LONG_PRESS_DURATION: float = 0.5
+
+# ---------------------------------------------------------------------------
+# Enemy Abilities
+# ---------------------------------------------------------------------------
+
+## Healer: heal pulse cooldown in seconds
+const HEALER_PULSE_COOLDOWN: float = 4.0
+## Healer: pulse range in pixels
+const HEALER_PULSE_RANGE: float = 80.0
+## Healer: fraction of ally max HP healed per pulse
+const HEALER_PULSE_FRACTION: float = 0.15
+
+## Shielder: shield aura cooldown in seconds
+const SHIELDER_AURA_COOLDOWN: float = 5.0
+## Shielder: aura range in pixels
+const SHIELDER_AURA_RANGE: float = 60.0
+## Shielder: shield points granted per pulse
+const SHIELDER_AURA_AMOUNT: float = 30.0
+## Shielder: maximum shield an ally can have from auras
+const SHIELDER_AURA_MAX: float = 100.0
+
+## Scout: scatter signal range in pixels on death
+const SCOUT_SCATTER_RANGE: float = 100.0
+## Scout: speed multiplier applied to nearby allies on death
+const SCOUT_SCATTER_SPEED_MULT: float = 1.2
+## Scout: duration of scatter speed buff in seconds
+const SCOUT_SCATTER_DURATION: float = 3.0
+
+## Drone Swarm: minimum alive drones to trigger Overwhelm
+const DRONE_OVERWHELM_THRESHOLD: int = 5
+## Drone Swarm: speed multiplier when Overwhelm is active
+const DRONE_OVERWHELM_SPEED_MULT: float = 1.1
+
+## Tank: damage reduction fraction for the first tower type that hits
+const TANK_FORTIFIED_REDUCTION: float = 0.25
+
+# ---------------------------------------------------------------------------
+# Tower Synergies
+# ---------------------------------------------------------------------------
+
+const SYNERGY_RANGE: float = 100.0
+const SYNERGY_BARRAGE_FIRE_RATE_MULT: float = 1.15
+const SYNERGY_EFFICIENCY_INCOME_MULT: float = 1.30
+const SYNERGY_SHATTER_CHAIN_DAMAGE_MULT: float = 2.0
+const SYNERGY_FROSTBITE_SPLASH_DAMAGE_MULT: float = 1.25
+const SYNERGY_COLD_SNAP_SLOW_EXTEND: float = 0.5
+const SYNERGY_FOCUS_FIRE_DAMAGE_MULT: float = 1.20
+const SYNERGY_FOCUS_FIRE_DURATION: float = 2.0
+
+# ---------------------------------------------------------------------------
+# Elite Enemy Modifiers (Endless Mode)
+# ---------------------------------------------------------------------------
+
+const ELITE_START_WAVE: int = 15
+const ELITE_REGEN_PULSE_INTERVAL: float = 2.0
+const ELITE_REGEN_HP_FRACTION: float = 0.02
+const ELITE_SPLIT_COUNT: int = 2
+const ELITE_SPLIT_HP_FRACTION: float = 0.30
+const ELITE_SPLIT_SPEED_MULT: float = 0.80
+const ELITE_PHASE_INTERVAL: float = 3.0
+const ELITE_PHASE_DURATION: float = 0.5
+const ELITE_MAGNETIC_RANGE: float = 60.0
+const ELITE_MAGNETIC_SPEED_MULT: float = 1.15
+const ELITE_REFLECTIVE_PAUSE: float = 0.3
+const ELITE_ENRAGED_INTERVAL: float = 3.0
+const ELITE_ENRAGED_SPEED_INCREMENT: float = 0.05
+const ELITE_ENRAGED_SPEED_CAP: float = 0.50
+const ELITE_DOUBLE_MODIFIER_WAVE: int = 50
+const ELITE_HP_SCALE: float = 1.5
+
+# ---------------------------------------------------------------------------
+# Roguelite Wave Rewards (Endless Mode)
+# ---------------------------------------------------------------------------
+
+const WAVE_REWARD_INTERVAL: int = 5
+const WAVE_REWARD_CHOICE_COUNT: int = 3
+const WAVE_REWARD_TIMER: float = 8.0
+
+# ---------------------------------------------------------------------------
+# Tower Mastery
+# ---------------------------------------------------------------------------
+
+const MASTERY_TIERS: Array = [
+	{"name": "Bronze",  "kills": 500,    "damage_bonus": 0.00, "cost_discount": 0.00},
+	{"name": "Silver",  "kills": 2000,   "damage_bonus": 0.03, "cost_discount": 0.00},
+	{"name": "Gold",    "kills": 8000,   "damage_bonus": 0.03, "cost_discount": 0.00},
+	{"name": "Diamond", "kills": 25000,  "damage_bonus": 0.03, "cost_discount": 0.00},
+	{"name": "Master",  "kills": 100000, "damage_bonus": 0.03, "cost_discount": 0.05},
+]
+
+# ---------------------------------------------------------------------------
+# Signal Decode Minigame
+# ---------------------------------------------------------------------------
+
+const SIGNAL_DECODE_GLYPHS: Array = ["◆", "◇", "○", "△", "□", "☆"]
+const SIGNAL_DECODE_DISPLAY_TIME: float = 2.0
+const SIGNAL_DECODE_INPUT_TIME: float = 4.0
+const SIGNAL_DECODE_REWARD_GOLD: int = 20
+const SIGNAL_DECODE_REWARD_DAMAGE_MULT: float = 0.05
+const SIGNAL_DECODE_REWARD_COOLDOWN_SECS: float = 3.0

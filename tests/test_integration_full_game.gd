@@ -12,11 +12,11 @@ var campaign_manager: CampaignManager
 var endless_manager: EndlessManager
 
 func before_each() -> void:
-	save_manager = SaveManager.new()
+	save_manager = load("res://core/save/save_manager.gd").new()
 	save_manager.save_path = "user://test_integration_full_temp.json"
 	add_child(save_manager)
 
-	economy_manager = EconomyManager.new()
+	economy_manager = load("res://core/economy/economy_manager.gd").new()
 	add_child(economy_manager)
 
 	campaign_manager = CampaignManager.new()
@@ -74,7 +74,7 @@ func test_complete_level_flow_sync_and_save() -> void:
 	save_manager.save_game()
 
 	# Load into a fresh save manager and verify
-	var sm2 := SaveManager.new()
+	var sm2 := load("res://core/save/save_manager.gd").new()
 	sm2.save_path = save_manager.save_path
 	add_child(sm2)
 	var ok := sm2.load_game()
@@ -196,7 +196,7 @@ func test_endless_mode_flow_high_score_persisted_across_save_load() -> void:
 	endless_manager.record_high_score(save_manager)
 	save_manager.save_game()
 
-	var sm2 := SaveManager.new()
+	var sm2 := load("res://core/save/save_manager.gd").new()
 	sm2.save_path = save_manager.save_path
 	add_child(sm2)
 	sm2.load_game()

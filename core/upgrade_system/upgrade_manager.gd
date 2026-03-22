@@ -33,10 +33,7 @@ func try_upgrade(tower: Tower, choice: int, economy) -> bool:
 	if tier_tree.get_upgrade_options(current_path).size() == 0:
 		return false
 
-	if cost <= 0 and tier_tree.get_upgrade_options(current_path).size() > 0:
-		# Free upgrade edge case — still valid, just no cost
-		pass
-	elif cost > 0:
+	if cost > 0:
 		if not economy.spend_gold(cost):
 			return false
 

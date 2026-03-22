@@ -33,6 +33,8 @@ var _show_health_bar: bool = false
 var _rotation_angle: float = 0.0
 var _frame_counter: int = 0
 var _hit_flash: float = 0.0
+var _elite_modifiers: Array[int] = []
+var _is_phasing: bool = false
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -51,6 +53,17 @@ func setup(definition: EnemyDefinition) -> void:
 ## Trigger a brief white hit flash on the enemy body.
 func flash_hit() -> void:
 	_hit_flash = 0.1
+	queue_redraw()
+
+## Set elite modifier list for visual indicators.
+func set_elite_modifiers(modifiers: Array[int]) -> void:
+	_elite_modifiers = modifiers
+	queue_redraw()
+
+## Set phasing visual state (transparent when phased).
+func set_phasing(active: bool) -> void:
+	_is_phasing = active
+	modulate.a = 0.3 if active else 1.0
 	queue_redraw()
 
 ## Update health display. Call from EnemyHealth.health_changed signal.
@@ -103,6 +116,10 @@ func _draw() -> void:
 	# Hit flash overlay
 	if _hit_flash > 0.0:
 		draw_colored_polygon(points, Color(1.0, 1.0, 1.0, _hit_flash * 3.0))
+
+	# Elite modifier indicators
+	if not _elite_modifiers.is_empty():
+		_draw_elite_indicators()
 
 	# Health bar (only when damaged)
 	if _show_health_bar:
@@ -193,3 +210,23 @@ func _resistance_color_for_type(dtype: Enums.DamageType, strength: float) -> Col
 		Enums.DamageType.HARVEST:
 			return Color(0.8, 0.5, 0.1, alpha)
 	return Color(1.0, 1.0, 1.0, alpha)
+
+func _draw_elite_indicators() -> void:
+	var r: float = _shape_radius * _size_scale
+	for mod in _elite_modifiers:
+		match mod:
+			Enums.EliteModifier.REGENERATING:
+				draw_arc(Vector2.ZERO, r * 1.4, 0, TAU, 16, Color(0.2, 1.0, 0.2, 0.4), 2.0)
+			Enums.EliteModifier.SPLITTING:
+				for i in range(4):
+					var angle: float = TAU * float(i) / 4.0
+					var inner: Vector2 = Vector2(cos(angle), sin(angle)) * r * 0.3
+					var outer: Vector2 = Vector2(cos(angle), sin(angle)) * r * 1.2
+					draw_line(inner, outer, Color(0.8, 0.6, 0.2, 0.6), 1.5)
+			Enums.EliteModifier.MAGNETIC:
+				draw_arc(Vector2.ZERO, Constants.ELITE_MAGNETIC_RANGE, 0, TAU, 24, Color(0.5, 0.3, 1.0, 0.15), 1.5)
+			Enums.EliteModifier.REFLECTIVE:
+				var pts: PackedVector2Array = _get_polygon_points(_shape_sides, r * 1.1)
+				_draw_polygon_outline(pts, Color(0.9, 0.9, 1.0, 0.6), 2.0)
+			Enums.EliteModifier.ENRAGED:
+				draw_circle(Vector2.ZERO, r * 1.3, Color(1.0, 0.1, 0.1, 0.25))

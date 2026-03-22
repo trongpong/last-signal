@@ -10,8 +10,8 @@ var am: AdaptationManager
 
 
 func before_each() -> void:
-	gm = GameManager.new()
-	em = EconomyManager.new()
+	gm = load("res://core/game_manager.gd").new()
+	em = load("res://core/economy/economy_manager.gd").new()
 	wm = WaveManager.new()
 	am = AdaptationManager.new()
 	gl = GameLoop.new()
@@ -128,7 +128,8 @@ func test_on_enemy_killed_adds_gold() -> void:
 	gl.send_wave()
 	wm._process(0.5)
 	gl.on_enemy_killed(25)
-	assert_eq(em.gold, 25)
+	# 25 (kill) + 25 (WAVE_CLEAR_BONUS, single-enemy wave auto-completes)
+	assert_eq(em.gold, 50)
 
 func test_on_enemy_killed_notifies_wave_manager() -> void:
 	_start_default_level()
@@ -210,16 +211,16 @@ func test_all_waves_complete_adds_diamonds() -> void:
 	gl.send_wave()
 	wm._process(0.5)
 	gl.on_enemy_killed(0)
-	# 3 stars (no lives lost), base = 50 + 3*25 = 125, mult = 1.0
-	assert_eq(em.diamonds, 125)
+	# 3 stars (no lives lost), base = 25 + 3*15 = 70, mult = 1.0
+	assert_eq(em.diamonds, 70)
 
 func test_all_waves_complete_diamonds_scaled_by_difficulty() -> void:
 	gl.start_level("level_01", Enums.Difficulty.NIGHTMARE, _make_waves(1))
 	gl.send_wave()
 	wm._process(0.5)
 	gl.on_enemy_killed(0)
-	# 3 stars, base = 125, nightmare mult = 2.5
-	assert_eq(em.diamonds, 312)  # int(125 * 2.5)
+	# 3 stars, base = 25 + 3*15 = 70, nightmare mult = 2.5
+	assert_eq(em.diamonds, 175)  # int(70 * 2.5)
 
 func test_victory_signal_carries_stars() -> void:
 	gl.start_level("level_01", Enums.Difficulty.NORMAL, _make_waves(1))
@@ -237,7 +238,7 @@ func test_victory_signal_carries_diamonds() -> void:
 	watch_signals(gl)
 	gl.on_enemy_killed(0)
 	var args: Array = get_signal_parameters(gl, "level_victory")
-	assert_eq(args[2], 125)
+	assert_eq(args[2], 70)
 
 # ---------------------------------------------------------------------------
 # on_damage_dealt

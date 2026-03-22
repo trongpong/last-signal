@@ -6,7 +6,7 @@ var em: EndlessManager
 var sm
 
 func before_each() -> void:
-	sm = SaveManager.new()
+	sm = load("res://core/save/save_manager.gd").new()
 	sm.save_path = "user://test_endless_temp.json"
 	add_child(sm)
 

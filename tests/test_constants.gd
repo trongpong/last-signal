@@ -9,6 +9,7 @@ func before_each() -> void:
 	constants = Constants.new()
 
 func after_each() -> void:
+	pass
 
 # ---------------------------------------------------------------------------
 # Difficulty multiplier tests

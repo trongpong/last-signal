@@ -42,6 +42,10 @@ func initialize(id: String, cooldown: float) -> void:
 func is_ready() -> bool:
 	return _cooldown_remaining <= 0.0
 
+## Reduces the current cooldown remaining by the given amount.
+func reduce_cooldown(seconds: float) -> void:
+	_cooldown_remaining = maxf(_cooldown_remaining - seconds, 0.0)
+
 ## Returns a 0.0–1.0 value representing cooldown progress (1.0 = fully charged).
 func get_cooldown_progress() -> float:
 	if _base_cooldown <= 0.0:

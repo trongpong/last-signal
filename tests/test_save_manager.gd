@@ -6,7 +6,7 @@ extends GutTest
 var sm
 
 func before_each() -> void:
-	sm = SaveManager.new()
+	sm = load("res://core/save/save_manager.gd").new()
 	# Use a temp path so tests don't pollute real saves
 	sm.save_path = "user://test_save_temp.json"
 	add_child(sm)
@@ -105,7 +105,7 @@ func test_load_returns_true_when_file_exists() -> void:
 func test_round_trip_preserves_language() -> void:
 	sm.data["profile"]["language"] = "fr"
 	sm.save_game()
-	var sm2 := SaveManager.new()
+	var sm2 := load("res://core/save/save_manager.gd").new()
 	sm2.save_path = sm.save_path
 	add_child(sm2)
 	sm2.load_game()
@@ -172,7 +172,7 @@ func test_completed_flag_set() -> void:
 # ---------------------------------------------------------------------------
 
 func test_sync_economy_stores_diamonds() -> void:
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	eco.add_diamonds(500)
 	sm.sync_economy(eco)
@@ -181,7 +181,7 @@ func test_sync_economy_stores_diamonds() -> void:
 
 func test_apply_economy_sets_diamonds() -> void:
 	sm.data["economy"]["diamonds"] = 250
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	sm.apply_economy(eco)
 	assert_eq(eco.diamonds, 250)
@@ -189,7 +189,7 @@ func test_apply_economy_sets_diamonds() -> void:
 
 func test_apply_economy_sets_diamond_doubler() -> void:
 	sm.data["economy"]["diamond_doubler"] = true
-	var eco := EconomyManager.new()
+	var eco := load("res://core/economy/economy_manager.gd").new()
 	add_child(eco)
 	sm.apply_economy(eco)
 	assert_true(eco.diamond_doubler)

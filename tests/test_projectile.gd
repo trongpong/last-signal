@@ -82,26 +82,26 @@ func test_hit_signal_emitted_when_reaching_target() -> void:
 func test_hit_signal_carries_damage() -> void:
 	_proj.global_position = Vector2.ZERO
 	_proj.initialize(Vector2(5, 0), 400.0, 33.0, Enums.DamageType.BEAM)
-	var received_damage: float = -1.0
-	_proj.hit_target.connect(func(pos, dmg, dtype, splash): received_damage = dmg)
+	watch_signals(_proj)
 	_proj._process(0.016)
-	assert_almost_eq(received_damage, 33.0, 0.001)
+	var args = get_signal_parameters(_proj, "hit_target")
+	assert_almost_eq(args[1] as float, 33.0, 0.001)
 
 func test_hit_signal_carries_damage_type() -> void:
 	_proj.global_position = Vector2.ZERO
 	_proj.initialize(Vector2(5, 0), 400.0, 10.0, Enums.DamageType.ARC)
-	var received_type: int = -1
-	_proj.hit_target.connect(func(pos, dmg, dtype, splash): received_type = dtype)
+	watch_signals(_proj)
 	_proj._process(0.016)
-	assert_eq(received_type, Enums.DamageType.ARC)
+	var args = get_signal_parameters(_proj, "hit_target")
+	assert_eq(args[2], Enums.DamageType.ARC)
 
 func test_hit_signal_carries_splash_radius() -> void:
 	_proj.global_position = Vector2.ZERO
 	_proj.initialize(Vector2(5, 0), 400.0, 10.0, Enums.DamageType.MISSILE, 75.0)
-	var received_splash: float = -1.0
-	_proj.hit_target.connect(func(pos, dmg, dtype, splash): received_splash = splash)
+	watch_signals(_proj)
 	_proj._process(0.016)
-	assert_almost_eq(received_splash, 75.0, 0.001)
+	var args = get_signal_parameters(_proj, "hit_target")
+	assert_almost_eq(args[3] as float, 75.0, 0.001)
 
 # ---------------------------------------------------------------------------
 # Max distance expiry

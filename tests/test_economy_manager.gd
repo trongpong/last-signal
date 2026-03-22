@@ -6,7 +6,7 @@ extends GutTest
 var em
 
 func before_each() -> void:
-	em = EconomyManager.new()
+	em = load("res://core/economy/economy_manager.gd").new()
 	add_child(em)
 
 func after_each() -> void:
@@ -58,13 +58,13 @@ func test_add_gold_modifier_nightmare() -> void:
 
 func test_spend_gold_succeeds_when_sufficient() -> void:
 	em.add_gold(100)
-	var result := em.spend_gold(50)
+	var result = em.spend_gold(50)
 	assert_true(result)
 	assert_eq(em.gold, 50)
 
 func test_spend_gold_fails_when_insufficient() -> void:
 	em.add_gold(30)
-	var result := em.spend_gold(50)
+	var result = em.spend_gold(50)
 	assert_false(result)
 	assert_eq(em.gold, 30, "Gold should be unchanged on failed spend")
 
@@ -134,13 +134,13 @@ func test_diamond_doubler_off_no_double() -> void:
 
 func test_spend_diamonds_succeeds_when_sufficient() -> void:
 	em.add_diamonds(200)
-	var result := em.spend_diamonds(100)
+	var result = em.spend_diamonds(100)
 	assert_true(result)
 	assert_eq(em.diamonds, 100)
 
 func test_spend_diamonds_fails_when_insufficient() -> void:
 	em.add_diamonds(50)
-	var result := em.spend_diamonds(100)
+	var result = em.spend_diamonds(100)
 	assert_false(result)
 	assert_eq(em.diamonds, 50)
 

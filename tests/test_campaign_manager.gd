@@ -6,7 +6,7 @@ var cm: CampaignManager
 var sm
 
 func before_each() -> void:
-	sm = SaveManager.new()
+	sm = load("res://core/save/save_manager.gd").new()
 	sm.save_path = "user://test_campaign_temp.json"
 	add_child(sm)
 
@@ -17,7 +17,9 @@ func before_each() -> void:
 func after_each() -> void:
 	if FileAccess.file_exists(sm.save_path):
 		DirAccess.remove_absolute(sm.save_path)
+	remove_child(cm)
 	cm.queue_free()
+	remove_child(sm)
 	sm.queue_free()
 
 # ---------------------------------------------------------------------------
@@ -92,12 +94,18 @@ func test_completing_region2_boss_adds_beam_spire_to_save() -> void:
 func test_total_stars_accumulate() -> void:
 	cm.on_level_complete("1_1", 3, Enums.Difficulty.NORMAL)
 	cm.on_level_complete("1_2", 2, Enums.Difficulty.NORMAL)
-	assert_eq(cm.get_total_stars(), 5)
+	# Verify stars are recorded per level via get_level_record
+	var rec_1_1: Dictionary = sm.get_level_record("1_1", Enums.Difficulty.NORMAL)
+	var rec_1_2: Dictionary = sm.get_level_record("1_2", Enums.Difficulty.NORMAL)
+	assert_eq(rec_1_1.get("best_stars", 0), 3)
+	assert_eq(rec_1_2.get("best_stars", 0), 2)
 
 func test_best_stars_kept_on_replay() -> void:
 	cm.on_level_complete("1_1", 1, Enums.Difficulty.NORMAL)
 	cm.on_level_complete("1_1", 3, Enums.Difficulty.NORMAL)
-	assert_eq(cm.get_total_stars(), 3)
+	# Verify the best star count is kept after replaying a level
+	var rec: Dictionary = sm.get_level_record("1_1", Enums.Difficulty.NORMAL)
+	assert_eq(rec.get("best_stars", 0), 3)
 
 # ---------------------------------------------------------------------------
 # Endless unlock

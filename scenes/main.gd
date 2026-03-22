@@ -9,6 +9,7 @@ extends Control
 # ---------------------------------------------------------------------------
 
 var _campaign_manager: CampaignManager = null
+var _daily_challenge_manager: DailyChallengeManager = null
 var _iap_manager: IAPManager = null
 var _ad_manager: AdManager = null
 var _current_screen: Node = null
@@ -46,6 +47,12 @@ func _ready() -> void:
 	add_child(_campaign_manager)
 	_campaign_manager.setup(SaveManager)
 
+	# Bootstrap daily challenge manager
+	_daily_challenge_manager = DailyChallengeManager.new()
+	_daily_challenge_manager.name = "DailyChallengeManager"
+	add_child(_daily_challenge_manager)
+	_daily_challenge_manager.setup(SaveManager)
+
 	# Bootstrap monetization managers
 	_iap_manager = IAPManager.new()
 	_iap_manager.name = "IAPManager"
@@ -73,6 +80,7 @@ func _show_main_menu() -> void:
 	menu.set_endless_unlocked(_campaign_manager.is_endless_unlocked())
 	menu.play_campaign.connect(_show_campaign_map)
 	menu.play_endless.connect(_start_endless)
+	menu.open_daily_challenge.connect(_show_daily_challenge)
 	menu.open_tower_lab.connect(_show_tower_lab)
 	menu.open_diamond_shop.connect(_show_diamond_shop)
 	menu.open_settings.connect(_show_settings)
@@ -143,6 +151,21 @@ func _start_endless() -> void:
 	if not GameManager.level_failed.is_connected(_on_endless_failed):
 		GameManager.level_failed.connect(_on_endless_failed)
 
+
+func _show_daily_challenge() -> void:
+	AudioManager.set_music_state(Enums.GameState.MENU)
+	var screen = load("res://ui/menus/daily_challenge_screen.gd").new()
+	var challenge: Dictionary = _daily_challenge_manager.get_today_challenge()
+	screen.setup(challenge)
+	screen.play_pressed.connect(_start_daily_challenge)
+	screen.back_pressed.connect(_show_main_menu)
+	_switch_screen(screen)
+
+func _start_daily_challenge() -> void:
+	AudioManager.set_music_state(Enums.GameState.BUILDING)
+	var game_scene := load("res://scenes/game.tscn").instantiate() as Node
+	_switch_screen(game_scene)
+	GameManager.start_level("daily_challenge", _pending_difficulty)
 
 func _show_tower_lab() -> void:
 	AudioManager.set_music_state(Enums.GameState.MENU)

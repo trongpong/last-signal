@@ -40,6 +40,7 @@ var _upgrade_cost_total: int = 0
 var _skill_damage_bonus: float = 0.0
 var _skill_fire_rate_bonus: float = 0.0
 var _skill_range_bonus: float = 0.0
+var _skill_specials: Dictionary = {}  # "special_name" -> level
 
 # Cooldown: seconds remaining before the tower can fire again
 var _fire_cooldown: float = 0.0
@@ -50,6 +51,16 @@ var _buff_sources: Dictionary = {}
 var _buff_damage_mult: float = 1.0
 var _buff_fire_rate_mult: float = 1.0
 
+# Synergy state (managed by SynergyManager)
+var _synergy_type: int = -1
+var _synergy_partner_id: int = -1
+
+# Last target tracking (for Focus Fire synergy)
+var _last_target_id: int = -1
+
+# Mastery bonuses (from TowerMasteryManager)
+var _mastery_damage_bonus: float = 0.0
+var _mastery_cost_discount: float = 0.0
 var _initialized: bool = false
 
 # ---------------------------------------------------------------------------
@@ -120,6 +131,12 @@ func apply_skill_bonuses(bonuses: Dictionary) -> void:
 	_skill_damage_bonus = bonuses.get("damage", 0.0) as float
 	_skill_fire_rate_bonus = bonuses.get("fire_rate", 0.0) as float
 	_skill_range_bonus = bonuses.get("range", 0.0) as float
+	_skill_specials.clear()
+	for entry in bonuses.get("specials", []):
+		var special: String = entry.get("special", "") as String
+		var level: int = entry.get("level", 0) as int
+		if special != "":
+			_skill_specials[special] = level
 	_recalculate_stats()
 
 ## Returns damage including any active buff multiplier.
@@ -212,6 +229,39 @@ func _recalculate_buff_multipliers() -> void:
 	_buff_fire_rate_mult = minf(max_fire_rate_mult, 3.0)
 
 # ---------------------------------------------------------------------------
+# Synergy
+# ---------------------------------------------------------------------------
+
+func set_synergy(synergy_type: int, partner_id: int) -> void:
+	_synergy_type = synergy_type
+	_synergy_partner_id = partner_id
+
+func clear_synergy() -> void:
+	_synergy_type = -1
+	_synergy_partner_id = -1
+
+func get_synergy_type() -> int:
+	return _synergy_type
+
+func has_synergy() -> bool:
+	return _synergy_type >= 0
+
+func get_synergy_partner_id() -> int:
+	return _synergy_partner_id
+
+# ---------------------------------------------------------------------------
+# Mastery
+# ---------------------------------------------------------------------------
+
+func apply_mastery_bonuses(bonuses: Dictionary) -> void:
+	_mastery_damage_bonus = bonuses.get("damage_bonus", 0.0) as float
+	_mastery_cost_discount = bonuses.get("cost_discount", 0.0) as float
+	_recalculate_stats()
+
+func get_mastery_cost_discount() -> float:
+	return _mastery_cost_discount
+
+# ---------------------------------------------------------------------------
 # Sell
 # ---------------------------------------------------------------------------
 
@@ -219,6 +269,92 @@ func _recalculate_buff_multipliers() -> void:
 func sell() -> void:
 	sold.emit(self)
 	queue_free()
+
+# ---------------------------------------------------------------------------
+# Effective stats (base + skill specials)
+# ---------------------------------------------------------------------------
+
+## Returns effective splash radius including skill bonuses.
+func get_effective_splash() -> float:
+	if _definition == null:
+		return 0.0
+	var base: float = _definition.splash_radius
+	for key in _skill_specials:
+		if key.begins_with("splash+"):
+			base += float(key.substr(7)) * float(_skill_specials[key])
+	return base
+
+## Returns effective chain count including skill bonuses.
+func get_effective_chain_count() -> int:
+	if _definition == null:
+		return 0
+	var base: int = _definition.chain_count
+	for key in _skill_specials:
+		if key.begins_with("chain_count+"):
+			base += int(key.substr(12)) * _skill_specials[key]
+	return base
+
+## Returns the chain range from the tower definition.
+func get_effective_chain_range() -> float:
+	if _definition == null:
+		return 0.0
+	return _definition.chain_range
+
+## Returns effective slow factor including skill bonuses (lower = stronger).
+func get_effective_slow_factor() -> float:
+	if _definition == null:
+		return 1.0
+	var base: float = _definition.slow_factor
+	for key in _skill_specials:
+		if key.begins_with("slow_power+"):
+			base -= float(key.substr(11)) * float(_skill_specials[key])
+	return clampf(base, 0.05, 1.0)
+
+## Returns the slow duration from the tower definition.
+func get_effective_slow_duration() -> float:
+	if _definition == null:
+		return 0.0
+	return _definition.slow_duration
+
+## Returns effective income per wave including skill bonuses.
+func get_effective_income() -> int:
+	if _definition == null:
+		return 0
+	var base: int = _definition.income_per_wave
+	for key in _skill_specials:
+		if key.begins_with("gold_bonus+"):
+			base += int(key.substr(11)) * _skill_specials[key]
+	return base
+
+## Returns effective buff range including skill range bonus.
+func get_effective_buff_range() -> float:
+	if _definition == null:
+		return 0.0
+	return _definition.buff_range + _skill_range_bonus
+
+## Returns effective buff damage multiplier including skill bonuses.
+func get_effective_buff_damage_mult() -> float:
+	if _definition == null:
+		return 1.0
+	var base: float = _definition.buff_damage_mult
+	for key in _skill_specials:
+		if key.begins_with("buff_power+"):
+			base += float(key.substr(11)) * float(_skill_specials[key])
+	return base
+
+## Returns the buff fire rate multiplier from the tower definition.
+func get_effective_buff_fire_rate_mult() -> float:
+	if _definition == null:
+		return 1.0
+	return _definition.buff_fire_rate_mult
+
+## Returns true if this tower has the named skill special active.
+func has_special(special_name: String) -> bool:
+	return _skill_specials.has(special_name)
+
+## Returns the level of the named skill special, or 0 if not present.
+func get_special_level(special_name: String) -> int:
+	return _skill_specials.get(special_name, 0) as int
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -236,6 +372,7 @@ func _recalculate_stats() -> void:
 	var upgraded: Dictionary = _tier_tree.apply_upgrades(base, _upgrade_path)
 
 	current_damage = (upgraded.get("damage", _definition.base_damage) as float) + _skill_damage_bonus
+	current_damage *= (1.0 + _mastery_damage_bonus)
 	current_fire_rate = (upgraded.get("fire_rate", _definition.base_fire_rate) as float) + _skill_fire_rate_bonus
 	current_fire_rate = minf(current_fire_rate, MAX_FIRE_RATE)
 	current_range = (upgraded.get("range", _definition.base_range) as float) + _skill_range_bonus

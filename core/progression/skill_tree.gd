@@ -34,6 +34,8 @@ func get_node_cost(node_index: int, unlocked_levels: Dictionary = {}) -> int:
 		return 0
 	var current_level: int = unlocked_levels.get(node_index, 0) as int
 	var costs: Array = Constants.SKILL_NODE_COSTS
+	if costs.is_empty():
+		return 0
 	var cost_idx: int = mini(current_level, costs.size() - 1)
 	return costs[cost_idx] as int
 
@@ -41,6 +43,8 @@ func get_node_cost(node_index: int, unlocked_levels: Dictionary = {}) -> int:
 func get_total_cost() -> int:
 	var total: int = 0
 	var costs: Array = Constants.SKILL_NODE_COSTS
+	if costs.is_empty():
+		return 0
 	for node in nodes:
 		for lvl in range(node.max_level):
 			var cost_idx: int = mini(lvl, costs.size() - 1)

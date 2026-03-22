@@ -94,14 +94,16 @@ func test_died_emitted_only_once() -> void:
 func test_armor_reduces_damage() -> void:
 	eh.initialize(100.0, 10.0, 0.0)
 	eh.take_damage(30.0, Enums.DamageType.PULSE)
-	# 30 - 10 armor = 20 damage
-	assert_almost_eq(eh.get_hp(), 80.0, 0.001)
+	# Diminishing-returns armor: reduction = 10/(10+100) ≈ 0.0909
+	# after_armor = 30 * (1 - 0.0909) ≈ 27.2727, HP = 100 - 27.2727 ≈ 72.7273
+	assert_almost_eq(eh.get_hp(), 72.727, 0.01)
 
-func test_armor_minimum_one_damage() -> void:
+func test_armor_diminishing_returns_on_small_damage() -> void:
 	eh.initialize(100.0, 50.0, 0.0)
 	eh.take_damage(5.0, Enums.DamageType.PULSE)
-	# 5 - 50 armor would be negative → clamped to 1 damage
-	assert_almost_eq(eh.get_hp(), 99.0, 0.001)
+	# Diminishing-returns armor: reduction = 50/(50+100) = 0.3333
+	# after_armor = 5 * (1 - 0.3333) ≈ 3.3333, HP = 100 - 3.3333 ≈ 96.6667
+	assert_almost_eq(eh.get_hp(), 96.667, 0.01)
 
 # ---------------------------------------------------------------------------
 # Shield
@@ -142,13 +144,13 @@ func test_resistance_reduces_damage() -> void:
 	# 40 * 0.5 = 20 damage, minimum armor check: 20 > 0 armor → 20 hp damage
 	assert_almost_eq(eh.get_hp(), 80.0, 0.001)
 
-func test_full_resistance_still_does_one_damage() -> void:
+func test_full_resistance_negates_all_damage() -> void:
 	var rmap: Dictionary = {}
 	rmap[Enums.DamageType.CRYO] = 1.0
 	eh.initialize(100.0, 0.0, 0.0, rmap)
 	eh.take_damage(50.0, Enums.DamageType.CRYO)
-	# 50 * (1 - 1.0) = 0, then armor min 1 → 1 damage
-	assert_almost_eq(eh.get_hp(), 99.0, 0.001)
+	# 50 * (1 - 1.0) = 0, no minimum-damage clamp → 0 damage
+	assert_almost_eq(eh.get_hp(), 100.0, 0.001)
 
 func test_no_resistance_for_other_type() -> void:
 	var rmap: Dictionary = {}

@@ -102,7 +102,6 @@ func test_hard_difficulty_scales_hp() -> void:
 	# 130/180 ≈ 0.722
 	assert_gt(hard_enemy.get_hp_percentage(), 0.7)
 	hard_enemy.queue_free()
-	d.free()
 
 # ---------------------------------------------------------------------------
 # Damage and death

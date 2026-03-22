@@ -6,7 +6,7 @@ extends GutTest
 var gm
 
 func before_each() -> void:
-	gm = GameManager.new()
+	gm = load("res://core/game_manager.gd").new()
 	add_child(gm)
 
 func after_each() -> void:

@@ -96,7 +96,7 @@ func test_is_occupied_false_for_unknown_spot() -> void:
 
 func test_mark_occupied_unknown_spot_does_not_crash() -> void:
 	_placer.mark_occupied(Vector2(999, 999))
-	assert_true(true)  # no crash
+	assert_false(_placer.is_occupied(Vector2(999, 999)), "Unknown spot should not be tracked as occupied")
 
 # ---------------------------------------------------------------------------
 # calculate_sell_value

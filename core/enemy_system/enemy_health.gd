@@ -25,6 +25,11 @@ var _shield: float = 0.0
 var _resistance_map: Dictionary = {}
 var _dead: bool = false
 
+# Tank Fortified mechanic
+var _is_fortified: bool = false
+var _fortified_type: int = -1
+var _fortified_reduction: float = Constants.TANK_FORTIFIED_REDUCTION
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -42,7 +47,8 @@ func initialize(hp: float, armor: float, shield: float, resistance_map: Dictiona
 
 ## Applies damage of the given type. Returns actual damage dealt to HP.
 ## Order: resistance reduction → armor reduction (diminishing returns) → shield absorption → HP.
-func take_damage(amount: float, damage_type: Enums.DamageType) -> float:
+## If ignore_armor is true, skip the armor reduction step.
+func take_damage(amount: float, damage_type: Enums.DamageType, ignore_armor: bool = false) -> float:
 	if _dead:
 		return 0.0
 
@@ -50,9 +56,18 @@ func take_damage(amount: float, damage_type: Enums.DamageType) -> float:
 	var resistance: float = _resistance_map.get(damage_type, 0.0) as float
 	var reduced: float = amount * (1.0 - clampf(resistance, 0.0, 1.0))
 
+	# 1b. Tank Fortified — 25% reduction from first tower type that hits
+	if _is_fortified:
+		if _fortified_type == -1:
+			_fortified_type = damage_type as int
+		if damage_type as int == _fortified_type:
+			reduced *= (1.0 - _fortified_reduction)
+
 	# 2. Armor (diminishing-returns percentage reduction)
-	var armor_reduction: float = _armor / (_armor + 100.0)
-	var after_armor: float = reduced * (1.0 - armor_reduction)
+	var after_armor: float = reduced
+	if not ignore_armor:
+		var armor_reduction: float = _armor / (_armor + 100.0)
+		after_armor = reduced * (1.0 - armor_reduction)
 
 	# 3. Shield absorbs first
 	var hp_damage: float = after_armor
@@ -102,3 +117,12 @@ func get_max_hp() -> float:
 
 func get_shield() -> float:
 	return _shield
+
+## Enables the Tank Fortified mechanic (25% reduction from first damage type).
+func enable_fortified() -> void:
+	_is_fortified = true
+	_fortified_type = -1
+
+## Returns the damage type the Tank is fortified against, or -1 if unset.
+func get_fortified_type() -> int:
+	return _fortified_type

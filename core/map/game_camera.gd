@@ -6,6 +6,9 @@ var _world_size: Vector2 = Vector2(1280, 720)
 var _min_zoom: float = 1.0
 var _max_zoom: float = 1.0
 var _is_panning: bool = false
+var _shake_intensity: float = 0.0
+var _shake_duration: float = 0.0
+var _shake_timer: float = 0.0
 
 func setup(map_scale: float, world_size: Vector2) -> void:
 	_map_scale = map_scale
@@ -24,6 +27,23 @@ func zoom_by(amount: float) -> void:
 func pan_by(delta: Vector2) -> void:
 	position -= delta / zoom.x
 	_clamp_position()
+
+func shake(intensity: float, duration: float) -> void:
+	_shake_intensity = intensity
+	_shake_duration = duration
+	_shake_timer = duration
+
+func _process(delta: float) -> void:
+	if _shake_timer > 0.0:
+		_shake_timer -= delta
+		var damping: float = _shake_timer / _shake_duration if _shake_duration > 0.0 else 0.0
+		offset = Vector2(
+			randf_range(-_shake_intensity, _shake_intensity) * damping,
+			randf_range(-_shake_intensity, _shake_intensity) * damping
+		)
+		if _shake_timer <= 0.0:
+			offset = Vector2.ZERO
+			_shake_timer = 0.0
 
 func _clamp_position() -> void:
 	var vp_size: Vector2 = get_viewport_rect().size

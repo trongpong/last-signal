@@ -7,10 +7,10 @@ var _em
 var _sm
 
 func before_each() -> void:
-	_em = EconomyManager.new()
+	_em = load("res://core/economy/economy_manager.gd").new()
 	add_child(_em)
 
-	_sm = SaveManager.new()
+	_sm = load("res://core/save/save_manager.gd").new()
 	_sm.save_path = "user://test_progression_temp.json"
 	add_child(_sm)
 

@@ -69,6 +69,12 @@ func set_loadout(ability_ids: Array) -> void:
 func get_loadout() -> Array[String]:
 	return _loadout.duplicate()
 
+## Reduces the cooldown of all abilities by the given amount.
+func reduce_all_cooldowns(seconds: float) -> void:
+	for ab in _abilities:
+		if ab != null:
+			ab.reduce_cooldown(seconds)
+
 # ---------------------------------------------------------------------------
 # Ability Access
 # ---------------------------------------------------------------------------
