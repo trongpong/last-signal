@@ -915,14 +915,22 @@ func _on_ability_used(slot: int) -> void:
 	pass  # Ability system not yet fully implemented
 
 func _on_adaptation_changed(resistances: Dictionary) -> void:
-	# Check if any resistance is active
-	var has_resistance: bool = false
-	for val in resistances.values():
-		if (val as float) > 0.0:
-			has_resistance = true
-			break
-	if has_resistance:
-		_hud.show_toast(tr("TOAST_RESISTANCE_ACTIVE"))
+	var resisted_types: PackedStringArray = PackedStringArray()
+	var type_names: Dictionary = {
+		Enums.DamageType.PULSE: "Pulse",
+		Enums.DamageType.ARC: "Arc",
+		Enums.DamageType.CRYO: "Cryo",
+		Enums.DamageType.MISSILE: "Missile",
+		Enums.DamageType.BEAM: "Beam",
+		Enums.DamageType.NANO: "Nano",
+		Enums.DamageType.HARVEST: "Harvest",
+	}
+	for key in resistances.keys():
+		if (resistances[key] as float) > 0.0:
+			resisted_types.append(type_names.get(key, "Unknown"))
+	if resisted_types.size() > 0:
+		var msg: String = tr("TOAST_RESISTANCE_ACTIVE").replace("{0}", ", ".join(resisted_types))
+		_hud.show_toast(msg)
 
 # ---------------------------------------------------------------------------
 # Damage popup

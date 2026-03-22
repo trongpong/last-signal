@@ -104,4 +104,4 @@ SPEED_X2,x2 Speed,Tốc độ x2
 SPEED_X3,x3 Speed,Tốc độ x3
 TOAST_UNLOCK_X2,x2 Speed can be unlocked in Diamond Shop,Tốc độ x2 có thể mở khóa trong Cửa hàng Kim cương
 TOAST_UNLOCK_X3,x3 Speed can be unlocked in Diamond Shop,Tốc độ x3 có thể mở khóa trong Cửa hàng Kim cương
-TOAST_RESISTANCE_ACTIVE,Enemies adapted! They now resist your most-used damage type.,Kẻ địch thích nghi! Chúng giờ kháng loại sát thương bạn dùng nhiều nhất.
+TOAST_RESISTANCE_ACTIVE,Enemies now resist: {0},Kẻ địch giờ kháng: {0}
