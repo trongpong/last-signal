@@ -29,7 +29,6 @@ var data: Dictionary = {}
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	data = get_default_save_data()
 
 # ---------------------------------------------------------------------------
@@ -50,7 +49,8 @@ func get_default_save_data() -> Dictionary:
 				"speed_pref": 1.0,
 				"graphics": "medium",
 				"show_damage_numbers": true,
-				"show_range_on_hover": true
+				"show_range_on_hover": true,
+				"colorblind_mode": false
 			}
 		},
 		"campaign": {
@@ -89,6 +89,10 @@ func get_default_save_data() -> Dictionary:
 			"ads_watched_today": 0,
 			"ads_last_reset_date": "",
 			"no_ads_purchased": false
+		},
+		"unlocks": {
+			"speed_x2": false,
+			"speed_x3": false
 		}
 	}
 
@@ -180,8 +184,61 @@ func load_game() -> bool:
 
 	var loaded: Dictionary = json.get_data()
 	data = _deep_merge(get_default_save_data(), loaded)
+	data = _validate_save_data(data)
 	game_loaded.emit(save_path)
 	return true
+
+## Validates and sanitises loaded save data so downstream code can assume
+## correct types and reasonable values.  Returns the cleaned dictionary.
+func _validate_save_data(d: Dictionary) -> Dictionary:
+	var defaults: Dictionary = get_default_save_data()
+
+	# --- ensure key sections exist and are the right type ---
+	for section in ["economy", "progression", "settings", "campaign"]:
+		if not d.has(section) or not (d[section] is Dictionary):
+			# profile.settings is nested under "profile" in the defaults
+			if section == "settings":
+				d["profile"] = defaults["profile"].duplicate(true)
+			else:
+				d[section] = defaults[section].duplicate(true)
+
+	# Also ensure profile.settings exists when "settings" section lives there
+	if d.has("profile"):
+		if not (d["profile"] is Dictionary):
+			d["profile"] = defaults["profile"].duplicate(true)
+		elif not d["profile"].has("settings") or not (d["profile"]["settings"] is Dictionary):
+			d["profile"]["settings"] = defaults["profile"]["settings"].duplicate(true)
+
+	# --- economy value validation ---
+	var eco: Dictionary = d["economy"]
+
+	# diamonds must be int, not string or float
+	if not (eco.get("diamonds") is int):
+		var raw = eco.get("diamonds", 0)
+		if raw is String and raw.is_valid_int():
+			eco["diamonds"] = int(raw)
+		elif raw is float:
+			eco["diamonds"] = int(raw)
+		else:
+			eco["diamonds"] = 0
+
+	# gold must be int (some save schemas include gold)
+	if eco.has("gold"):
+		if not (eco["gold"] is int):
+			var raw = eco["gold"]
+			if raw is String and raw.is_valid_int():
+				eco["gold"] = int(raw)
+			elif raw is float:
+				eco["gold"] = int(raw)
+			else:
+				eco["gold"] = 0
+
+	# clamp to >= 0
+	eco["diamonds"] = maxi(eco["diamonds"] as int, 0)
+	if eco.has("gold"):
+		eco["gold"] = maxi(eco["gold"] as int, 0)
+
+	return d
 
 ## Deep-merges src into dst (dst is the defaults, src is the loaded data).
 ## Keys in src override dst; keys in dst missing from src are preserved.
@@ -200,26 +257,50 @@ func _deep_merge(dst: Dictionary, src: Dictionary) -> Dictionary:
 
 ## Records level completion, keeping the best stars and best difficulty seen.
 ## difficulty is an Enums.Difficulty int.
+## Records completion per difficulty. Save structure:
+## levels_completed[level_id][str(difficulty)] = { best_stars, completed }
 func set_level_complete(level_id: String, stars: int, difficulty: int) -> void:
 	var levels: Dictionary = data["campaign"]["levels_completed"]
 	if not levels.has(level_id):
-		levels[level_id] = {
-			"best_stars": stars,
-			"best_difficulty": difficulty,
-			"completed": true
-		}
+		levels[level_id] = {}
+	var level_data: Dictionary = levels[level_id]
+	var diff_key: String = str(difficulty)
+	if not level_data.has(diff_key):
+		level_data[diff_key] = {"best_stars": stars, "completed": true}
 	else:
-		var existing: Dictionary = levels[level_id]
+		var existing: Dictionary = level_data[diff_key]
 		if stars > existing.get("best_stars", 0):
 			existing["best_stars"] = stars
-		if difficulty > existing.get("best_difficulty", 0):
-			existing["best_difficulty"] = difficulty
 		existing["completed"] = true
 
-## Returns the completion record for a level, or empty dict if not completed.
-func get_level_record(level_id: String) -> Dictionary:
+## Returns the completion record for a level at a specific difficulty.
+## Returns empty dict if not completed at that difficulty.
+func get_level_record(level_id: String, difficulty: int = -1) -> Dictionary:
 	var levels: Dictionary = data["campaign"]["levels_completed"]
-	return levels.get(level_id, {}).duplicate(true)
+	if not levels.has(level_id):
+		return {}
+	var level_data: Dictionary = levels[level_id]
+	# If difficulty specified, return that difficulty's record
+	if difficulty >= 0:
+		var diff_key: String = str(difficulty)
+		return (level_data.get(diff_key, {}) as Dictionary).duplicate(true)
+	# If no difficulty specified, return best across all difficulties (backward compat)
+	# Handle old flat format: level_data = { "completed": true, "best_stars": 3 }
+	if level_data.has("completed"):
+		return level_data.duplicate(true)
+	# New per-difficulty format: level_data = { "0": {...}, "1": {...} }
+	var best: Dictionary = {}
+	for diff_key in level_data.keys():
+		var val = level_data[diff_key]
+		if not (val is Dictionary):
+			continue
+		var record: Dictionary = val as Dictionary
+		if record.get("completed", false):
+			if best.is_empty() or (record.get("best_stars", 0) as int) > (best.get("best_stars", 0) as int):
+				best = record.duplicate(true)
+	if not best.is_empty():
+		best["completed"] = true
+	return best
 
 # ---------------------------------------------------------------------------
 # Convenience setters (sync from runtime managers)

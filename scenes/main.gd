@@ -178,10 +178,23 @@ func _show_diamond_shop() -> void:
 		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
 	if _iap_manager.has_doubler(SaveManager):
 		shop.mark_purchased("doubler")
+	if SaveManager.data.get("unlocks", {}).get("speed_x2", false):
+		shop.mark_purchased("speed_x2")
+	if SaveManager.data.get("unlocks", {}).get("speed_x3", false):
+		shop.mark_purchased("speed_x3")
 
 
 func _on_shop_purchase(pack_id: String) -> void:
-	_iap_manager.request_purchase(pack_id, EconomyManager, SaveManager)
+	if pack_id == "speed_x2":
+		# x2 speed is purchased with diamonds, not real money
+		if not EconomyManager.can_afford_diamonds(500):
+			return
+		EconomyManager.spend_diamonds(500)
+		SaveManager.data["unlocks"]["speed_x2"] = true
+		SaveManager.sync_economy(EconomyManager)
+		SaveManager.save_game()
+	else:
+		_iap_manager.request_purchase(pack_id, EconomyManager, SaveManager)
 	# Refresh shop UI
 	if _current_screen is DiamondShop:
 		var shop: DiamondShop = _current_screen as DiamondShop
@@ -191,6 +204,10 @@ func _on_shop_purchase(pack_id: String) -> void:
 			shop.mark_purchased("no_ads")
 		elif pack_id == "doubler":
 			shop.mark_purchased("doubler")
+		elif pack_id == "speed_x2":
+			shop.mark_purchased("speed_x2")
+		elif pack_id == "speed_x3":
+			shop.mark_purchased("speed_x3")
 
 
 func _on_shop_watch_ad() -> void:

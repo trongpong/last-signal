@@ -188,6 +188,11 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	if discount > 0:
 		_hud.update_tower_bar_costs(discount)
 
+	# Set available speed options based on unlocks
+	var has_x2: bool = SaveManager.data.get("unlocks", {}).get("speed_x2", false)
+	var has_x3: bool = SaveManager.data.get("unlocks", {}).get("speed_x3", false)
+	_hud.set_available_speeds(has_x2, has_x3)
+
 	# Highlight the default selected tower type
 	_hud.select_tower_type(_selected_tower_type)
 

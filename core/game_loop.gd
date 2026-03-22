@@ -57,6 +57,7 @@ func setup(
 
 	_wm.wave_complete.connect(_on_wave_complete)
 	_wm.all_waves_complete.connect(_on_all_waves_complete)
+	_wm.break_send_requested.connect(_on_break_send_requested)
 
 
 ## Initialises all managers and transitions to BUILDING state.
@@ -116,6 +117,7 @@ func on_damage_dealt(damage_type: int, amount: float) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_wave_complete(wave_number: int) -> void:
+	_em.add_gold(Constants.WAVE_CLEAR_BONUS)
 	_waves_since_adaptation_check += 1
 	if _waves_since_adaptation_check >= Constants.ADAPTATION_CHECK_INTERVAL:
 		_am.check_adaptation()
@@ -124,12 +126,16 @@ func _on_wave_complete(wave_number: int) -> void:
 	_gm.change_state(Enums.GameState.WAVE_COMPLETE)
 
 
+func _on_break_send_requested() -> void:
+	send_wave()
+
+
 func _on_all_waves_complete() -> void:
 	var stars: int = _gm.calculate_stars()
 	var constants := Constants.new()
 	var diamond_mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(_difficulty, 1.0)
 
-	var base_diamonds: int = 50 + stars * 25
+	var base_diamonds: int = 25 + stars * 15
 	var diamonds: int = int(float(base_diamonds) * diamond_mult)
 	_em.add_diamonds(diamonds)
 

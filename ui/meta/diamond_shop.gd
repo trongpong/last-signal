@@ -20,8 +20,10 @@ const PACKS: Array = [
 	{"id": "small",   "diamonds": 500,  "price_label": "$0.99"},
 	{"id": "medium",  "diamonds": 2000, "price_label": "$3.99"},
 	{"id": "large",   "diamonds": 5000, "price_label": "$7.99"},
-	{"id": "doubler", "diamonds": 0,    "price_label": "$4.99"},  # Diamond doubler
-	{"id": "no_ads",  "diamonds": 0,    "price_label": "$1.99"},  # Remove ads
+	{"id": "doubler",  "diamonds": 0,    "price_label": "$9.99"},  # Diamond doubler
+	{"id": "no_ads",   "diamonds": 0,    "price_label": "$1.99"},  # Remove ads
+	{"id": "speed_x2", "diamonds": 500,  "price_label": "500 ◆"},  # x2 speed (diamond purchase)
+	{"id": "speed_x3", "diamonds": 0,    "price_label": "$0.99"},  # x3 speed (IAP)
 ]
 
 # ---------------------------------------------------------------------------
@@ -113,6 +115,10 @@ func _build_layout() -> void:
 			lbl.text = tr("NO_ADS")
 		elif pack["id"] == "doubler":
 			lbl.text = tr("DIAMOND_DOUBLER")
+		elif pack["id"] == "speed_x2":
+			lbl.text = tr("SPEED_X2")
+		elif pack["id"] == "speed_x3":
+			lbl.text = tr("SPEED_X3")
 		else:
 			lbl.text = "+%d ♦" % (pack["diamonds"] as int)
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -248,12 +254,16 @@ func _on_purchase_pressed(pack_id: String) -> void:
 			diamonds = pack["diamonds"] as int
 			price_label = pack["price_label"] as String
 			break
-	if diamonds > 0:
-		_confirm_label.text = "Buy %d diamonds for %s?" % [diamonds, price_label]
+	if pack_id == "speed_x2":
+		_confirm_label.text = "Unlock x2 Speed for 500 diamonds?"
+	elif pack_id == "speed_x3":
+		_confirm_label.text = "Unlock x3 Speed for %s?" % price_label
 	elif pack_id == "no_ads":
 		_confirm_label.text = "Remove all ads for %s?" % price_label
-	else:
+	elif pack_id == "doubler":
 		_confirm_label.text = "Buy Diamond Doubler for %s?" % price_label
+	elif diamonds > 0:
+		_confirm_label.text = "Buy %d diamonds for %s?" % [diamonds, price_label]
 	_confirm_overlay.visible = true
 
 
