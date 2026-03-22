@@ -11,10 +11,11 @@ extends Node2D
 # ---------------------------------------------------------------------------
 
 const PLATFORM_SCALE: float = 1.35
-const PLATFORM_DARK_FACTOR: float = 0.35
-const RANGE_INDICATOR_ALPHA: float = 0.12
-const RANGE_BORDER_ALPHA: float = 0.35
-const OUTLINE_BASE_WIDTH: float = 1.0
+const PLATFORM_DARK_FACTOR: float = 0.5
+const RANGE_INDICATOR_ALPHA: float = 0.08
+const RANGE_BORDER_ALPHA: float = 0.5
+const RANGE_BORDER_WIDTH: float = 1.5
+const OUTLINE_BASE_WIDTH: float = 1.5
 const OUTLINE_TIER_WIDTH: float = 0.5
 const TIE_DOT_RADIUS: float = 3.0
 const TIER_DOT_SPACING: float = 9.0
@@ -31,6 +32,17 @@ var _current_tier: int = 0
 var show_range: bool = false
 var _range: float = 200.0
 
+# Polygon point cache for mobile rendering performance
+var _cached_shape_points: PackedVector2Array = PackedVector2Array()
+var _cached_platform_points: PackedVector2Array = PackedVector2Array()
+var _cache_dirty: bool = true
+
+# Aura glow cache
+var _cached_aura_points: PackedVector2Array = PackedVector2Array()
+
+# Firing flash effect
+var _flash_timer: float = 0.0
+
 # ---------------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------------
@@ -42,57 +54,88 @@ func setup(definition: TowerDefinition) -> void:
 	_color = definition.color
 	_range = definition.base_range
 	_current_tier = 0
-	queue_redraw()
+	mark_dirty()
 
 ## Update the displayed tier (affects outline brightness and dot count).
 func set_tier(tier: int) -> void:
 	_current_tier = maxi(tier, 0)
-	queue_redraw()
+	mark_dirty()
 
 ## Update the displayed range (used for range indicator circle).
 func set_range(new_range: float) -> void:
 	_range = maxf(new_range, 0.0)
+	mark_dirty()
+
+## Mark the polygon point cache as dirty and request a redraw.
+func mark_dirty() -> void:
+	_cache_dirty = true
 	queue_redraw()
+
+## Trigger a firing flash effect.
+func flash() -> void:
+	_flash_timer = 0.1
+	queue_redraw()
+
+func _process(delta: float) -> void:
+	if _flash_timer > 0.0:
+		_flash_timer -= delta
+		if _flash_timer <= 0.0:
+			_flash_timer = 0.0
+		queue_redraw()
 
 # ---------------------------------------------------------------------------
 # Drawing
 # ---------------------------------------------------------------------------
 
 func _draw() -> void:
+	# Regenerate cached polygon points only when dirty
+	if _cache_dirty:
+		_cached_aura_points = _get_polygon_points(_shape_sides, _shape_radius * 1.8)
+		_cached_platform_points = _get_polygon_points(_shape_sides, _shape_radius * PLATFORM_SCALE)
+		_cached_shape_points = _get_polygon_points(_shape_sides, _shape_radius)
+		_cache_dirty = false
+
 	# 1. Range indicator (drawn first so it appears behind everything)
 	if show_range:
 		_draw_range_indicator()
 
-	# 2. Platform (darker, larger base)
-	var platform_points: PackedVector2Array = _get_polygon_points(_shape_sides, _shape_radius * PLATFORM_SCALE)
+	# 2. Aura glow behind tower
+	var aura_color := Color(_color.r, _color.g, _color.b, 0.1)
+	draw_colored_polygon(_cached_aura_points, aura_color)
+
+	# 3. Platform (darker, larger base)
 	var platform_color := Color(
 		_color.r * PLATFORM_DARK_FACTOR,
 		_color.g * PLATFORM_DARK_FACTOR,
 		_color.b * PLATFORM_DARK_FACTOR,
 		1.0
 	)
-	draw_colored_polygon(platform_points, platform_color)
+	draw_colored_polygon(_cached_platform_points, platform_color)
 
-	# 3. Main shape
-	var main_points: PackedVector2Array = _get_polygon_points(_shape_sides, _shape_radius)
-	draw_colored_polygon(main_points, _color)
+	# 4. Main shape
+	draw_colored_polygon(_cached_shape_points, _color)
 
-	# 4. Outline — brighter at higher tiers
-	var outline_brightness: float = minf(0.6 + float(_current_tier) * 0.1, 1.0)
+	# 5. Outline — brighter at higher tiers
+	var outline_brightness: float = minf(0.8 + float(_current_tier) * 0.1, 1.0)
 	var outline_color := Color(outline_brightness, outline_brightness, outline_brightness, 0.85)
 	var outline_width: float = OUTLINE_BASE_WIDTH + float(_current_tier) * OUTLINE_TIER_WIDTH
-	_draw_polygon_outline(main_points, outline_color, outline_width)
+	_draw_polygon_outline(_cached_shape_points, outline_color, outline_width)
 
-	# 5. Tier indicator dots (one dot per tier, centered below the tower)
+	# 6. Tier indicator dots (one dot per tier, centered below the tower)
 	if _current_tier > 0:
 		_draw_tier_dots()
+
+	# 7. Firing flash effect
+	if _flash_timer > 0.0:
+		var flash_alpha: float = _flash_timer / 0.1
+		draw_circle(Vector2.ZERO, 6.0, Color(1.0, 1.0, 1.0, flash_alpha))
 
 ## Draw a filled circle for range with a thin border.
 func _draw_range_indicator() -> void:
 	draw_circle(Vector2.ZERO, _range, Color(_color.r, _color.g, _color.b, RANGE_INDICATOR_ALPHA))
 	# Draw border as a polygon approximation
-	var border_points := _get_polygon_points(48, _range)
-	_draw_polygon_outline(border_points, Color(_color.r, _color.g, _color.b, RANGE_BORDER_ALPHA), 1.0)
+	var border_points := _get_polygon_points(16, _range)
+	_draw_polygon_outline(border_points, Color(_color.r, _color.g, _color.b, RANGE_BORDER_ALPHA), RANGE_BORDER_WIDTH)
 
 func _draw_tier_dots() -> void:
 	var total_width: float = float(_current_tier - 1) * TIER_DOT_SPACING

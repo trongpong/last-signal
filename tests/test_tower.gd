@@ -142,15 +142,15 @@ func test_effective_fire_rate_no_buff_equals_base() -> void:
 	assert_almost_eq(_tower.get_effective_fire_rate(), 1.0, 0.001)
 
 func test_buff_increases_effective_damage() -> void:
-	_tower.apply_buff(1.5, 1.0)
+	_tower.apply_buff(self, 1.5, 1.0)
 	assert_almost_eq(_tower.get_effective_damage(), 37.5, 0.001)
 
 func test_buff_increases_effective_fire_rate() -> void:
-	_tower.apply_buff(1.0, 2.0)
+	_tower.apply_buff(self, 1.0, 2.0)
 	assert_almost_eq(_tower.get_effective_fire_rate(), 2.0, 0.001)
 
 func test_clear_buff_resets_to_one() -> void:
-	_tower.apply_buff(1.5, 2.0)
+	_tower.apply_buff(self, 1.5, 2.0)
 	_tower.clear_buff()
 	assert_almost_eq(_tower.get_effective_damage(), 25.0, 0.001)
 	assert_almost_eq(_tower.get_effective_fire_rate(), 1.0, 0.001)

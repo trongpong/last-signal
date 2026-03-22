@@ -106,10 +106,15 @@ func _process(delta: float) -> void:
 ## Applies a movement slow effect. factor is 0.0–1.0 (1.0 = no slow, 0.5 = half speed).
 ## The effect lasts for duration seconds; a new slow only applies if stronger.
 func apply_slow(factor: float, duration: float) -> void:
-	var clamped: float = clampf(factor, 0.0, 1.0)
+	var clamped: float = clampf(factor, 0.05, 1.0)
 	if clamped < _slow_factor:
+		# Stronger slow: apply it and reset the timer
 		_slow_factor = clamped
-		_slow_timer = maxf(duration, _slow_timer)
+		_slow_timer = duration
+	else:
+		# Same or weaker slow: only extend duration if current timer is shorter
+		if duration > _slow_timer:
+			_slow_timer = duration
 
 ## Returns the gold value of this enemy (from its definition).
 func get_gold_value() -> int:
@@ -151,5 +156,44 @@ func _on_health_changed(hp: float, max_hp: float, shield: float) -> void:
 
 func _on_died() -> void:
 	set_process(false)
+	_spawn_death_effect()
 	enemy_died.emit(self)
 	queue_free()
+
+# ---------------------------------------------------------------------------
+# Death effect
+# ---------------------------------------------------------------------------
+
+func _spawn_death_effect() -> void:
+	var effect := _DeathEffect.new()
+	var color := Color.WHITE
+	var radius: float = 12.0
+	if _definition != null:
+		color = _definition.color
+		radius = _definition.shape_radius * _definition.size_scale
+	effect.setup(color, radius)
+	effect.global_position = global_position
+	get_parent().add_child(effect)
+	# Animate: expand and fade out, then auto-remove
+	var tw := effect.create_tween()
+	tw.tween_property(effect, "scale", Vector2(2.0, 2.0), 0.3)
+	tw.parallel().tween_property(effect, "modulate:a", 0.0, 0.3)
+	tw.tween_callback(effect.queue_free)
+
+# ---------------------------------------------------------------------------
+# Inner classes
+# ---------------------------------------------------------------------------
+
+class _DeathEffect extends Node2D:
+	var _color: Color = Color.WHITE
+	var _radius: float = 12.0
+
+	func setup(color: Color, radius: float) -> void:
+		_color = color
+		_radius = radius
+
+	func _draw() -> void:
+		# Expanding ring
+		draw_arc(Vector2.ZERO, _radius, 0, TAU, 16, _color, 2.0)
+		# Inner burst
+		draw_circle(Vector2.ZERO, _radius * 0.3, Color(_color.r, _color.g, _color.b, 0.4))

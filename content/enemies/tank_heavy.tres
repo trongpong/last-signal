@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://tank_heavy001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_tank_heavy"]
+
+[resource]
+script = ExtResource("1_tank_heavy")
+id = "tank_heavy"
+display_name = "Tank Heavy"
+archetype = 2
+base_hp = 600.0
+speed = 70.0
+armor = 25.0
+shield = 0.0
+gold_value = 35
+diamond_chance = 0.0
+shape_sides = 4
+shape_radius = 20.0
+color = Color(0.8, 0.1, 0.1, 1)
+size_scale = 1.2
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = false

@@ -1,7 +1,8 @@
 class_name AbilityBar
-extends HBoxContainer
+extends VBoxContainer
 
-## Horizontal bar of ability activation buttons plus an optional hero summon button.
+## Vertical bar of ability activation buttons plus an optional hero summon button.
+## Positioned bottom-left, above the tower bar for mobile thumb-zone ergonomics.
 ## Call setup() after loading the ability loadout, then update_cooldowns() each frame/tick.
 
 # ---------------------------------------------------------------------------
@@ -18,6 +19,7 @@ signal hero_summoned
 var _ability_buttons: Array[Button] = []
 var _hero_btn: Button = null
 var _ability_ids: Array[String] = []
+var _cooldown_overlays: Array[ColorRect] = []
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -32,6 +34,7 @@ func setup(ability_ids: Array, hero_available: bool) -> void:
 	for child in get_children():
 		child.queue_free()
 	_ability_buttons.clear()
+	_cooldown_overlays.clear()
 	_hero_btn = null
 
 	# Create one button per ability slot
@@ -41,17 +44,26 @@ func setup(ability_ids: Array, hero_available: bool) -> void:
 
 		var btn := Button.new()
 		btn.text = _get_ability_label(ab_id)
-		btn.custom_minimum_size = Vector2(80, 48)
+		btn.custom_minimum_size = Vector2(64, 64)
+		btn.clip_contents = true
 		var slot := i  # capture loop variable
 		btn.pressed.connect(func() -> void: _on_ability_pressed(slot))
 		add_child(btn)
 		_ability_buttons.append(btn)
 
+		# Cooldown overlay — a semi-transparent dark rect that shrinks as cooldown expires
+		var overlay := ColorRect.new()
+		overlay.color = Color(0, 0, 0, 0.5)
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		overlay.visible = false
+		btn.add_child(overlay)
+		_cooldown_overlays.append(overlay)
+
 	# Hero summon button
 	if hero_available:
 		_hero_btn = Button.new()
-		_hero_btn.text = tr("HUD_SEND_WAVE")  # repurpose label until a dedicated key exists
-		_hero_btn.custom_minimum_size = Vector2(80, 48)
+		_hero_btn.text = "Hero"
+		_hero_btn.custom_minimum_size = Vector2(64, 64)
 		_hero_btn.pressed.connect(_on_hero_pressed)
 		add_child(_hero_btn)
 
@@ -61,6 +73,7 @@ func setup(ability_ids: Array, hero_available: bool) -> void:
 func update_cooldowns(abilities: Array) -> void:
 	for i in _ability_buttons.size():
 		var btn: Button = _ability_buttons[i]
+		var overlay: ColorRect = _cooldown_overlays[i] if i < _cooldown_overlays.size() else null
 		if i < abilities.size() and abilities[i] != null:
 			var ab: Ability = abilities[i] as Ability
 			btn.disabled = not ab.is_ready()
@@ -68,10 +81,20 @@ func update_cooldowns(abilities: Array) -> void:
 			if not ab.is_ready():
 				var remaining: float = ab._cooldown_remaining
 				btn.text = _get_ability_label(_ability_ids[i]) + "\n%.0fs" % remaining
+				# Update cooldown overlay height
+				if overlay != null:
+					var progress: float = ab.get_cooldown_progress()
+					overlay.visible = true
+					overlay.position = Vector2.ZERO
+					overlay.size = Vector2(btn.size.x, btn.size.y * (1.0 - progress))
 			else:
 				btn.text = _get_ability_label(_ability_ids[i])
+				if overlay != null:
+					overlay.visible = false
 		else:
 			btn.disabled = false
+			if overlay != null:
+				overlay.visible = false
 
 # ---------------------------------------------------------------------------
 # Internal

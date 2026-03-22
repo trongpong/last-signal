@@ -33,14 +33,28 @@ config_version=5
 
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
 
 [dotnet]
 
 project/assembly_name="Last Signal"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/admob/plugin.cfg")
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
 [internationalization]
 
-locale/translations=PackedStringArray("res://content/translations/ui.en.translation")
+locale/translations=PackedStringArray("res://content/translations/ui.en.translation", "res://content/translations/ui.vi.translation")
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

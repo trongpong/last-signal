@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://flyer_heavy001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_flyer_heavy"]
+
+[resource]
+script = ExtResource("1_flyer_heavy")
+id = "flyer_heavy"
+display_name = "Flyer Heavy"
+archetype = 3
+base_hp = 200.0
+speed = 120.0
+armor = 10.0
+shield = 0.0
+gold_value = 25
+diamond_chance = 0.0
+shape_sides = 4
+shape_radius = 14.0
+color = Color(0.7, 0, 0.7, 1)
+size_scale = 1.3
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = true

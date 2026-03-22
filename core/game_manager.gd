@@ -106,10 +106,16 @@ func lose_life() -> void:
 # ---------------------------------------------------------------------------
 
 ## Returns 1, 2, or 3 stars based on lives lost during the level.
+## Thresholds scale with starting lives so that harder difficulties (fewer lives)
+## use proportional limits instead of fixed numbers.
 func calculate_stars() -> int:
-	if lives_lost <= Constants.STAR_3_MAX_LIVES_LOST:
+	var constants := Constants.new()
+	var starting_lives: int = constants.DIFFICULTY_LIVES.get(current_difficulty, 20)
+	var max_lost_for_3: int = int(float(starting_lives) * constants.STAR_3_MAX_LIVES_LOST_FRACTION)
+	var max_lost_for_2: int = maxi(int(float(starting_lives) * constants.STAR_2_MAX_LIVES_LOST_FRACTION), 1)
+	if lives_lost <= max_lost_for_3:
 		return 3
-	elif lives_lost <= Constants.STAR_2_MAX_LIVES_LOST:
+	elif lives_lost <= max_lost_for_2:
 		return 2
 	return 1
 

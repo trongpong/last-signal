@@ -11,6 +11,8 @@ Thumbs.db
 android/
 *.keystore
 *.jks
+GodotGooglePlayBilling/
+ios/
 
 # Exports
 *.export

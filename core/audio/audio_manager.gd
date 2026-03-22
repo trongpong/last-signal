@@ -5,11 +5,14 @@ extends Node
 ## Registered as an autoload in project.godot.
 
 const SFX_POOL_SIZE := 8
+const MAX_SFX_CACHE: int = 64
 
 var _music_system: MusicSystem
 var _sfx_generator: SFXGenerator
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_cache: Dictionary = {}  # key -> AudioStreamWAV
+var _sfx_access_order: Array = []  # LRU tracking: oldest first
+var _bg_player: AudioStreamPlayer = null
 
 
 func _ready() -> void:
@@ -80,6 +83,55 @@ func play_ability_activate() -> void:
 
 
 # ---------------------------------------------------------------------------
+# Procedural background music
+# ---------------------------------------------------------------------------
+
+## Generate and play a simple ambient drone loop using the synth engine.
+## Creates a layered sine tone with a slow filter sweep for atmosphere.
+func play_procedural_background() -> void:
+	if _bg_player != null and _bg_player.playing:
+		return
+
+	var sample_rate: int = SFXGenerator.SAMPLE_RATE
+	var duration: float = 8.0  # 8-second loop
+
+	# Layer 1: deep bass drone at ~55 Hz (A1)
+	var bass := SynthEngine.generate_sine(55.0, duration, sample_rate)
+	# Layer 2: subtle fifth at ~82.5 Hz (E2)
+	var fifth := SynthEngine.generate_sine(82.5, duration, sample_rate)
+	# Layer 3: soft high harmonic at ~220 Hz (A3) through lowpass
+	var harmonic := SynthEngine.generate_sine(220.0, duration, sample_rate)
+	harmonic = SynthEngine.apply_filter_lowpass(harmonic, 300.0, sample_rate)
+
+	# Mix layers: bass dominant, fifth softer, harmonic subtle
+	var mixed := SynthEngine.mix(bass, fifth, 0.5, 0.25)
+	mixed = SynthEngine.mix(mixed, harmonic, 1.0, 0.15)
+
+	# Apply a gentle envelope for smooth looping (fade in/out at edges)
+	mixed = SynthEngine.apply_adsr(mixed, 0.5, 0.2, 0.8, 0.5, sample_rate)
+
+	var stream := _samples_to_stream(mixed)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_end = mixed.size()
+
+	if _bg_player == null:
+		_bg_player = AudioStreamPlayer.new()
+		_bg_player.bus = "Music"
+		_bg_player.name = "ProceduralBG"
+		_bg_player.volume_db = linear_to_db(0.3)
+		add_child(_bg_player)
+
+	_bg_player.stream = stream
+	_bg_player.play()
+
+
+## Stop the procedural background drone.
+func stop_procedural_background() -> void:
+	if _bg_player != null and _bg_player.playing:
+		_bg_player.stop()
+
+
+# ---------------------------------------------------------------------------
 # Volume control
 # ---------------------------------------------------------------------------
 
@@ -115,12 +167,21 @@ func _play_sfx(stream: AudioStreamWAV) -> void:
 
 
 ## Return a cached AudioStreamWAV or generate and cache a new one.
+## Uses LRU eviction to keep the cache within MAX_SFX_CACHE entries.
 func _get_or_generate(key: String, generator: Callable) -> AudioStreamWAV:
 	if _sfx_cache.has(key):
+		# Move to end of access order (most recently used)
+		_sfx_access_order.erase(key)
+		_sfx_access_order.append(key)
 		return _sfx_cache[key]
 	var samples: PackedFloat32Array = generator.call()
 	var stream := _samples_to_stream(samples)
+	# Evict oldest entry if cache is full
+	if _sfx_cache.size() >= MAX_SFX_CACHE:
+		var oldest_key = _sfx_access_order.pop_front()
+		_sfx_cache.erase(oldest_key)
 	_sfx_cache[key] = stream
+	_sfx_access_order.append(key)
 	return stream
 
 

@@ -9,8 +9,8 @@ extends Node2D
 # Constants
 # ---------------------------------------------------------------------------
 
-const HEALTH_BAR_WIDTH: float = 28.0
-const HEALTH_BAR_HEIGHT: float = 4.0
+const HEALTH_BAR_WIDTH: float = 32.0
+const HEALTH_BAR_HEIGHT: float = 5.0
 const HEALTH_BAR_OFFSET_Y: float = -20.0
 const SHIELD_BAR_OFFSET_Y: float = -26.0
 const RESISTANCE_OUTLINE_WIDTH: float = 2.0
@@ -31,6 +31,8 @@ var _hp_fraction: float = 1.0
 var _shield_fraction: float = 0.0   # shield / max_hp, for bar proportions
 var _show_health_bar: bool = false
 var _rotation_angle: float = 0.0
+var _frame_counter: int = 0
+var _hit_flash: float = 0.0
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -44,6 +46,11 @@ func setup(definition: EnemyDefinition) -> void:
 	_size_scale = definition.size_scale
 	_is_flying = definition.is_flying
 	_resistance_map = definition.resistance_map.duplicate()
+	queue_redraw()
+
+## Trigger a brief white hit flash on the enemy body.
+func flash_hit() -> void:
+	_hit_flash = 0.1
 	queue_redraw()
 
 ## Update health display. Call from EnemyHealth.health_changed signal.
@@ -64,7 +71,13 @@ func set_resistance_map(resistance_map: Dictionary) -> void:
 
 func _process(delta: float) -> void:
 	if _is_flying:
-		_rotation_angle += FLYER_ROTATION_SPEED * delta
+		_rotation_angle = fmod(_rotation_angle + FLYER_ROTATION_SPEED * delta, TAU)
+		_frame_counter += 1
+		if _frame_counter % 3 == 0:
+			queue_redraw()
+
+	if _hit_flash > 0.0:
+		_hit_flash -= delta
 		queue_redraw()
 
 # ---------------------------------------------------------------------------
@@ -74,6 +87,9 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var points: PackedVector2Array = _get_polygon_points(_shape_sides, _shape_radius * _size_scale)
 
+	# Ground shadow
+	draw_circle(Vector2(2, 4), _shape_radius * _size_scale * 1.2, Color(0.0, 0.0, 0.0, 0.3))
+
 	# Resistance outline (drawn behind body)
 	if not _resistance_map.is_empty():
 		_draw_resistance_outline(points)
@@ -81,8 +97,12 @@ func _draw() -> void:
 	# Body polygon
 	draw_colored_polygon(points, _color)
 
-	# Outline
-	_draw_polygon_outline(points, Color(0.0, 0.0, 0.0, 0.4), 1.0)
+	# Outline (light outline to stand out against dark backgrounds)
+	_draw_polygon_outline(points, Color(1.0, 1.0, 1.0, 0.3), 1.0)
+
+	# Hit flash overlay
+	if _hit_flash > 0.0:
+		draw_colored_polygon(points, Color(1.0, 1.0, 1.0, _hit_flash * 3.0))
 
 	# Health bar (only when damaged)
 	if _show_health_bar:

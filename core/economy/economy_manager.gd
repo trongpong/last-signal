@@ -36,7 +36,7 @@ var total_diamonds_earned: int = 0
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
+	pass
 
 # ---------------------------------------------------------------------------
 # Gold API

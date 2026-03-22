@@ -17,12 +17,12 @@ signal endless_unlocked
 # Constants
 # ---------------------------------------------------------------------------
 
-## Tower IDs available from the very start of the campaign.
+## Tower IDs available from the very start of the campaign (uppercase-normalised).
 const STARTING_TOWERS: Array = [
-	"pulse_cannon",
-	"arc_emitter",
-	"cryo_array",
-	"missile_pod",
+	"PULSE_CANNON",
+	"ARC_EMITTER",
+	"CRYO_ARRAY",
+	"MISSILE_POD",
 ]
 
 # ---------------------------------------------------------------------------
@@ -53,6 +53,8 @@ func setup(sm) -> void:
 func is_level_unlocked(level_id: String) -> bool:
 	if level_id == "1_1":
 		return true
+	if _registry == null:
+		return false
 
 	var level_def: Dictionary = _registry.get_level(level_id)
 	if level_def.is_empty():
@@ -74,6 +76,9 @@ func on_level_complete(level_id: String, stars: int, difficulty: int) -> void:
 	if _save_manager == null:
 		push_warning("CampaignManager.on_level_complete: no SaveManager")
 		return
+	if _registry == null:
+		push_warning("CampaignManager.on_level_complete: no LevelRegistry")
+		return
 
 	_save_manager.set_level_complete(level_id, stars, difficulty)
 
@@ -93,12 +98,13 @@ func on_level_complete(level_id: String, stars: int, difficulty: int) -> void:
 
 		var tower_id: String = _registry.get_tower_unlock_for_region(region)
 		if not tower_id.is_empty():
+			# Normalise to uppercase — LevelRegistry returns lowercase IDs
+			var tower_id_upper: String = tower_id.to_upper()
 			# Record tower unlock in save data
 			var towers: Array = _save_manager.data["progression"]["towers_unlocked"]
-			var tower_id_upper: String = tower_id.to_upper()
 			if not towers.has(tower_id_upper):
 				towers.append(tower_id_upper)
-			tower_unlocked.emit(tower_id)
+			tower_unlocked.emit(tower_id_upper)
 
 	# If the final level is beaten, unlock endless mode
 	if level_def.get("has_final_boss", false):
@@ -124,7 +130,7 @@ func is_endless_unlocked() -> bool:
 ## Returns the region number of the most-recently-reached incomplete level,
 ## or 1 if no levels have been started yet.
 func get_current_region() -> int:
-	if _save_manager == null:
+	if _save_manager == null or _registry == null:
 		return 1
 	for region in range(1, _registry.get_region_count() + 1):
 		var levels: Array = _registry.get_levels_for_region(region)
@@ -162,7 +168,7 @@ func get_total_stars() -> int:
 # Private helpers
 # ---------------------------------------------------------------------------
 
-## Returns true if the given level_id has a completed record in save data.
+## Returns true if the given level_id has been completed on any difficulty.
 func _is_completed(level_id: String) -> bool:
 	if _save_manager == null:
 		return false
@@ -170,9 +176,19 @@ func _is_completed(level_id: String) -> bool:
 	return record.get("completed", false) as bool
 
 
+## Returns true if the given level_id has been completed on a specific difficulty.
+func _is_completed_at(level_id: String, difficulty: int) -> bool:
+	if _save_manager == null:
+		return false
+	var record: Dictionary = _save_manager.get_level_record(level_id, difficulty)
+	return record.get("completed", false) as bool
+
+
 ## Returns the level_id of the level immediately before level_def in sequence.
 ## Returns "" if this is the first level overall.
 func _get_previous_level_id(level_def: Dictionary) -> String:
+	if _registry == null:
+		return ""
 	var region: int = level_def["region"] as int
 	var number: int = level_def["level_number"] as int
 
@@ -193,6 +209,8 @@ func _get_previous_level_id(level_def: Dictionary) -> String:
 ## Returns the level_id of the level immediately after level_def in sequence.
 ## Returns "" if this is the final level overall.
 func _get_next_level_id(level_def: Dictionary) -> String:
+	if _registry == null:
+		return ""
 	var region: int = level_def["region"] as int
 	var number: int = level_def["level_number"] as int
 	var region_levels: Array = _registry.get_levels_for_region(region)

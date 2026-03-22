@@ -152,7 +152,7 @@ func test_buff_and_upgrade_compound_damage() -> void:
 	assert_almost_eq(tower.current_damage, 50.0, 0.001)
 
 	# Apply support buff: damage_mult=1.25
-	tower.apply_buff(1.25, 1.0)
+	tower.apply_buff(self, 1.25, 1.0)
 	# Effective = 50.0 * 1.25 = 62.5
 	assert_almost_eq(tower.get_effective_damage(), 62.5, 0.001)
 

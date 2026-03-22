@@ -75,7 +75,8 @@ func is_occupied(spot: Vector2) -> bool:
 ## Calculate gold refund when selling a tower.
 ## total_investment: total gold spent on the tower (base cost + all upgrades)
 ## refund_upgrade_tier: the tower's current upgrade tier (depth of chosen path)
+## bonus_percent: additional refund percent from global upgrades (default 0)
 ## Returns floored gold value.
-func calculate_sell_value(total_investment: int, refund_upgrade_tier: int) -> int:
-	var refund_rate: float = Constants.BASE_SELL_REFUND + float(refund_upgrade_tier) * Constants.SELL_REFUND_PER_UPGRADE_TIER
+func calculate_sell_value(total_investment: int, refund_upgrade_tier: int, bonus_percent: int = 0) -> int:
+	var refund_rate: float = minf(Constants.BASE_SELL_REFUND + float(refund_upgrade_tier) * Constants.SELL_REFUND_PER_UPGRADE_TIER + float(bonus_percent) / 100.0, 0.95)
 	return int(float(total_investment) * refund_rate)

@@ -41,7 +41,7 @@ func initialize(hp: float, armor: float, shield: float, resistance_map: Dictiona
 	health_changed.emit(_hp, _max_hp, _shield)
 
 ## Applies damage of the given type. Returns actual damage dealt to HP.
-## Order: resistance reduction → armor reduction (min 1) → shield absorption → HP.
+## Order: resistance reduction → armor reduction (diminishing returns) → shield absorption → HP.
 func take_damage(amount: float, damage_type: Enums.DamageType) -> float:
 	if _dead:
 		return 0.0
@@ -50,8 +50,9 @@ func take_damage(amount: float, damage_type: Enums.DamageType) -> float:
 	var resistance: float = _resistance_map.get(damage_type, 0.0) as float
 	var reduced: float = amount * (1.0 - clampf(resistance, 0.0, 1.0))
 
-	# 2. Armor (minimum 1 damage always gets through)
-	var after_armor: float = maxf(reduced - _armor, 1.0)
+	# 2. Armor (diminishing-returns percentage reduction)
+	var armor_reduction: float = _armor / (_armor + 100.0)
+	var after_armor: float = reduced * (1.0 - armor_reduction)
 
 	# 3. Shield absorbs first
 	var hp_damage: float = after_armor

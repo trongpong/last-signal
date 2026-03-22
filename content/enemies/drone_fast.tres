@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://drone_fast001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_drone_fast"]
+
+[resource]
+script = ExtResource("1_drone_fast")
+id = "drone_fast"
+display_name = "Drone Fast"
+archetype = 1
+base_hp = 70.0
+speed = 220.0
+armor = 0.0
+shield = 0.0
+gold_value = 8
+diamond_chance = 0.0
+shape_sides = 6
+shape_radius = 10.0
+color = Color(0.8, 1, 1, 1)
+size_scale = 0.9
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = false

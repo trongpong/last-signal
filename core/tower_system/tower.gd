@@ -5,6 +5,8 @@ extends Node2D
 ## Manages combat stats, upgrade path, cooldown, and buff state.
 ## Creates TierTree, TowerTargeting, and TowerRenderer as children.
 
+const MAX_FIRE_RATE: float = 10.0
+
 # ---------------------------------------------------------------------------
 # Signals
 # ---------------------------------------------------------------------------
@@ -34,10 +36,17 @@ var _upgrade_path: Array = []
 var _base_cost: int = 0
 var _upgrade_cost_total: int = 0
 
+# Skill tree bonuses from ProgressionManager
+var _skill_damage_bonus: float = 0.0
+var _skill_fire_rate_bonus: float = 0.0
+var _skill_range_bonus: float = 0.0
+
 # Cooldown: seconds remaining before the tower can fire again
 var _fire_cooldown: float = 0.0
 
 # Buff state (applied by support towers)
+# Dictionary keyed by source Node, value is { "damage_mult": float, "fire_rate_mult": float }
+var _buff_sources: Dictionary = {}
 var _buff_damage_mult: float = 1.0
 var _buff_fire_rate_mult: float = 1.0
 
@@ -102,6 +111,16 @@ func can_fire() -> bool:
 func on_fired() -> void:
 	if current_fire_rate > 0.0:
 		_fire_cooldown = 1.0 / current_fire_rate
+	else:
+		_fire_cooldown = 999.0
+
+## Applies skill tree bonuses from ProgressionManager.
+## bonuses: Dictionary with keys "damage", "fire_rate", "range", "specials"
+func apply_skill_bonuses(bonuses: Dictionary) -> void:
+	_skill_damage_bonus = bonuses.get("damage", 0.0) as float
+	_skill_fire_rate_bonus = bonuses.get("fire_rate", 0.0) as float
+	_skill_range_bonus = bonuses.get("range", 0.0) as float
+	_recalculate_stats()
 
 ## Returns damage including any active buff multiplier.
 func get_effective_damage() -> float:
@@ -160,16 +179,37 @@ func get_total_investment() -> int:
 # ---------------------------------------------------------------------------
 
 ## Apply a buff from a support tower.
+## source: the node applying the buff (used as dictionary key for stacking)
 ## damage_mult: damage multiplier (1.0 = no change)
 ## fire_rate_mult: fire rate multiplier (1.0 = no change)
-func apply_buff(damage_mult: float, fire_rate_mult: float) -> void:
-	_buff_damage_mult = maxf(damage_mult, 0.0)
-	_buff_fire_rate_mult = maxf(fire_rate_mult, 0.0)
+func apply_buff(source: Node, damage_mult: float, fire_rate_mult: float) -> void:
+	_buff_sources[source] = {
+		"damage_mult": maxf(damage_mult, 0.0),
+		"fire_rate_mult": maxf(fire_rate_mult, 0.0),
+	}
+	_recalculate_buff_multipliers()
 
-## Remove any active buff (reset multipliers to 1.0).
+## Remove a buff from a specific source.
+func remove_buff(source: Node) -> void:
+	_buff_sources.erase(source)
+	_recalculate_buff_multipliers()
+
+## Remove all active buffs (reset multipliers to 1.0).
 func clear_buff() -> void:
+	_buff_sources.clear()
 	_buff_damage_mult = 1.0
 	_buff_fire_rate_mult = 1.0
+
+## Recalculate effective buff multipliers by taking the max from all sources.
+func _recalculate_buff_multipliers() -> void:
+	var max_damage_mult: float = 1.0
+	var max_fire_rate_mult: float = 1.0
+	for source in _buff_sources:
+		var buff: Dictionary = _buff_sources[source]
+		max_damage_mult = maxf(max_damage_mult, buff.get("damage_mult", 1.0))
+		max_fire_rate_mult = maxf(max_fire_rate_mult, buff.get("fire_rate_mult", 1.0))
+	_buff_damage_mult = minf(max_damage_mult, 3.0)
+	_buff_fire_rate_mult = minf(max_fire_rate_mult, 3.0)
 
 # ---------------------------------------------------------------------------
 # Sell
@@ -195,6 +235,7 @@ func _recalculate_stats() -> void:
 	}
 	var upgraded: Dictionary = _tier_tree.apply_upgrades(base, _upgrade_path)
 
-	current_damage = upgraded.get("damage", _definition.base_damage) as float
-	current_fire_rate = upgraded.get("fire_rate", _definition.base_fire_rate) as float
-	current_range = upgraded.get("range", _definition.base_range) as float
+	current_damage = (upgraded.get("damage", _definition.base_damage) as float) + _skill_damage_bonus
+	current_fire_rate = (upgraded.get("fire_rate", _definition.base_fire_rate) as float) + _skill_fire_rate_bonus
+	current_fire_rate = minf(current_fire_rate, MAX_FIRE_RATE)
+	current_range = (upgraded.get("range", _definition.base_range) as float) + _skill_range_bonus

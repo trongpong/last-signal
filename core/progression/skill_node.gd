@@ -39,3 +39,6 @@ extends Resource
 
 ## String key for a special effect (e.g. "pierce", "chain", "slow").
 @export var special: String = ""
+
+## Maximum level this skill can be upgraded to.
+@export var max_level: int = 5

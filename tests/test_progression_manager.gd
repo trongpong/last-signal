@@ -143,21 +143,23 @@ func test_unlock_skill_node_spends_diamonds() -> void:
 	# SKILL_NODE_COSTS[0] = 80
 	assert_eq(_em.diamonds, 420)
 
-func test_unlock_skill_node_cannot_unlock_same_twice() -> void:
+func test_unlock_skill_node_can_level_up_multiple_times() -> void:
 	_em.add_diamonds(5000)
 	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
 	var result := _pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	assert_true(result)
+
+func test_unlock_skill_node_fails_at_max_level() -> void:
+	_em.add_diamonds(99999)
+	# Max level is 5
+	for _i in range(5):
+		_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	var result := _pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
 	assert_false(result)
 
-func test_unlock_skill_node_requires_prereq() -> void:
+func test_unlock_skill_nodes_are_independent() -> void:
 	_em.add_diamonds(5000)
-	# Node 1 requires node 0
-	var result := _pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 1)
-	assert_false(result)
-
-func test_unlock_skill_node_with_prereq_satisfied() -> void:
-	_em.add_diamonds(5000)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	# All 5 skills can be leveled independently (no prerequisites)
 	var result := _pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 1)
 	assert_true(result)
 
@@ -175,8 +177,8 @@ func test_skill_bonuses_after_unlocking_first_node() -> void:
 	_em.add_diamonds(5000)
 	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
 	var bonuses := _pm.get_skill_bonuses(Enums.TowerType.PULSE_CANNON)
-	# Default tree node 0 grants 2.0 damage bonus
-	assert_almost_eq(bonuses["damage"] as float, 2.0, 0.001)
+	# Focused Beam grants 3.0 damage per level, at level 1 = 3.0
+	assert_almost_eq(bonuses["damage"] as float, 3.0, 0.001)
 
 # ---------------------------------------------------------------------------
 # Hero Unlock
@@ -185,25 +187,26 @@ func test_skill_bonuses_after_unlocking_first_node() -> void:
 func test_hero_not_unlocked_initially() -> void:
 	assert_false(_pm.is_hero_unlocked(Enums.TowerType.PULSE_CANNON))
 
-func test_hero_unlocked_after_unlocking_hero_node() -> void:
+func test_skill_bonuses_scale_with_level() -> void:
 	_em.add_diamonds(99999)
-	# Unlock nodes 5 through 9 to reach the hero unlock node
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 5)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 6)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 7)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 8)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 9)
-	assert_true(_pm.is_hero_unlocked(Enums.TowerType.PULSE_CANNON))
+	# Focused Beam grants 3.0 damage per level
+	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	var bonuses := _pm.get_skill_bonuses(Enums.TowerType.PULSE_CANNON)
+	# Level 3 x 3.0 = 9.0 damage
+	assert_almost_eq(bonuses["damage"] as float, 9.0, 0.001)
 
-func test_hero_unlock_emits_signal() -> void:
+func test_multiple_skills_combine_bonuses() -> void:
 	_em.add_diamonds(99999)
-	watch_signals(_pm)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 5)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 6)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 7)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 8)
-	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 9)
-	assert_signal_emitted(_pm, "hero_unlocked")
+	# Focused Beam (node 0): 3.0 damage per level
+	# Overcharge Protocol (node 4): 5.0 damage + 0.03 fire rate per level
+	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
+	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 4)
+	var bonuses := _pm.get_skill_bonuses(Enums.TowerType.PULSE_CANNON)
+	# 3.0 + 5.0 = 8.0 damage total
+	assert_almost_eq(bonuses["damage"] as float, 8.0, 0.001)
+	assert_almost_eq(bonuses["fire_rate"] as float, 0.03, 0.001)
 
 # ---------------------------------------------------------------------------
 # Persistence
@@ -219,7 +222,7 @@ func test_save_and_reload_preserves_upgrade_tier() -> void:
 	assert_eq(pm2.get_global_upgrade_tier("starting_gold"), 1)
 	pm2.queue_free()
 
-func test_save_and_reload_preserves_unlocked_nodes() -> void:
+func test_save_and_reload_preserves_skill_levels() -> void:
 	_em.add_diamonds(5000)
 	_pm.unlock_skill_node(Enums.TowerType.PULSE_CANNON, 0)
 
@@ -227,5 +230,6 @@ func test_save_and_reload_preserves_unlocked_nodes() -> void:
 	add_child(pm2)
 	pm2.setup(_em, _sm)
 	var bonuses := pm2.get_skill_bonuses(Enums.TowerType.PULSE_CANNON)
-	assert_almost_eq(bonuses["damage"] as float, 2.0, 0.001)
+	# Focused Beam at level 1 = 3.0 damage
+	assert_almost_eq(bonuses["damage"] as float, 3.0, 0.001)
 	pm2.queue_free()

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=2 format=3 uid="uid://drone_swarm001"]
+
+[ext_resource type="Script" path="res://core/enemy_system/enemy_definition.gd" id="1_drone_swarm"]
+
+[resource]
+script = ExtResource("1_drone_swarm")
+id = "drone_swarm"
+display_name = "Drone Swarm"
+archetype = 1
+base_hp = 40.0
+speed = 180.0
+armor = 0.0
+shield = 0.0
+gold_value = 3
+diamond_chance = 0.0
+shape_sides = 6
+shape_radius = 8.0
+color = Color(0.7, 0.7, 0.7, 1)
+size_scale = 0.7
+resistance_map = {}
+abilities = []
+is_boss = false
+is_flying = false
