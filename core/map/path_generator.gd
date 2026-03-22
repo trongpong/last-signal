@@ -124,7 +124,7 @@ func _gen_spiral(map_scale: float, level_number: int) -> Array:
 
 	return path
 
-func _gen_branching(map_scale: float, level_number: int) -> Array:
+func _gen_branching(map_scale: float, level_number: int) -> Dictionary:
 	var w: float = _world_width(map_scale)
 	var y_min: float = _playable_y_min(map_scale)
 	var y_max: float = _playable_y_max(map_scale)
