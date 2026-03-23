@@ -180,6 +180,53 @@ func set_targeting_mode(mode: int) -> void:
 # Accessors
 # ---------------------------------------------------------------------------
 
+## Adds extra time to the fire cooldown (e.g. Reflective elite penalty).
+func add_fire_cooldown(amount: float) -> void:
+	_fire_cooldown += amount
+
+## Records the instance ID of the last enemy this tower targeted.
+func set_last_target_id(enemy_id: int) -> void:
+	_last_target_id = enemy_id
+
+## Returns the instance ID of the last enemy this tower targeted.
+func get_last_target_id() -> int:
+	return _last_target_id
+
+func get_tower_type() -> Enums.TowerType:
+	if _definition == null:
+		return Enums.TowerType.PULSE_CANNON
+	return _definition.tower_type
+
+## Returns true if initialize() has been called successfully.
+func is_initialized() -> bool:
+	return _initialized
+
+## Returns true if this tower is an income-generating tower (e.g. Harvester).
+func is_income_tower() -> bool:
+	return _definition != null and _definition.is_income
+
+## Returns true if this tower is a support tower that buffs nearby towers.
+func is_support_tower() -> bool:
+	return _definition != null and _definition.is_support
+
+## Returns the projectile speed from the definition (default 400 if uninitialized).
+func get_projectile_speed() -> float:
+	if _definition == null:
+		return 400.0
+	return _definition.projectile_speed
+
+## Returns the damage type from the definition (default PULSE if uninitialized).
+func get_damage_type() -> int:
+	if _definition == null:
+		return Enums.DamageType.PULSE
+	return _definition.damage_type
+
+## Proxy for TowerTargeting.select_target — avoids external access to _targeting.
+func select_target(tower_pos: Vector2, attack_range: float, mode: int, enemy_data: Array) -> int:
+	if _targeting == null:
+		return -1
+	return _targeting.select_target(tower_pos, attack_range, mode, enemy_data)
+
 func get_tier_tree() -> TierTree:
 	return _tier_tree
 

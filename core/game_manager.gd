@@ -109,8 +109,10 @@ func lose_life() -> void:
 ## Thresholds scale with starting lives so that harder difficulties (fewer lives)
 ## use proportional limits instead of fixed numbers.
 func calculate_stars() -> int:
+	# Derive starting lives from current state rather than looking up Constants,
+	# so daily-challenge overrides are respected automatically.
 	var constants := Constants.new()
-	var starting_lives: int = constants.DIFFICULTY_LIVES.get(current_difficulty, 20)
+	var starting_lives: int = lives + lives_lost
 	var max_lost_for_3: int = int(float(starting_lives) * constants.STAR_3_MAX_LIVES_LOST_FRACTION)
 	var max_lost_for_2: int = maxi(int(float(starting_lives) * constants.STAR_2_MAX_LIVES_LOST_FRACTION), 1)
 	if lives_lost <= max_lost_for_3:

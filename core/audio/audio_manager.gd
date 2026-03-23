@@ -16,6 +16,8 @@ var _bg_player: AudioStreamPlayer = null
 
 
 func _ready() -> void:
+	_ensure_buses()
+
 	_music_system = MusicSystem.new()
 	_music_system.name = "MusicSystem"
 	add_child(_music_system)
@@ -185,24 +187,16 @@ func _get_or_generate(key: String, generator: Callable) -> AudioStreamWAV:
 	return stream
 
 
+## Ensure "Music" and "SFX" audio buses exist, creating them if missing.
+func _ensure_buses() -> void:
+	if AudioServer.get_bus_index("Music") < 0:
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(AudioServer.get_bus_count() - 1, "Music")
+	if AudioServer.get_bus_index("SFX") < 0:
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(AudioServer.get_bus_count() - 1, "SFX")
+
+
 ## Convert a PackedFloat32Array of samples [-1,1] to an AudioStreamWAV (FORMAT_16_BITS, mono).
 func _samples_to_stream(samples: PackedFloat32Array) -> AudioStreamWAV:
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.stereo = false
-	stream.mix_rate = SFXGenerator.SAMPLE_RATE
-
-	var num_samples := samples.size()
-	var byte_array := PackedByteArray()
-	byte_array.resize(num_samples * 2)  # 2 bytes per 16-bit sample
-
-	for i in num_samples:
-		var int16_val := int(clampf(samples[i], -1.0, 1.0) * 32767.0)
-		# Clamp to int16 range
-		int16_val = clampi(int16_val, -32768, 32767)
-		# Write little-endian int16
-		byte_array[i * 2]     = int16_val & 0xFF
-		byte_array[i * 2 + 1] = (int16_val >> 8) & 0xFF
-
-	stream.data = byte_array
-	return stream
+	return SynthEngine.samples_to_stream(samples, SFXGenerator.SAMPLE_RATE)

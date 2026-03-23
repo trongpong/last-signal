@@ -330,6 +330,21 @@ func show_upgrade_panel(tower: Tower, sell_value: int) -> void:
 func hide_upgrade_panel() -> void:
 	_upgrade_panel.hide_panel()
 
+
+## Returns true if the viewport-space position falls on a visible interactive overlay.
+## Used by the game scene to filter clicks that should not place towers.
+func is_point_on_overlay(pos: Vector2) -> bool:
+	var overlays: Array[Control] = [
+		_upgrade_panel,
+		_ability_bar,
+		_send_wave_btn,
+	]
+	for overlay in overlays:
+		if overlay != null and overlay.visible:
+			if Rect2(overlay.global_position, overlay.size).has_point(pos):
+				return true
+	return false
+
 # ---------------------------------------------------------------------------
 # Adaptation warning
 # ---------------------------------------------------------------------------

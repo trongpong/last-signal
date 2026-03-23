@@ -212,6 +212,35 @@ func apply_focus_fire(mult: float, duration: float) -> void:
 func get_damage_multiplier() -> float:
 	return _focus_fire_mult
 
+## Returns true if the enemy is currently slowed below normal speed.
+func is_slowed() -> bool:
+	return _slow_factor < 1.0
+
+## Extends the current slow timer by extra seconds (does not change factor).
+func extend_slow(extra: float) -> void:
+	_slow_timer += extra
+
+## Returns true if this enemy is a boss (defined in its EnemyDefinition).
+func is_boss() -> bool:
+	return _definition != null and _definition.is_boss
+
+## Sets the spawn context used by Splitting elites and speed modifiers.
+func initialize_spawn_context(path_idx: int, difficulty: int) -> void:
+	_spawn_path_index = path_idx
+	_spawn_difficulty = difficulty
+
+## Multiplies the effective speed by the given factor (stacks multiplicatively).
+func apply_speed_multiplier(mult: float) -> void:
+	_effective_speed *= mult
+
+## Records the tower type that most recently dealt damage (for kill attribution).
+func set_last_damage_source(tower_type: int) -> void:
+	_last_damage_tower_type = tower_type
+
+## Returns the tower type that last dealt damage, or -1 if none.
+func get_last_damage_source() -> int:
+	return _last_damage_tower_type
+
 ## Applies an elite modifier to this enemy. Scales HP per modifier applied.
 func apply_elite_modifier(modifier: int) -> void:
 	if _elite_modifiers.has(modifier):
@@ -219,10 +248,7 @@ func apply_elite_modifier(modifier: int) -> void:
 	_elite_modifiers.append(modifier)
 	# Scale HP up for elites (preserve current HP fraction)
 	if _health != null:
-		var hp_frac: float = _health._hp / maxf(_health._max_hp, 1.0)
-		_health._max_hp *= Constants.ELITE_HP_SCALE
-		_health._hp = _health._max_hp * hp_frac
-		_health.health_changed.emit(_health._hp, _health._max_hp, _health._shield)
+		_health.scale_max_hp(Constants.ELITE_HP_SCALE)
 	if _renderer != null:
 		_renderer.set_elite_modifiers(_elite_modifiers)
 
@@ -257,6 +283,8 @@ func _on_died() -> void:
 		var remaining: Array = _elite_modifiers.filter(func(m: int) -> bool: return m != Enums.EliteModifier.SPLITTING)
 		elite_split_requested.emit(global_position, _definition, _spawn_difficulty, _spawn_path_index, get_progress_ratio(), remaining)
 	_spawn_death_effect()
+	if Engine.has_singleton("AudioManager"):
+		AudioManager.play_enemy_death(_definition.size_scale if _definition != null else 1.0)
 	enemy_died.emit(self)
 	queue_free()
 
@@ -357,7 +385,7 @@ func _process_elite_regen(delta: float) -> void:
 		return
 	_elite_regen_timer = Constants.ELITE_REGEN_PULSE_INTERVAL
 	if _health != null and _health.is_alive():
-		_health.heal(_health.get_max_hp() * Constants.ELITE_REGEN_HP_FRACTION * Constants.ELITE_REGEN_PULSE_INTERVAL)
+		_health.heal(_health.get_max_hp() * Constants.ELITE_REGEN_HP_PER_SECOND * Constants.ELITE_REGEN_PULSE_INTERVAL)
 
 func _process_elite_phasing(delta: float) -> void:
 	if _elite_phase_active:

@@ -143,8 +143,8 @@ func get_reward_diamonds(stars: int) -> int:
 	var base: int = BASE_REWARD
 	if stars >= 3:
 		base = THREE_STAR_REWARD
-	var streak: int = mini(get_current_streak(), 7)
-	return base + streak * STREAK_BONUS_PER_DAY
+	var streak_bonus: int = mini(get_current_streak() * STREAK_BONUS_PER_DAY, STREAK_BONUS_CAP)
+	return base + streak_bonus
 
 # ---------------------------------------------------------------------------
 # Constraint Generation

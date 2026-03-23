@@ -56,8 +56,6 @@ func get_mastery_bonuses(tower_type: int) -> Dictionary:
 	var damage_bonus: float = 0.0
 	var cost_discount: float = 0.0
 	for i in range(tier + 1):
-		if i < 0 or i >= Constants.MASTERY_TIERS.size():
-			continue
 		damage_bonus += Constants.MASTERY_TIERS[i]["damage_bonus"] as float
 		cost_discount += Constants.MASTERY_TIERS[i]["cost_discount"] as float
 	return {"damage_bonus": damage_bonus, "cost_discount": cost_discount}

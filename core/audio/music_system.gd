@@ -4,6 +4,9 @@ extends Node
 ## Adaptive music system for Last Signal.
 ## Manages multiple MusicLayers that fade in/out based on game state and region.
 
+const SAMPLE_RATE: int = 44100
+const LOOP_DURATION: float = 8.0
+
 const REGION_KEYS: Dictionary = {
 	1: "C",
 	2: "D",
@@ -29,6 +32,42 @@ func _ready() -> void:
 	_layer_intensity = _make_layer("intensity", "Music")
 	_layer_combat = _make_layer("combat", "Music")
 	_layer_boss = _make_layer("boss", "Music")
+	_assign_layer_streams()
+
+
+## Generate procedural audio streams and assign them to each music layer.
+func _assign_layer_streams() -> void:
+	# base: warm ambient drone — A1 + E2 sine, very low cutoff
+	_layer_base.stream = _make_drone_stream(55.0, 82.5, "sine", 220.0)
+	# intensity: mid-range tension — A2 + D3 sine
+	_layer_intensity.stream = _make_drone_stream(110.0, 146.8, "sine", 400.0)
+	# combat: brighter energy — A3 + A4 square
+	_layer_combat.stream = _make_drone_stream(220.0, 440.0, "square", 600.0)
+	# boss: deep ominous sub-bass — A0 + A1 saw
+	_layer_boss.stream = _make_drone_stream(27.5, 55.0, "saw", 100.0)
+
+
+## Generate an 8-second looped AudioStreamWAV drone from two frequencies.
+func _make_drone_stream(freq_a: float, freq_b: float, wave: String, cutoff: float) -> AudioStreamWAV:
+	var layer_a: PackedFloat32Array
+	var layer_b: PackedFloat32Array
+	match wave:
+		"sine":
+			layer_a = SynthEngine.generate_sine(freq_a, LOOP_DURATION, SAMPLE_RATE)
+			layer_b = SynthEngine.generate_sine(freq_b, LOOP_DURATION, SAMPLE_RATE)
+		"square":
+			layer_a = SynthEngine.generate_square(freq_a, LOOP_DURATION, SAMPLE_RATE)
+			layer_b = SynthEngine.generate_square(freq_b, LOOP_DURATION, SAMPLE_RATE)
+		_:  # saw
+			layer_a = SynthEngine.generate_saw(freq_a, LOOP_DURATION, SAMPLE_RATE)
+			layer_b = SynthEngine.generate_saw(freq_b, LOOP_DURATION, SAMPLE_RATE)
+	var mixed := SynthEngine.mix(layer_a, layer_b, 0.6, 0.4)
+	mixed = SynthEngine.apply_filter_lowpass(mixed, cutoff, SAMPLE_RATE)
+	mixed = SynthEngine.apply_adsr(mixed, 0.5, 0.2, 0.8, 0.5, SAMPLE_RATE)
+	var stream := SynthEngine.samples_to_stream(mixed, SAMPLE_RATE)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_end = mixed.size()
+	return stream
 
 
 func _make_layer(layer_name: String, bus: String) -> MusicLayer:

@@ -101,6 +101,23 @@ static func mix(
 	return result
 
 
+## Convert a PackedFloat32Array of samples [-1,1] to an AudioStreamWAV (FORMAT_16_BITS, mono).
+static func samples_to_stream(samples: PackedFloat32Array, sample_rate: int) -> AudioStreamWAV:
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.stereo = false
+	stream.mix_rate = sample_rate
+	var num_samples := samples.size()
+	var byte_array := PackedByteArray()
+	byte_array.resize(num_samples * 2)
+	for i in num_samples:
+		var int16_val := clampi(int(clampf(samples[i], -1.0, 1.0) * 32767.0), -32768, 32767)
+		byte_array[i * 2]     = int16_val & 0xFF
+		byte_array[i * 2 + 1] = (int16_val >> 8) & 0xFF
+	stream.data = byte_array
+	return stream
+
+
 ## Simple single-pole RC lowpass filter.
 ## cutoff is in Hz.
 static func apply_filter_lowpass(

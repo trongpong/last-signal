@@ -138,7 +138,7 @@ func _build_normal_sub_waves(available: Array, total_count: int, wave_number: in
 		return result
 
 	# Distribute total count evenly across chosen types (remainder to first type)
-	var per_type: int = maxi(1, total_count / chosen.size())
+	var per_type: int = total_count / chosen.size()
 	var remainder: int = total_count - per_type * chosen.size()
 
 	var accumulated_delay: float = 0.0

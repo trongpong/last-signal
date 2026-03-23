@@ -33,7 +33,7 @@ var hero_definition: HeroDefinition = null
 var _attack_timer: float = 0.0
 var _target: Node2D = null
 
-# Visual parameters (can be set before adding to scene)
+# Visual parameters
 var _color: Color = Color(0.4, 0.8, 1.0, 1.0)
 var _shape_sides: int = 8
 var _shape_radius: float = 24.0
@@ -49,6 +49,11 @@ func initialize(id: String, duration: float, spawn_pos: Vector2) -> void:
 	_duration_remaining = duration
 	_active = duration > 0.0
 	position = spawn_pos
+	queue_redraw()
+
+## Sets the visual color of this hero unit.
+func set_color(color: Color) -> void:
+	_color = color
 	queue_redraw()
 
 ## Adds extra duration to the hero (e.g. from progression upgrades).
@@ -168,6 +173,8 @@ func _find_nearest_enemy() -> Node2D:
 		if not is_instance_valid(candidate):
 			continue
 		if not (candidate is Node2D):
+			continue
+		if candidate is Enemy and not (candidate as Enemy).is_alive():
 			continue
 		var dist_sq: float = global_position.distance_squared_to(candidate.global_position)
 		if dist_sq < best_dist_sq:

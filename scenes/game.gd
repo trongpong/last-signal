@@ -159,22 +159,26 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	EconomyManager.set_gold_modifier(gold_modifier)
 
 	# Apply daily challenge constraints (gold modifier, starting lives, etc.)
+	var cc_lives: int = -1
 	if not _challenge_constraints.is_empty():
 		var cc := _challenge_constraints
 		var gold_mult_c: float = cc.get("gold_multiplier", 1.0) as float
 		if gold_mult_c != 1.0:
 			gold_modifier *= gold_mult_c
 			EconomyManager.set_gold_modifier(gold_modifier)
-		var cc_lives: int = cc.get("starting_lives", -1) as int
-		if cc_lives > 0:
-			c.DIFFICULTY_LIVES[difficulty] = cc_lives
+		cc_lives = cc.get("starting_lives", -1) as int
 
 	# Apply starting gold — enough for 3-4 basic towers
 	var starting_gold: int = 200 + _progression_manager.get_starting_gold_bonus()
 	EconomyManager.add_gold(starting_gold)
 
-	# Start level in GameManager
+	# Start level in GameManager (sets lives from difficulty constants)
 	GameManager.start_level(level_id, difficulty)
+
+	# Override lives after start_level so GameManager's own Constants lookup is bypassed
+	if cc_lives > 0:
+		GameManager.lives = cc_lives
+		GameManager.lives_changed.emit(GameManager.lives, GameManager.lives_lost)
 
 	# Create GameCamera for maps larger than 1x viewport
 	var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
@@ -604,26 +608,24 @@ func _on_enemy_spawn_requested(enemy_id: String, path_index: int = 0) -> void:
 			var health := enemy.get_node_or_null("EnemyHealth") as EnemyHealth
 			if health != null:
 				for dtype in adapt_res.keys():
-					var existing: float = health._resistance_map.get(dtype, 0.0) as float
-					health._resistance_map[dtype] = minf(existing + (adapt_res[dtype] as float), 0.75)
-			var renderer := enemy.get_node_or_null("EnemyRenderer")
-			if renderer != null and renderer.has_method("set_resistance_map"):
-				renderer.set_resistance_map(adapt_res)
+					health.apply_resistance_bonus(dtype as int, adapt_res[dtype] as float)
+			var renderer := enemy.get_node_or_null("EnemyRenderer") as EnemyRenderer
+			if renderer != null and health != null:
+				renderer.set_resistance_map(health.get_resistance_map())
 
 	# Store spawn context for splitting elites
-	enemy._spawn_path_index = path_index
-	enemy._spawn_difficulty = _difficulty
+	enemy.initialize_spawn_context(path_index, _difficulty)
 
 	# Apply wave reward speed modifier to spawned enemies
 	var speed_mod: float = _get_reward_mod("enemy_speed_mult")
 	if speed_mod != 0.0:
-		enemy._effective_speed *= (1.0 + speed_mod)
+		enemy.apply_speed_multiplier(1.0 + speed_mod)
 
 	# Apply daily challenge enemy speed constraint
 	if not _challenge_constraints.is_empty():
 		var cc_speed: float = _challenge_constraints.get("enemy_speed_mult", 1.0) as float
 		if cc_speed != 1.0:
-			enemy._effective_speed *= cc_speed
+			enemy.apply_speed_multiplier(cc_speed)
 
 	# Apply elite modifiers in endless mode
 	_maybe_apply_elite(enemy)
@@ -843,7 +845,7 @@ func _process(delta: float) -> void:
 
 	# Update ability cooldown display
 	if _ability_manager != null:
-		_hud.update_ability_cooldowns(_ability_manager._abilities)
+		_hud.update_ability_cooldowns(_ability_manager.get_abilities())
 
 func _rebuild_spatial_grid() -> void:
 	_spatial_grid.clear()
@@ -901,11 +903,11 @@ func _process_tower_combat() -> void:
 				"position": enemy.global_position,
 				"hp": enemy.get_hp_percentage(),
 				"progress": enemy.get_progress_ratio(),
-				"alive": true,
+				"alive": enemy.is_alive(),
 			})
 			enemy_nodes.append(enemy)
 
-		var idx: int = tower._targeting.select_target(
+		var idx: int = tower.select_target(
 			tower.global_position,
 			tower.current_range,
 			tower.targeting_mode,
@@ -917,7 +919,7 @@ func _process_tower_combat() -> void:
 		var target_enemy: Enemy = enemy_nodes[idx] as Enemy
 
 		# Track last target for Focus Fire synergy
-		tower._last_target_id = target_enemy.get_instance_id()
+		tower.set_last_target_id(target_enemy.get_instance_id())
 
 		# Spawn a projectile — use effective stats (base + skill bonuses)
 		var tower_id: int = tower.get_instance_id()
@@ -946,6 +948,7 @@ func _process_tower_combat() -> void:
 
 		tower.fired.emit(tower, target_enemy.global_position)
 		tower.on_fired()
+		AudioManager.play_tower_fire(tower.get_tower_type(), tower.current_tier)
 
 # ---------------------------------------------------------------------------
 # Projectile hit
@@ -959,7 +962,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 		if inst is Tower:
 			source_tower = inst as Tower
 	var armor_pierce: bool = source_tower != null and source_tower.has_special("armor_pierce") and source_tower.get_special_level("armor_pierce") >= 2
-	var src_tower_type: int = source_tower._definition.tower_type if source_tower != null and source_tower._definition != null else -1
+	var src_tower_type: int = source_tower.get_tower_type() if source_tower != null else -1
 
 	# Wave reward modifiers: damage mult, crit, armor pierce
 	var reward_dmg_mult: float = 1.0 + _get_reward_mod("damage_mult") + _signal_decode_damage_buff
@@ -984,7 +987,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 			if e.global_position.distance_to(hit_pos) <= splash_radius:
 				# Frostbite synergy: slowed enemies take +25% splash damage
 				var splash_dmg: float = damage
-				if synergy == Enums.SynergyType.FROSTBITE and e._slow_factor < 1.0:
+				if synergy == Enums.SynergyType.FROSTBITE and e.is_slowed():
 					splash_dmg *= Constants.SYNERGY_FROSTBITE_SPLASH_DAMAGE_MULT
 				_deal_damage_to_enemy(e, splash_dmg, damage_type, armor_pierce, src_tower_type)
 				hit_enemies.append(e)
@@ -1000,7 +1003,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 	# Reflective elite: pause attacking tower briefly
 	for e in hit_enemies:
 		if is_instance_valid(e) and e.has_elite_modifier(Enums.EliteModifier.REFLECTIVE):
-			source_tower._fire_cooldown += Constants.ELITE_REFLECTIVE_PAUSE
+			source_tower.add_fire_cooldown(Constants.ELITE_REFLECTIVE_PAUSE)
 			break
 
 	# Apply slow on hit (Cryo Array base mechanic + skill bonuses)
@@ -1014,8 +1017,8 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 	# Cold Snap synergy: extend slow on already-slowed enemies
 	if synergy == Enums.SynergyType.COLD_SNAP:
 		for e in hit_enemies:
-			if is_instance_valid(e) and e.is_alive() and e._slow_factor < 1.0:
-				e._slow_timer += Constants.SYNERGY_COLD_SNAP_SLOW_EXTEND
+			if is_instance_valid(e) and e.is_alive() and e.is_slowed():
+				e.extend_slow(Constants.SYNERGY_COLD_SNAP_SLOW_EXTEND)
 
 	# Freeze chance skill — small chance to fully stop enemy
 	if source_tower.has_special("freeze_chance") and source_tower.get_special_level("freeze_chance") >= 3:
@@ -1047,7 +1050,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 		var partner = instance_from_id(source_tower.get_synergy_partner_id())
 		if partner != null and partner is Tower:
 			var target_e: Enemy = hit_enemies[0] as Enemy
-			if (partner as Tower)._last_target_id == target_e.get_instance_id():
+			if (partner as Tower).get_last_target_id() == target_e.get_instance_id():
 				target_e.apply_focus_fire(Constants.SYNERGY_FOCUS_FIRE_DAMAGE_MULT, Constants.SYNERGY_FOCUS_FIRE_DURATION)
 
 func _deal_damage_to_enemy(enemy: Enemy, damage: float, damage_type: int, ignore_armor: bool = false, tower_type: int = -1) -> void:
@@ -1056,13 +1059,13 @@ func _deal_damage_to_enemy(enemy: Enemy, damage: float, damage_type: int, ignore
 		return
 	# Track last damage source for kill attribution
 	if tower_type >= 0:
-		enemy._last_damage_tower_type = tower_type
+		enemy.set_last_damage_source(tower_type)
 	# Focus Fire debuff: enemy takes increased damage from all sources
 	var effective_damage: float = damage * enemy.get_damage_multiplier()
 	health.take_damage(effective_damage, damage_type as Enums.DamageType, ignore_armor)
 
-	# Floating damage number
-	_show_damage_popup(enemy.global_position, damage, damage_type)
+	# Floating damage number (show actual damage dealt, not pre-debuff value)
+	_show_damage_popup(enemy.global_position, effective_damage, damage_type)
 
 	# Record damage for the adaptation system
 	if _game_loop:
@@ -1085,12 +1088,12 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	_match_kills += 1
 	_match_gold += gold
 	# Boss death: camera shake + white flash
-	if enemy._definition != null and enemy._definition.is_boss:
+	if enemy.is_boss():
 		if _game_camera != null:
 			_game_camera.shake(8.0, 0.4)
 		_flash_screen(Color.WHITE, 0.15)
 	# Tower mastery kill attribution
-	var killing_tower_type: int = enemy._last_damage_tower_type
+	var killing_tower_type: int = enemy.get_last_damage_source()
 	if killing_tower_type >= 0 and _tower_mastery_manager != null:
 		_tower_mastery_manager.record_kill(killing_tower_type)
 	if _wave_manager:
@@ -1271,17 +1274,7 @@ func _toggle_pause() -> void:
 
 ## Returns true if the viewport-space position hits a visible HUD overlay with buttons.
 func _is_click_on_hud_overlay(pos: Vector2) -> bool:
-	var overlays: Array[Control] = [
-		_hud._upgrade_panel,
-		_hud._ability_bar,
-		_hud._send_wave_btn,
-	]
-	for overlay in overlays:
-		if overlay != null and overlay.visible:
-			var rect := Rect2(overlay.global_position, overlay.size)
-			if rect.has_point(pos):
-				return true
-	return false
+	return _hud.is_point_on_overlay(pos)
 
 
 ## Returns true if the position is too close to any existing tower.
@@ -1435,6 +1428,7 @@ func _on_ability_used(slot: int) -> void:
 func _on_hero_summon_requested() -> void:
 	if _hero != null and _hero.is_active():
 		return  # Only one hero at a time
+	AudioManager.play_hero_summon()
 	# Find any unlocked hero
 	var hero_tower_type: int = -1
 	for tt in range(7):
@@ -1451,7 +1445,7 @@ func _on_hero_summon_requested() -> void:
 	_hero.name = "Hero"
 	var duration: float = 20.0 + _progression_manager.get_hero_duration_bonus()
 	_hero.initialize(str(hero_tower_type), duration, spawn_pos)
-	_hero._color = Color(0.4, 0.8, 1.0)
+	_hero.set_color(Color(0.4, 0.8, 1.0))
 	_hero.attacked.connect(_on_hero_attacked)
 	_hero.expired.connect(_on_hero_expired)
 	add_child(_hero)
@@ -1566,9 +1560,8 @@ func _ability_emp_burst() -> void:
 	_hud.show_toast("EMP BURST!")
 
 func _ability_repair_wave() -> void:
-	var c := Constants.new()
-	var max_lives: int = c.DIFFICULTY_LIVES.get(_difficulty, 20)
-	max_lives += _progression_manager.get_extra_lives()
+	# Cap at the actual starting lives for this run (respects daily challenge overrides)
+	var max_lives: int = (GameManager.lives + GameManager.lives_lost) + _progression_manager.get_extra_lives()
 	if GameManager.lives < max_lives:
 		GameManager.lives += 1
 		GameManager.lives_changed.emit(GameManager.lives, GameManager.lives_lost)
@@ -1591,7 +1584,7 @@ func _ability_overclock(tower: Tower) -> void:
 	_hud.show_toast("OVERCLOCK!")
 
 func _ability_scrap_salvage() -> void:
-	var original: float = EconomyManager._gold_modifier
+	var original: float = EconomyManager.get_gold_modifier()
 	EconomyManager.set_gold_modifier(original * 2.0)
 	get_tree().create_timer(10.0).timeout.connect(func() -> void:
 		if is_inside_tree():
@@ -1605,15 +1598,15 @@ func _ability_scrap_salvage() -> void:
 
 ## Spawns a projectile from a tower toward a target enemy.
 func _spawn_tower_projectile(tower: Tower, target_enemy: Enemy) -> void:
-	if tower._definition == null:
+	if not tower.is_initialized():
 		return
 	var proj := Projectile.new()
 	proj.global_position = tower.global_position
 	proj.initialize(
 		target_enemy.global_position,
-		tower._definition.projectile_speed,
+		tower.get_projectile_speed(),
 		tower.get_effective_damage(),
-		tower._definition.damage_type,
+		tower.get_damage_type(),
 		tower.get_effective_splash()
 	)
 	proj.hit_target.connect(_on_projectile_hit.bind(target_enemy.get_instance_id(), tower.get_instance_id()))
@@ -1639,7 +1632,7 @@ func _apply_chain_damage(origin: Vector2, chain_count: int, chain_range: float, 
 			break
 		# Shatter synergy: slowed enemies take 2x chain damage
 		var chain_dmg: float = damage
-		if shatter and best_enemy._slow_factor < 1.0:
+		if shatter and best_enemy.is_slowed():
 			chain_dmg *= Constants.SYNERGY_SHATTER_CHAIN_DAMAGE_MULT
 		_deal_damage_to_enemy(best_enemy, chain_dmg, damage_type, armor_pierce, tower_type)
 		hit_set.append(best_enemy)
@@ -1733,18 +1726,16 @@ func _on_elite_split_requested(pos: Vector2, def: EnemyDefinition, difficulty: i
 		# Scale down HP for split copies
 		var health: EnemyHealth = split.get_node_or_null("EnemyHealth")
 		if health != null:
-			health._hp = health._max_hp * Constants.ELITE_SPLIT_HP_FRACTION
-			health.health_changed.emit(health._hp, health._max_hp, health._shield)
-		split._effective_speed *= Constants.ELITE_SPLIT_SPEED_MULT
+			health.set_hp_fraction(Constants.ELITE_SPLIT_HP_FRACTION)
+		split.apply_speed_multiplier(Constants.ELITE_SPLIT_SPEED_MULT)
 		# Apply remaining modifiers (no SPLITTING to prevent infinite chain)
 		for mod in remaining_mods:
 			split.apply_elite_modifier(mod as int)
-		split._spawn_path_index = path_idx
-		split._spawn_difficulty = difficulty
+		split.initialize_spawn_context(path_idx, difficulty)
 		split.enemy_died.connect(_on_enemy_died)
 		split.enemy_reached_exit.connect(_on_enemy_reached_exit)
 		if _wave_manager:
-			_wave_manager._enemies_alive += 1
+			_wave_manager.on_enemy_spawned()
 
 func _recalculate_synergies() -> void:
 	if _synergy_manager == null:
@@ -1765,7 +1756,7 @@ func _recalculate_synergies() -> void:
 		if not (child is Tower) or not (child as Tower).has_synergy():
 			continue
 		var t := child as Tower
-		var pair_key: int = mini(t.get_instance_id(), t.get_synergy_partner_id()) * 100000 + maxi(t.get_instance_id(), t.get_synergy_partner_id())
+		var pair_key: String = "%d_%d" % [mini(t.get_instance_id(), t.get_synergy_partner_id()), maxi(t.get_instance_id(), t.get_synergy_partner_id())]
 		if drawn.has(pair_key):
 			continue
 		drawn[pair_key] = true
@@ -1794,8 +1785,8 @@ func _check_wave_reward(wave_number: int) -> void:
 		return
 	if not _wave_reward_manager.should_offer_reward(wave_number):
 		return
-	# Pause the break timer
-	_wave_manager._in_break = false
+	# Pause the break timer while showing the reward UI
+	_wave_manager.pause_break()
 	var choices: Array = _wave_reward_manager.generate_choices()
 	_show_wave_reward_ui(choices)
 
@@ -1823,9 +1814,7 @@ func _dismiss_wave_reward_ui() -> void:
 		_wave_reward_ui = null
 	# Resume the break
 	if _wave_manager != null:
-		_wave_manager._in_break = true
-		_wave_manager._break_timer = Constants.WAVE_BREAK_DURATION
-		_wave_manager.break_started.emit(Constants.WAVE_BREAK_DURATION)
+		_wave_manager.resume_break(Constants.WAVE_BREAK_DURATION)
 
 func _apply_wave_reward_modifiers() -> void:
 	if _wave_reward_manager == null:
@@ -1959,7 +1948,7 @@ func _recalculate_all_buffs() -> void:
 		if not (child is Tower):
 			continue
 		var support := child as Tower
-		if support._definition == null or not support._definition.is_support:
+		if not support.is_support_tower():
 			continue
 		var buff_range: float = support.get_effective_buff_range()
 		var dmg_mult: float = support.get_effective_buff_damage_mult()
@@ -1978,7 +1967,7 @@ func _collect_harvester_income(_wave_number: int) -> void:
 		if not (child is Tower):
 			continue
 		var tower := child as Tower
-		if tower._definition == null or not tower._definition.is_income:
+		if not tower.is_income_tower():
 			continue
 		var income: int = tower.get_effective_income()
 		# Efficiency synergy: +30% income

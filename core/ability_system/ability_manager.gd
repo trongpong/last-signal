@@ -69,6 +69,10 @@ func set_loadout(ability_ids: Array) -> void:
 func get_loadout() -> Array[String]:
 	return _loadout.duplicate()
 
+## Returns the live ability nodes array (read-only intent).
+func get_abilities() -> Array[Ability]:
+	return _abilities
+
 ## Reduces the cooldown of all abilities by the given amount.
 func reduce_all_cooldowns(seconds: float) -> void:
 	for ab in _abilities:
@@ -99,6 +103,8 @@ func activate_ability(slot: int, target: Variant = null) -> bool:
 		return false
 	var ab_id: String = _loadout[slot] if slot < _loadout.size() else ""
 	ability_activated.emit(ab_id, slot, target)
+	if Engine.has_singleton("AudioManager"):
+		AudioManager.play_ability_activate()
 	return true
 
 # ---------------------------------------------------------------------------

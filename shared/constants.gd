@@ -219,7 +219,7 @@ const SYNERGY_FOCUS_FIRE_DURATION: float = 2.0
 
 const ELITE_START_WAVE: int = 15
 const ELITE_REGEN_PULSE_INTERVAL: float = 2.0
-const ELITE_REGEN_HP_FRACTION: float = 0.02
+const ELITE_REGEN_HP_PER_SECOND: float = 0.02  # fraction of max HP healed per second
 const ELITE_SPLIT_COUNT: int = 2
 const ELITE_SPLIT_HP_FRACTION: float = 0.30
 const ELITE_SPLIT_SPEED_MULT: float = 0.80

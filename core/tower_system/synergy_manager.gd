@@ -100,9 +100,9 @@ func load_discovered(discovered_array: Array) -> void:
 # ---------------------------------------------------------------------------
 
 func _get_tower_type(tower: Tower) -> int:
-	if tower._definition == null:
+	if not tower.is_initialized():
 		return -1
-	return tower._definition.tower_type
+	return tower.get_tower_type()
 
 func _assign_synergy(ta: Tower, tb: Tower, synergy: int, sname: String, assigned: Dictionary) -> void:
 	ta.set_synergy(synergy, tb.get_instance_id())

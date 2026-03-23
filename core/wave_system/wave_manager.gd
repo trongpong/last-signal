@@ -150,6 +150,26 @@ func on_enemy_reached_exit() -> void:
 	_check_wave_clear()
 
 
+## Called when a new enemy is spawned mid-wave (e.g. Splitting elite copies).
+## Increments the alive counter so the wave does not clear prematurely.
+func on_enemy_spawned() -> void:
+	_enemies_alive += 1
+
+
+## Pauses the inter-wave break (e.g. while showing a wave reward UI).
+## The break timer stops until resume_break() is called.
+func pause_break() -> void:
+	_in_break = false
+
+
+## Resumes the inter-wave break with the given duration.
+## Emits break_started so HUD timers can sync.
+func resume_break(duration: float) -> void:
+	_in_break = true
+	_break_timer = duration
+	break_started.emit(duration)
+
+
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
@@ -198,6 +218,8 @@ func _check_wave_clear() -> void:
 
 ## Called when all enemies in the wave are gone.
 func _on_wave_enemies_cleared() -> void:
+	if current_wave_index < 0 or current_wave_index >= _waves.size():
+		return
 	var finished_wave: WaveDefinition = _waves[current_wave_index]
 	is_wave_active = false
 	wave_complete.emit(finished_wave.wave_number)
@@ -209,6 +231,6 @@ func _on_wave_enemies_cleared() -> void:
 		break_started.emit(bd)
 		if bd <= 0.0:
 			_in_break = false
-			_start_next_wave()
+			break_send_requested.emit()
 	else:
 		all_waves_complete.emit()

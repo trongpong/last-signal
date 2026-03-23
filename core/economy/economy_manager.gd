@@ -60,6 +60,10 @@ func spend_gold(amount: int) -> bool:
 func can_afford(amount: int) -> bool:
 	return gold >= amount
 
+## Returns the current gold income modifier.
+func get_gold_modifier() -> float:
+	return _gold_modifier
+
 ## Sets the gold income modifier (e.g. 0.85 for hard difficulty).
 func set_gold_modifier(modifier: float) -> void:
 	_gold_modifier = modifier
