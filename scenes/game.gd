@@ -82,6 +82,10 @@ var _signal_decode_damage_buff: float = 0.0
 
 ## Juice: life tracking for flash effects
 var _prev_lives: int = 0
+
+## Match stats for pause menu
+var _match_kills: int = 0
+var _match_gold: int = 0
 var _low_life_vignette: ColorRect = null
 
 ## Ability system
@@ -884,6 +888,8 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	if gold > 0:
 		EconomyManager.add_gold(gold)
 		_show_gold_popup(enemy.global_position, gold)
+	_match_kills += 1
+	_match_gold += gold
 	# Boss death: camera shake + white flash
 	if enemy._definition != null and enemy._definition.is_boss:
 		if _game_camera != null:
@@ -1062,6 +1068,8 @@ func _toggle_pause() -> void:
 		GameManager.toggle_pause()
 	else:
 		GameManager.toggle_pause()
+		var wave: int = _wave_manager.current_wave_index + 1 if _wave_manager else 0
+		_pause_menu.update_stats(wave, _match_gold, _match_kills)
 		_pause_menu.show_animated()
 
 
