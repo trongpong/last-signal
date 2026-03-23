@@ -343,4 +343,6 @@ func _save_to_save() -> void:
 	# Save hero unlocks
 	prog["heroes_unlocked"] = _heroes_unlocked.duplicate()
 
+	# Sync diamond balance so spend is persisted
+	_save_manager.sync_economy(_economy_manager)
 	_save_manager.save_game()

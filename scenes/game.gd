@@ -62,6 +62,9 @@ var _progression_manager: ProgressionManager
 ## Camera for panning/zooming on maps with map_scale > 1.0
 var _game_camera: GameCamera = null
 
+## Grid manager for maze mode levels
+var _grid_manager: GridManager = null
+
 ## Synergy manager for tower combo detection
 var _synergy_manager: SynergyManager = null
 var _synergy_lines: Node2D = null
@@ -109,6 +112,12 @@ const ABILITY_TARGETING: Dictionary = {
 # Lifecycle
 # ---------------------------------------------------------------------------
 
+func _exit_tree() -> void:
+	# Always restore time scale when leaving the game scene to prevent
+	# ability time-slow from persisting into menus or next level
+	Engine.time_scale = 1.0
+
+
 func _ready() -> void:
 	# Build the HUD using the proper HUD class
 	_setup_hud()
@@ -119,6 +128,8 @@ func _ready() -> void:
 
 	# Load all tower definitions
 	_load_tower_definitions()
+	if _tower_defs.is_empty():
+		push_error("game.gd: no tower definitions loaded — cannot start game")
 
 	# Create tower placer for sell value calculations
 	_tower_placer = TowerPlacer.new()
@@ -145,14 +156,11 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	EconomyManager.set_gold_modifier(gold_modifier)
 
 	# Apply starting gold — enough for 3-4 basic towers
-	var starting_gold: int = 300 + _progression_manager.get_starting_gold_bonus()
+	var starting_gold: int = 200 + _progression_manager.get_starting_gold_bonus()
 	EconomyManager.add_gold(starting_gold)
 
 	# Start level in GameManager
 	GameManager.start_level(level_id, difficulty)
-
-	# Build enemy paths for this level (must happen after _level_id is set)
-	_setup_enemy_paths()
 
 	# Create GameCamera for maps larger than 1x viewport
 	var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
@@ -163,6 +171,27 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 		add_child(_game_camera)
 		var world_size := Vector2(1280.0 * map_scale, 720.0 * map_scale)
 		_game_camera.setup(map_scale, world_size)
+
+	# Initialize GridManager for GRID_MAZE levels with scaled grid size
+	# Must happen BEFORE _setup_enemy_paths() so grid A* path is available
+	if level_def.get("map_mode", 0) == Enums.MapMode.GRID_MAZE:
+		_grid_manager = GridManager.new()
+		_grid_manager.name = "GridManager"
+		add_child(_grid_manager)
+		var grid_w: int = int(20 * map_scale)
+		var grid_h: int = int(12 * map_scale)
+		_grid_manager.initialize(Vector2i(grid_w, grid_h), Vector2(64.0, 64.0))
+		_grid_manager.set_entry_point(Vector2i(0, grid_h / 2))
+		_grid_manager.set_exit_point(Vector2i(grid_w - 1, grid_h / 2))
+
+	# Build enemy paths for this level (must happen after _level_id and _grid_manager are set)
+	_setup_enemy_paths()
+
+	# Bail out early if no paths were generated (prevents game hang)
+	if _enemy_paths.is_empty():
+		push_error("game.gd: no enemy paths for level %s — aborting" % _level_id)
+		get_tree().change_scene_to_file("res://scenes/main.tscn")
+		return
 
 	# Scale background, grid overlay, and field border to world size
 	var ws := Vector2(1280.0 * map_scale, 720.0 * map_scale)
@@ -311,12 +340,20 @@ func _setup_enemy_paths() -> void:
 	if level_paths.is_empty():
 		# Try procedural generation via PathGenerator
 		var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
-		if level_def.is_empty() or level_def.get("map_mode", 0) == Enums.MapMode.GRID_MAZE:
+		if level_def.is_empty():
 			return
-		var gen := PathGenerator.new()
-		var path_type: String = level_def.get("path_type", "zigzag")
-		var ms: float = level_def.get("map_scale", 1.0)
-		level_paths = gen.generate(path_type, ms, level_def.get("level_number", 1), _level_id.hash())
+		# GRID_MAZE levels: build path from GridManager A*
+		if level_def.get("map_mode", 0) == Enums.MapMode.GRID_MAZE and _grid_manager != null:
+			var grid_world_path: Array = _grid_manager.get_path_world()
+			if grid_world_path.size() >= 2:
+				level_paths = {"type": "grid_maze", "paths": [grid_world_path]}
+			else:
+				return
+		else:
+			var gen := PathGenerator.new()
+			var path_type: String = level_def.get("path_type", "zigzag")
+			var ms: float = level_def.get("map_scale", 1.0)
+			level_paths = gen.generate(path_type, ms, level_def.get("level_number", 1), _level_id.hash())
 
 	if level_paths.is_empty():
 		return
@@ -442,6 +479,19 @@ func _on_enemy_spawn_requested(enemy_id: String, path_index: int = 0) -> void:
 		enemy.add_to_group("enemies")
 		enemy.initialize(def, _difficulty)
 		enemy.global_position = path_follow.global_position
+
+	# Apply adaptive resistance from AdaptationManager to newly spawned enemies
+	if _adaptation_manager != null:
+		var adapt_res: Dictionary = _adaptation_manager.get_resistances()
+		if not adapt_res.is_empty():
+			var health := enemy.get_node_or_null("EnemyHealth") as EnemyHealth
+			if health != null:
+				for dtype in adapt_res.keys():
+					var existing: float = health._resistance_map.get(dtype, 0.0) as float
+					health._resistance_map[dtype] = minf(existing + (adapt_res[dtype] as float), 0.75)
+			var renderer := enemy.get_node_or_null("EnemyRenderer")
+			if renderer != null and renderer.has_method("set_resistance_map"):
+				renderer.set_resistance_map(adapt_res)
 
 	# Store spawn context for splitting elites
 	enemy._spawn_path_index = path_index
@@ -578,12 +628,21 @@ func _try_place_tower(click_pos: Vector2) -> void:
 
 	# Prevent placement too close to existing towers
 	if _is_position_occupied(click_pos):
+		_hud.show_toast(tr("TOAST_PLACEMENT_BLOCKED"))
 		return
+
+	# Grid maze mode: validate placement doesn't block the path
+	if _grid_manager != null:
+		var cell: Vector2i = _grid_manager.world_to_cell(click_pos)
+		if not _grid_manager.can_place_tower(cell):
+			_hud.show_toast(tr("TOAST_PLACEMENT_BLOCKED"))
+			return
 
 	# Check we can afford it (apply tower cost discount from global upgrades)
 	var discount: int = _progression_manager.get_tower_cost_discount()
 	var cost: int = maxi(def.cost - int(float(def.cost) * float(discount) / 100.0), 1)
 	if not EconomyManager.can_afford(cost):
+		_hud.show_toast(tr("TOAST_NOT_ENOUGH_GOLD"))
 		return
 
 	# Spend gold and place tower
@@ -611,6 +670,12 @@ func _try_place_tower(click_pos: Vector2) -> void:
 	ring.global_position = tower.global_position
 	ring.setup(def.color)
 	add_child(ring)
+
+	# Mark grid cell as occupied in maze mode
+	if _grid_manager != null:
+		var cell: Vector2i = _grid_manager.world_to_cell(click_pos)
+		_grid_manager.place_tower(cell)
+		tower.set_meta("grid_cell", cell)
 
 	# Recalculate support tower buffs and synergies
 	_recalculate_all_buffs()
@@ -1177,6 +1242,9 @@ func _on_sell_tower_requested(tower: Tower) -> void:
 		_progression_manager.get_sell_refund_bonus()
 	)
 	EconomyManager.add_gold(sell_value)
+	# Free grid cell in maze mode
+	if _grid_manager != null and tower.has_meta("grid_cell"):
+		_grid_manager.remove_tower(tower.get_meta("grid_cell") as Vector2i)
 	tower.sell()
 	_selected_tower = null
 	_hud.hide_upgrade_panel()
@@ -1244,8 +1312,10 @@ func _on_hero_summon_requested() -> void:
 			break
 	if hero_tower_type < 0:
 		return
-	# Spawn hero at center of the map
-	var spawn_pos := Vector2(640, 360)
+	# Spawn hero at center of the map (account for map scale)
+	var level_def_h: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
+	var ms_h: float = level_def_h.get("map_scale", 1.0)
+	var spawn_pos := Vector2(640.0 * ms_h, 360.0 * ms_h)
 	_hero = Hero.new()
 	_hero.name = "Hero"
 	var duration: float = 20.0 + _progression_manager.get_hero_duration_bonus()
@@ -1265,18 +1335,21 @@ func _on_hero_expired(_hero_ref: Hero) -> void:
 	_hero = null
 
 func _on_pause_settings() -> void:
+	# Use a dedicated CanvasLayer above the HUD so settings covers everything
+	var settings_layer := CanvasLayer.new()
+	settings_layer.layer = 10
+	settings_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(settings_layer)
 	var settings := SettingsMenu.new()
 	settings.process_mode = Node.PROCESS_MODE_ALWAYS
-	settings.z_index = 100
 	settings.back_pressed.connect(func() -> void:
-		settings.queue_free()
+		settings_layer.queue_free()
 		_pause_menu.show_animated()
 	)
 	_pause_menu.hide()
-	ui.add_child(settings)
+	settings_layer.add_child(settings)
 
 func _on_adaptation_changed(resistances: Dictionary) -> void:
-	var resisted_types: PackedStringArray = PackedStringArray()
 	var type_names: Dictionary = {
 		Enums.DamageType.PULSE: "Pulse",
 		Enums.DamageType.ARC: "Arc",
@@ -1286,13 +1359,28 @@ func _on_adaptation_changed(resistances: Dictionary) -> void:
 		Enums.DamageType.NANO: "Nano",
 		Enums.DamageType.HARVEST: "Harvest",
 	}
+	# Show rising/falling banners comparing to previous state
+	var rising: PackedStringArray = PackedStringArray()
+	var falling: PackedStringArray = PackedStringArray()
 	for key in resistances.keys():
-		if (resistances[key] as float) > 0.0:
-			resisted_types.append(type_names.get(key, "Unknown"))
-	if resisted_types.size() > 0:
-		var msg: String = tr("TOAST_RESISTANCE_ACTIVE").replace("{0}", ", ".join(resisted_types))
+		var cur: float = resistances[key] as float
+		var prev: float = _previous_resistances.get(key, 0.0) as float
+		var dtype_name: String = type_names.get(key, "Unknown")
+		if cur > prev:
+			rising.append(dtype_name)
+		elif cur < prev and cur >= 0.0:
+			falling.append(dtype_name)
+	if rising.size() > 0:
+		var msg: String = tr("TOAST_RESISTANCE_RISING").replace("{0}", ", ".join(rising))
 		_hud.show_toast(msg)
-		# Glitch effect on all visible enemies
+	if falling.size() > 0:
+		var msg: String = tr("TOAST_RESISTANCE_FALLING").replace("{0}", ", ".join(falling))
+		_hud.show_toast(msg)
+	_previous_resistances = resistances.duplicate()
+	# Update HUD resistance meter
+	_hud.update_resistance_meter(resistances)
+	# Glitch effect on all visible enemies
+	if rising.size() > 0:
 		for child in enemies.get_children():
 			if child is Enemy and child.is_alive():
 				_apply_glitch_effect(child as Enemy)
@@ -1302,6 +1390,11 @@ func _on_adaptation_changed(resistances: Dictionary) -> void:
 # ---------------------------------------------------------------------------
 
 func _execute_ability(ability_id: String, target: Variant) -> void:
+	# Brief time-slow "moment of impact" pause (0.1s)
+	Engine.time_scale = 0.2
+	get_tree().create_timer(0.1, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = GameManager.game_speed
+	)
 	match ability_id:
 		"orbital_strike":
 			_ability_orbital_strike(target as Vector2)
@@ -1381,6 +1474,8 @@ func _ability_scrap_salvage() -> void:
 
 ## Spawns a projectile from a tower toward a target enemy.
 func _spawn_tower_projectile(tower: Tower, target_enemy: Enemy) -> void:
+	if tower._definition == null:
+		return
 	var proj := Projectile.new()
 	proj.global_position = tower.global_position
 	proj.initialize(
@@ -1564,7 +1659,7 @@ func _on_synergy_activated(_tower_a: Tower, _tower_b: Tower, synergy_type: int, 
 
 ## Check if a wave reward should be offered after this wave.
 func _check_wave_reward(wave_number: int) -> void:
-	if _wave_reward_manager == null:
+	if _wave_reward_manager == null or _wave_manager == null:
 		return
 	if not _wave_reward_manager.should_offer_reward(wave_number):
 		return
@@ -1596,9 +1691,10 @@ func _dismiss_wave_reward_ui() -> void:
 		_wave_reward_ui.queue_free()
 		_wave_reward_ui = null
 	# Resume the break
-	_wave_manager._in_break = true
-	_wave_manager._break_timer = Constants.WAVE_BREAK_DURATION
-	_wave_manager.break_started.emit(Constants.WAVE_BREAK_DURATION)
+	if _wave_manager != null:
+		_wave_manager._in_break = true
+		_wave_manager._break_timer = Constants.WAVE_BREAK_DURATION
+		_wave_manager.break_started.emit(Constants.WAVE_BREAK_DURATION)
 
 func _apply_wave_reward_modifiers() -> void:
 	if _wave_reward_manager == null:
@@ -1608,7 +1704,7 @@ func _apply_wave_reward_modifiers() -> void:
 	var lives_add: int = int(mods.get("lives_add", 0.0))
 	if lives_add != 0:
 		GameManager.lives = maxi(GameManager.lives + lives_add, 1)
-		GameManager.lives_changed.emit(GameManager.lives, lives_add)
+		GameManager.lives_changed.emit(GameManager.lives, GameManager.lives_lost)
 	# Apply adaptation decay multiplier
 	var decay_mult: float = 1.0 + mods.get("adaptation_decay_mult", 0.0)
 	if decay_mult > 1.0 and _adaptation_manager != null:
@@ -1661,7 +1757,8 @@ func _on_decode_finished() -> void:
 func _on_wave_started_dismiss_decode(_wave_number: int, _total_waves: int) -> void:
 	if _signal_decode_minigame != null:
 		_signal_decode_minigame.skip()
-	# Reset decode damage buff at end of next wave (applied during wave, cleared after)
+	# Reset decode damage buff (only lasts one wave)
+	_signal_decode_damage_buff = 0.0
 
 # ---------------------------------------------------------------------------
 # Juice: Screen Flash + Life Effects
@@ -1680,6 +1777,8 @@ func _flash_screen(color: Color, duration: float) -> void:
 func _on_lives_changed_fx(new_lives: int, _delta: int) -> void:
 	if new_lives < _prev_lives:
 		_flash_screen(Color.RED, 0.5)
+		if _game_camera != null:
+			_game_camera.shake(4.0, 0.3)
 	if new_lives == 1 and _low_life_vignette == null:
 		_low_life_vignette = ColorRect.new()
 		_low_life_vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

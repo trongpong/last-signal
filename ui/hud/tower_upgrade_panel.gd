@@ -291,17 +291,26 @@ func _populate_upgrade_choices(tower: Tower) -> void:
 		btn.pressed.connect(func() -> void: _on_upgrade_pressed(slot))
 		top_row.add_child(btn)
 
-		# Stat preview
+		# Stat preview — multiply only the base+tier portion, then re-add bonuses
+		# Tower stat formula: (base × tier_mults + skill) × (1 + mastery)
+		# To preview, extract base×tier, apply new mult, reconstruct
 		var dmg_mult: float = branch.get("damage_mult", 1.0) as float
 		var rof_mult: float = branch.get("fire_rate_mult", 1.0) as float
 		var rng_mult: float = branch.get("range_mult", 1.0) as float
+		var mastery_f: float = 1.0 + tower._mastery_damage_bonus
+		var base_tier_dmg: float = cur_dmg / maxf(mastery_f, 0.01) - tower._skill_damage_bonus
+		var base_tier_rof: float = cur_rof - tower._skill_fire_rate_bonus
+		var base_tier_rng: float = cur_rng - tower._skill_range_bonus
 		var preview_parts: PackedStringArray = PackedStringArray()
 		if not is_equal_approx(dmg_mult, 1.0):
-			preview_parts.append("Damage: %.1f → %.1f" % [cur_dmg, cur_dmg * dmg_mult])
+			var new_dmg: float = (base_tier_dmg * dmg_mult + tower._skill_damage_bonus) * mastery_f
+			preview_parts.append("Damage: %.1f → %.1f" % [cur_dmg, new_dmg])
 		if not is_equal_approx(rof_mult, 1.0):
-			preview_parts.append("Fire Rate: %.2f → %.2f" % [cur_rof, cur_rof * rof_mult])
+			var new_rof: float = base_tier_rof * rof_mult + tower._skill_fire_rate_bonus
+			preview_parts.append("Fire Rate: %.2f → %.2f" % [cur_rof, new_rof])
 		if not is_equal_approx(rng_mult, 1.0):
-			preview_parts.append("Range: %.0f → %.0f" % [cur_rng, cur_rng * rng_mult])
+			var new_rng: float = base_tier_rng * rng_mult + tower._skill_range_bonus
+			preview_parts.append("Range: %.0f → %.0f" % [cur_rng, new_rng])
 
 		if preview_parts.size() > 0:
 			var preview_lbl := Label.new()

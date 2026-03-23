@@ -26,6 +26,8 @@ var _upgrade_panel: TowerUpgradePanel
 var _ability_bar: AbilityBar
 var _send_wave_btn: Button
 var _adaptation_warning: Label
+var _resistance_panel: VBoxContainer
+var _resistance_bars: Dictionary = {}  # DamageType -> ProgressBar
 var _root: Control
 
 # ---------------------------------------------------------------------------
@@ -166,6 +168,105 @@ func _build_hud() -> void:
 	_adaptation_warning.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_adaptation_warning.hide()
 	root.add_child(_adaptation_warning)
+
+	# Resistance meter panel (collapsible, top-right)
+	_build_resistance_panel(root)
+
+func _build_resistance_panel(root: Control) -> void:
+	_resistance_panel = VBoxContainer.new()
+	_resistance_panel.anchor_left = 1.0
+	_resistance_panel.anchor_right = 1.0
+	_resistance_panel.anchor_top = 0.0
+	_resistance_panel.anchor_bottom = 0.0
+	_resistance_panel.offset_left = -160.0
+	_resistance_panel.offset_right = -4.0
+	_resistance_panel.offset_top = 60.0
+	_resistance_panel.offset_bottom = 250.0
+	_resistance_panel.add_theme_constant_override("separation", 2)
+	_resistance_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_resistance_panel.visible = false
+	root.add_child(_resistance_panel)
+
+	# Background
+	var bg := ColorRect.new()
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.0, 0.0, 0.0, 0.6)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_resistance_panel.add_child(bg)
+	_resistance_panel.move_child(bg, 0)
+
+	# Header label
+	var header := Label.new()
+	header.text = tr("UI_RESISTANCE")
+	header.add_theme_font_size_override("font_size", 12)
+	header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_resistance_panel.add_child(header)
+
+	# Colored bars per damage type
+	var type_info: Array = [
+		[Enums.DamageType.PULSE, "Pulse", Color(0.0, 1.0, 1.0)],
+		[Enums.DamageType.ARC, "Arc", Color(0.267, 0.533, 1.0)],
+		[Enums.DamageType.CRYO, "Cryo", Color(0.7, 0.9, 1.0)],
+		[Enums.DamageType.MISSILE, "Missile", Color(1.0, 0.647, 0.0)],
+		[Enums.DamageType.BEAM, "Beam", Color(0.502, 0.0, 0.502)],
+	]
+	for info in type_info:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_resistance_panel.add_child(row)
+
+		var lbl := Label.new()
+		lbl.text = info[1] as String
+		lbl.custom_minimum_size = Vector2(42, 0)
+		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_color_override("font_color", info[2] as Color)
+		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(lbl)
+
+		var bar := ProgressBar.new()
+		bar.min_value = 0.0
+		bar.max_value = 75.0
+		bar.value = 0.0
+		bar.show_percentage = false
+		bar.custom_minimum_size = Vector2(80, 14)
+		bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var bar_style := StyleBoxFlat.new()
+		bar_style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
+		bar_style.set_corner_radius_all(2)
+		bar.add_theme_stylebox_override("background", bar_style)
+		var fill_style := StyleBoxFlat.new()
+		fill_style.bg_color = info[2] as Color
+		fill_style.set_corner_radius_all(2)
+		bar.add_theme_stylebox_override("fill", fill_style)
+		row.add_child(bar)
+
+		var pct := Label.new()
+		pct.text = "0%"
+		pct.custom_minimum_size = Vector2(30, 0)
+		pct.add_theme_font_size_override("font_size", 11)
+		pct.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		pct.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(pct)
+
+		_resistance_bars[info[0] as int] = {"bar": bar, "label": pct}
+
+
+## Update the resistance meter with current adaptation values.
+func update_resistance_meter(resistances: Dictionary) -> void:
+	var any_active: bool = false
+	for dtype in _resistance_bars.keys():
+		var res_val: float = resistances.get(dtype, 0.0) as float
+		var entry: Dictionary = _resistance_bars[dtype] as Dictionary
+		(entry["bar"] as ProgressBar).value = res_val * 100.0
+		(entry["label"] as Label).text = "%d%%" % int(res_val * 100.0)
+		if res_val > 0.0:
+			any_active = true
+	_resistance_panel.visible = any_active
+
 
 # ---------------------------------------------------------------------------
 # Manager binding

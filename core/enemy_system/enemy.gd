@@ -217,10 +217,11 @@ func apply_elite_modifier(modifier: int) -> void:
 	if _elite_modifiers.has(modifier):
 		return
 	_elite_modifiers.append(modifier)
-	# Scale HP up for elites
+	# Scale HP up for elites (preserve current HP fraction)
 	if _health != null:
+		var hp_frac: float = _health._hp / maxf(_health._max_hp, 1.0)
 		_health._max_hp *= Constants.ELITE_HP_SCALE
-		_health._hp = _health._max_hp
+		_health._hp = _health._max_hp * hp_frac
 		_health.health_changed.emit(_health._hp, _health._max_hp, _health._shield)
 	if _renderer != null:
 		_renderer.set_elite_modifiers(_elite_modifiers)

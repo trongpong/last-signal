@@ -128,10 +128,10 @@ func _start_campaign_level() -> void:
 		game_scene.start_level(_pending_level_id, _pending_difficulty)
 
 	# Wire level_completed on GameManager to record campaign progress
-	if not GameManager.level_completed.is_connected(_on_campaign_level_complete):
-		GameManager.level_completed.connect(_on_campaign_level_complete)
-	if not GameManager.level_failed.is_connected(_on_campaign_level_failed):
-		GameManager.level_failed.connect(_on_campaign_level_failed)
+	# Disconnect stale connections first to prevent signal stacking across level transitions
+	_disconnect_level_signals()
+	GameManager.level_completed.connect(_on_campaign_level_complete)
+	GameManager.level_failed.connect(_on_campaign_level_failed)
 
 
 func _start_endless() -> void:
@@ -148,8 +148,9 @@ func _start_endless() -> void:
 	# GameManager start without a campaign level_id flags endless intent
 	GameManager.start_level("endless", _pending_difficulty)
 
-	if not GameManager.level_failed.is_connected(_on_endless_failed):
-		GameManager.level_failed.connect(_on_endless_failed)
+	# Disconnect stale campaign signals, connect endless failure handler
+	_disconnect_level_signals()
+	GameManager.level_failed.connect(_on_endless_failed)
 
 
 func _show_daily_challenge() -> void:
@@ -165,6 +166,7 @@ func _start_daily_challenge() -> void:
 	AudioManager.set_music_state(Enums.GameState.BUILDING)
 	var game_scene := load("res://scenes/game.tscn").instantiate() as Node
 	_switch_screen(game_scene)
+	_disconnect_level_signals()
 	GameManager.start_level("daily_challenge", _pending_difficulty)
 
 func _show_tower_lab() -> void:
@@ -260,6 +262,16 @@ func _switch_screen(new_screen: Node) -> void:
 # ---------------------------------------------------------------------------
 # Signal handlers
 # ---------------------------------------------------------------------------
+
+## Disconnect all level-related signal handlers to prevent stacking across transitions.
+func _disconnect_level_signals() -> void:
+	if GameManager.level_completed.is_connected(_on_campaign_level_complete):
+		GameManager.level_completed.disconnect(_on_campaign_level_complete)
+	if GameManager.level_failed.is_connected(_on_campaign_level_failed):
+		GameManager.level_failed.disconnect(_on_campaign_level_failed)
+	if GameManager.level_failed.is_connected(_on_endless_failed):
+		GameManager.level_failed.disconnect(_on_endless_failed)
+
 
 func _on_campaign_level_complete(level_id: String, stars: int) -> void:
 	_campaign_manager.on_level_complete(level_id, stars, GameManager.current_difficulty)

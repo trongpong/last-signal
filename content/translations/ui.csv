@@ -121,3 +121,10 @@ SIGNAL_DECODE_PROMPT,Decode the signal!,Giải mã tín hiệu!
 SIGNAL_DECODE_SUCCESS,Signal decoded!,Giải mã thành công!
 SIGNAL_DECODE_FAIL,Decoding failed!,Giải mã thất bại!
 SYNERGY_DISCOVERED,Synergy Discovered,Phát hiện Hiệp lực
+TOAST_PLACEMENT_BLOCKED,Position occupied!,Vị trí đã bị chiếm!
+TOAST_NOT_ENOUGH_GOLD,Not enough gold!,Không đủ vàng!
+TOAST_RESISTANCE_RISING,THE CONVERGENCE ADAPTS — {0} resistance increasing,SỰ HỘI TỤ THÍCH NGHI — Kháng {0} tăng
+TOAST_RESISTANCE_FALLING,THE CONVERGENCE DESTABILIZES — {0} resistance fading,SỰ HỘI TỤ MẤT ỔN ĐỊNH — Kháng {0} giảm
+UI_SYNERGIES,Synergies,Hiệp lực
+UI_SYNERGY_UNDISCOVERED,???,???
+UI_RESISTANCE,Resistance,Kháng cự

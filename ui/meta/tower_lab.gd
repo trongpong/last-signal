@@ -59,9 +59,12 @@ var _selected_tower_type: int = -1
 var _content_title: Label
 var _tab_skills_btn: Button
 var _tab_globals_btn: Button
+var _tab_synergies_btn: Button
 var _skill_scroll: ScrollContainer
 var _global_scroll: ScrollContainer
-var _current_tab: int = 0  # 0 = skills, 1 = globals
+var _synergy_scroll: ScrollContainer
+var _synergy_panel: VBoxContainer
+var _current_tab: int = 0  # 0 = skills, 1 = globals, 2 = synergies
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -256,6 +259,13 @@ func _build_content_area(parent: HBoxContainer) -> void:
 	_tab_globals_btn.pressed.connect(func() -> void: _switch_tab(1))
 	header.add_child(_tab_globals_btn)
 
+	_tab_synergies_btn = Button.new()
+	_tab_synergies_btn.text = tr("UI_SYNERGIES")
+	_tab_synergies_btn.custom_minimum_size = Vector2(100, 36)
+	_tab_synergies_btn.add_theme_font_size_override("font_size", 14)
+	_tab_synergies_btn.pressed.connect(func() -> void: _switch_tab(2))
+	header.add_child(_tab_synergies_btn)
+
 	right_vbox.add_child(HSeparator.new())
 
 	# Skill tree scroll area
@@ -280,6 +290,18 @@ func _build_content_area(parent: HBoxContainer) -> void:
 	_global_upgrades_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_global_upgrades_panel.add_theme_constant_override("separation", 6)
 	_global_scroll.add_child(_global_upgrades_panel)
+
+	# Synergies scroll area (hidden by default)
+	_synergy_scroll = ScrollContainer.new()
+	_synergy_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_synergy_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_synergy_scroll.visible = false
+	right_vbox.add_child(_synergy_scroll)
+
+	_synergy_panel = VBoxContainer.new()
+	_synergy_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_synergy_panel.add_theme_constant_override("separation", 8)
+	_synergy_scroll.add_child(_synergy_panel)
 
 	# Skill detail panel at bottom
 	_skill_detail_panel = PanelContainer.new()
@@ -343,15 +365,20 @@ func _switch_tab(tab: int) -> void:
 	_current_tab = tab
 	_skill_scroll.visible = (tab == 0)
 	_global_scroll.visible = (tab == 1)
+	_synergy_scroll.visible = (tab == 2)
 	_skill_detail_panel.visible = (tab == 0)
 
 	# Style tab buttons
+	_style_tab_inactive(_tab_skills_btn)
+	_style_tab_inactive(_tab_globals_btn)
+	_style_tab_inactive(_tab_synergies_btn)
 	if tab == 0:
 		_style_tab_active(_tab_skills_btn)
-		_style_tab_inactive(_tab_globals_btn)
-	else:
-		_style_tab_inactive(_tab_skills_btn)
+	elif tab == 1:
 		_style_tab_active(_tab_globals_btn)
+	elif tab == 2:
+		_style_tab_active(_tab_synergies_btn)
+		_populate_synergies()
 
 
 func _style_tab_active(btn: Button) -> void:
@@ -815,3 +842,73 @@ func _on_global_upgrade(upgrade_id: String) -> void:
 func _on_diamonds_changed(new_diamonds: int, _delta: int) -> void:
 	if _diamonds_label != null:
 		_diamonds_label.text = "◆ " + str(new_diamonds)
+
+
+# ---------------------------------------------------------------------------
+# Synergies tab
+# ---------------------------------------------------------------------------
+
+const _SYNERGY_DEFS: Array = [
+	{"type": Enums.SynergyType.SHATTER, "name": "Shatter", "pair": "Cryo + Arc", "effect": "Frozen/slowed enemies take 2x chain damage"},
+	{"type": Enums.SynergyType.BARRAGE, "name": "Barrage", "pair": "Pulse + Missile", "effect": "Both gain +15% fire rate"},
+	{"type": Enums.SynergyType.AMPLIFY, "name": "Amplify", "pair": "Nano Hive + Beam", "effect": "Beam pierces through first target"},
+	{"type": Enums.SynergyType.FROSTBITE, "name": "Frostbite", "pair": "Cryo + Missile", "effect": "Slowed enemies take +25% splash damage"},
+	{"type": Enums.SynergyType.EFFICIENCY, "name": "Efficiency", "pair": "Harvester + Nano", "effect": "Harvester income +30%"},
+	{"type": Enums.SynergyType.COLD_SNAP, "name": "Cold Snap", "pair": "Pulse + Cryo", "effect": "Pulse hits on slowed enemies extend slow +0.5s"},
+	{"type": Enums.SynergyType.CONDUIT, "name": "Conduit", "pair": "Arc + Beam", "effect": "Beam can chain to 1 additional target"},
+	{"type": Enums.SynergyType.FOCUS_FIRE, "name": "Focus Fire", "pair": "Missile + Beam", "effect": "Same target takes +20% damage for 2s"},
+]
+
+func _populate_synergies() -> void:
+	if _synergy_panel == null:
+		return
+	for child in _synergy_panel.get_children():
+		child.queue_free()
+
+	var discovered: Array = SaveManager.data.get("progression", {}).get("synergies_discovered", [])
+
+	for syn in _SYNERGY_DEFS:
+		var syn_name: String = syn["name"] as String
+		var is_found: bool = discovered.has(syn_name.to_lower()) or discovered.has(syn_name)
+
+		var card := PanelContainer.new()
+		var card_style := StyleBoxFlat.new()
+		card_style.bg_color = Color(0.06, 0.07, 0.12, 0.9) if is_found else Color(0.04, 0.04, 0.06, 0.7)
+		card_style.border_color = Color(0.9, 0.8, 0.2, 0.5) if is_found else Color(0.3, 0.3, 0.3, 0.3)
+		card_style.set_border_width_all(1)
+		card_style.set_corner_radius_all(4)
+		card_style.set_content_margin_all(10)
+		card.add_theme_stylebox_override("panel", card_style)
+		_synergy_panel.add_child(card)
+
+		var vbox := VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 4)
+		card.add_child(vbox)
+
+		var title := Label.new()
+		title.add_theme_font_size_override("font_size", 16)
+		if is_found:
+			title.text = syn_name
+			title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+		else:
+			title.text = tr("UI_SYNERGY_UNDISCOVERED")
+			title.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+		vbox.add_child(title)
+
+		var pair_lbl := Label.new()
+		pair_lbl.add_theme_font_size_override("font_size", 13)
+		if is_found:
+			pair_lbl.text = syn["pair"] as String
+			pair_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		else:
+			pair_lbl.text = "??? + ???"
+			pair_lbl.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3))
+		vbox.add_child(pair_lbl)
+
+		if is_found:
+			var effect_lbl := Label.new()
+			effect_lbl.text = syn["effect"] as String
+			effect_lbl.add_theme_font_size_override("font_size", 12)
+			effect_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.5))
+			effect_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			vbox.add_child(effect_lbl)

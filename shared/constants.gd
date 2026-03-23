@@ -40,7 +40,7 @@ var DIFFICULTY_LIVES: Dictionary = {
 ## before resistance starts increasing)
 var DIFFICULTY_ADAPTATION_THRESHOLD: Dictionary = {
 	Enums.Difficulty.NORMAL: 0.4,
-	Enums.Difficulty.HARD: 0.35,
+	Enums.Difficulty.HARD: 0.4,
 	Enums.Difficulty.NIGHTMARE: 0.25
 }
 
@@ -120,7 +120,7 @@ const SPEED_OPTIONS: Array = [1.0, 2.0, 3.0]
 const GLOBAL_UPGRADE_COSTS: Array = [50, 75, 110, 160, 230, 330, 470, 680, 980, 1400]
 
 ## Diamond costs for each skill node tier (10 tiers)
-const SKILL_NODE_COSTS: Array = [80, 100, 120, 200, 250, 350, 450, 600, 750, 1200]
+const SKILL_NODE_COSTS: Array = [80, 120, 180, 260, 380, 540, 760, 920, 1080, 1200]
 
 # ---------------------------------------------------------------------------
 # Abilities
@@ -130,17 +130,17 @@ const SKILL_NODE_COSTS: Array = [80, 100, 120, 200, 250, 350, 450, 600, 750, 120
 const ABILITY_UNLOCK_COST: int = 200
 
 ## Diamond costs to upgrade an ability through 5 tiers
-const ABILITY_UPGRADE_COSTS: Array = [100, 150, 250, 400, 600]
+const ABILITY_UPGRADE_COSTS: Array = [100, 200, 300, 450, 600]
 
 # ---------------------------------------------------------------------------
 # Monetization
 # ---------------------------------------------------------------------------
 
 ## Maximum ad views rewarded per day
-const MAX_ADS_PER_DAY: int = 10
+const MAX_ADS_PER_DAY: int = 5
 
 ## Diamonds earned per ad view
-const DIAMONDS_PER_AD: int = 100
+const DIAMONDS_PER_AD: int = 10
 
 # ---------------------------------------------------------------------------
 # Hero Abilities

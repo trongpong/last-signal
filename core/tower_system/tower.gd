@@ -374,5 +374,5 @@ func _recalculate_stats() -> void:
 	current_damage = (upgraded.get("damage", _definition.base_damage) as float) + _skill_damage_bonus
 	current_damage *= (1.0 + _mastery_damage_bonus)
 	current_fire_rate = (upgraded.get("fire_rate", _definition.base_fire_rate) as float) + _skill_fire_rate_bonus
-	current_fire_rate = minf(current_fire_rate, MAX_FIRE_RATE)
+	current_fire_rate = clampf(current_fire_rate, 0.1, MAX_FIRE_RATE)
 	current_range = (upgraded.get("range", _definition.base_range) as float) + _skill_range_bonus

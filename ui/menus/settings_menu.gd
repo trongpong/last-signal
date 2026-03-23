@@ -54,15 +54,48 @@ func _build_layout() -> void:
 	# Dark background
 	var bg := ColorRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.03, 0.06, 0.9)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.color = Color(0.02, 0.03, 0.06, 1.0)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
 
+	# Fixed header with title and back button
+	var header := HBoxContainer.new()
+	header.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	header.anchor_bottom = 0.0
+	header.offset_top = 8.0
+	header.offset_bottom = 52.0
+	header.offset_left = 16.0
+	header.offset_right = -16.0
+	header.add_theme_constant_override("separation", 12)
+	add_child(header)
+
+	var back_btn := Button.new()
+	back_btn.text = tr("UI_BACK")
+	back_btn.focus_mode = Control.FOCUS_ALL
+	back_btn.custom_minimum_size = Vector2(120, 40)
+	back_btn.add_theme_font_size_override("font_size", 18)
+	back_btn.pressed.connect(_on_back_pressed)
+	header.add_child(back_btn)
+
+	var title := Label.new()
+	title.text = tr("UI_SETTINGS")
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	header.add_child(title)
+
+	# Spacer to balance the back button
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(120, 0)
+	header.add_child(spacer)
+
+	# Scrollable content area below the header
 	var scroll := ScrollContainer.new()
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.offset_top = 56.0
 	add_child(scroll)
 
-	# Margin wrapper so content isn't flush on small screens
 	var scroll_margin := MarginContainer.new()
 	scroll_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -79,14 +112,6 @@ func _build_layout() -> void:
 	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
 	scroll_margin.add_child(vbox)
-
-	# Settings title
-	var title := Label.new()
-	title.text = "Settings"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
-	vbox.add_child(title)
 
 	# --- Audio section ---
 	var audio_header := Label.new()
@@ -216,20 +241,11 @@ func _build_layout() -> void:
 	_language_option.item_selected.connect(_on_language_selected)
 	vbox.add_child(_language_option)
 
-	# Back button
-	var back_btn := Button.new()
-	back_btn.text = tr("UI_BACK")
-	back_btn.focus_mode = Control.FOCUS_ALL
-	back_btn.custom_minimum_size = Vector2(200, 56)
-	back_btn.add_theme_font_size_override("font_size", 20)
-	back_btn.pressed.connect(_on_back_pressed)
-	vbox.add_child(back_btn)
-
 	# Focus neighbors for arrow key navigation
 	var controls: Array[Control] = [
-		_music_slider, _sfx_slider, _language_option,
+		_music_slider, _sfx_slider,
 		_damage_numbers_check, _range_on_hover_check,
-		_fullscreen_check, _colorblind_check, back_btn
+		_fullscreen_check, _colorblind_check, _language_option
 	]
 	for i in controls.size():
 		var prev_path := controls[(i - 1 + controls.size()) % controls.size()].get_path()
