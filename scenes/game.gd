@@ -95,6 +95,9 @@ var _low_life_vignette: ColorRect = null
 var _ability_manager: AbilityManager = null
 var _pending_ability_slot: int = -1
 
+## Daily challenge constraints (empty = not a daily challenge)
+var _challenge_constraints: Dictionary = {}
+
 ## Active hero on the field (only one at a time)
 var _hero: Hero = null
 
@@ -155,6 +158,17 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	var gold_modifier: float = c.DIFFICULTY_GOLD_MULT.get(difficulty, 1.0)
 	EconomyManager.set_gold_modifier(gold_modifier)
 
+	# Apply daily challenge constraints (gold modifier, starting lives, etc.)
+	if not _challenge_constraints.is_empty():
+		var cc := _challenge_constraints
+		var gold_mult_c: float = cc.get("gold_multiplier", 1.0) as float
+		if gold_mult_c != 1.0:
+			gold_modifier *= gold_mult_c
+			EconomyManager.set_gold_modifier(gold_modifier)
+		var cc_lives: int = cc.get("starting_lives", -1) as int
+		if cc_lives > 0:
+			c.DIFFICULTY_LIVES[difficulty] = cc_lives
+
 	# Apply starting gold — enough for 3-4 basic towers
 	var starting_gold: int = 200 + _progression_manager.get_starting_gold_bonus()
 	EconomyManager.add_gold(starting_gold)
@@ -164,12 +178,16 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 
 	# Create GameCamera for maps larger than 1x viewport
 	var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
+	# Daily challenge and endless don't have level registry entries — use defaults
+	if level_def.is_empty():
+		level_def = {"map_scale": 1.0, "map_mode": Enums.MapMode.FIXED_PATH, "path_type": "zigzag", "level_number": 1}
 	var map_scale: float = level_def.get("map_scale", 1.0)
 	if map_scale > 1.0:
 		_game_camera = GameCamera.new()
 		_game_camera.name = "GameCamera"
 		add_child(_game_camera)
-		var world_size := Vector2(1280.0 * map_scale, 720.0 * map_scale)
+		var cam_vp := get_viewport_rect().size
+		var world_size := Vector2(maxf(1280.0 * map_scale, cam_vp.x), maxf(720.0 * map_scale, cam_vp.y))
 		_game_camera.setup(map_scale, world_size)
 
 	# Initialize GridManager for GRID_MAZE levels with scaled grid size
@@ -184,6 +202,10 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 		_grid_manager.set_entry_point(Vector2i(0, grid_h / 2))
 		_grid_manager.set_exit_point(Vector2i(grid_w - 1, grid_h / 2))
 
+	# Seed RNG for daily challenge deterministic paths
+	if not _challenge_constraints.is_empty():
+		seed(_challenge_constraints.get("seed", 0))
+
 	# Build enemy paths for this level (must happen after _level_id and _grid_manager are set)
 	_setup_enemy_paths()
 
@@ -193,8 +215,9 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 		get_tree().change_scene_to_file("res://scenes/main.tscn")
 		return
 
-	# Scale background, grid overlay, and field border to world size
-	var ws := Vector2(1280.0 * map_scale, 720.0 * map_scale)
+	# Scale field border and grid overlay to world size (use actual viewport for expand mode)
+	var vp_rect := get_viewport_rect().size
+	var ws := Vector2(maxf(1280.0 * map_scale, vp_rect.x), maxf(720.0 * map_scale, vp_rect.y))
 	for child in map.get_children():
 		if child is _GridOverlay:
 			child.world_size = ws
@@ -221,6 +244,12 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	if waves.is_empty():
 		var generator := WaveGenerator.new()
 		var wave_count: int = _get_level_wave_count(level_id)
+		# Daily challenge uses its own wave count, seed, and boss interval
+		if not _challenge_constraints.is_empty():
+			wave_count = _challenge_constraints.get("wave_count", 20) as int
+			seed(_challenge_constraints.get("seed", 0))
+			if _challenge_constraints.get("type", -1) == Enums.DailyChallengeType.BOSS_RUSH:
+				generator.boss_wave_interval = 3
 		for w in range(1, wave_count + 1):
 			waves.append(generator.generate_wave(w, difficulty))
 
@@ -230,6 +259,11 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	if waves.size() > 0:
 		_wave_manager.load_waves(waves)
 	_wave_manager.enemy_spawn_requested.connect(_on_enemy_spawn_requested)
+	# Apply daily challenge wave break override
+	if not _challenge_constraints.is_empty():
+		var cc_break: float = _challenge_constraints.get("wave_break_duration", -1.0) as float
+		if cc_break >= 0.0:
+			_wave_manager.break_duration_override = cc_break
 
 	# Setup adaptation manager
 	_adaptation_manager = AdaptationManager.new()
@@ -270,6 +304,9 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	_game_loop = GameLoop.new()
 	add_child(_game_loop)
 	_game_loop.setup(GameManager, EconomyManager, _wave_manager, _adaptation_manager)
+	# Apply daily challenge diamond reward multiplier
+	if not _challenge_constraints.is_empty():
+		_game_loop.diamond_reward_mult = _challenge_constraints.get("diamond_reward_mult", 1.0) as float
 
 	# Bind HUD to manager signals (must happen after wave manager is created)
 	_hud.bind_signals(GameManager, EconomyManager, _wave_manager)
@@ -286,12 +323,29 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	_prev_lives = GameManager.lives
 	GameManager.lives_changed.connect(_on_lives_changed_fx)
 
-	# Populate the tower bar with all loaded definitions
+	# Populate the tower bar — only show towers the player has unlocked
 	var all_defs: Array = _tower_defs.values()
-	var unlocked_ids: Array = []
-	for def in all_defs:
-		unlocked_ids.append(def.id)
-	_hud.populate_tower_bar(all_defs, unlocked_ids)
+	var unlocked_ids: Array = SaveManager.data.get("progression", {}).get("towers_unlocked", [
+		"PULSE_CANNON", "ARC_EMITTER", "CRYO_ARRAY", "MISSILE_POD"
+	]).duplicate()
+	# Convert enum names to definition ids (lowercase with underscore)
+	var unlocked_def_ids: Array = []
+	for uid in unlocked_ids:
+		unlocked_def_ids.append((uid as String).to_lower())
+	# Daily challenge: restrict towers if constraints specify allowed_towers
+	if not _challenge_constraints.is_empty():
+		var allowed: Array = _challenge_constraints.get("allowed_towers", [])
+		if allowed.size() > 0:
+			# allowed contains tower type ints; convert to def ids
+			var restricted: Array = []
+			for def in all_defs:
+				if allowed.has(def.tower_type):
+					restricted.append(def.id)
+			unlocked_def_ids = restricted
+		elif _challenge_constraints.get("tower_cost_mult", 1.0) == 0.0:
+			# Puzzle mode: no building allowed
+			unlocked_def_ids = []
+	_hud.populate_tower_bar(all_defs, unlocked_def_ids)
 
 	# Update tower bar prices with global discount
 	var discount: int = _progression_manager.get_tower_cost_discount()
@@ -327,6 +381,48 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	# Wire income collection to wave_complete
 	_wave_manager.wave_complete.connect(_collect_harvester_income)
 
+	# PUZZLE challenge: pre-place towers along the path
+	if not _challenge_constraints.is_empty() and _challenge_constraints.get("type", -1) == Enums.DailyChallengeType.PUZZLE:
+		_preplace_puzzle_towers()
+
+# ---------------------------------------------------------------------------
+# Puzzle tower pre-placement
+# ---------------------------------------------------------------------------
+
+func _preplace_puzzle_towers() -> void:
+	if _enemy_paths.is_empty():
+		return
+	var path: Path2D = _enemy_paths[0]
+	if path.curve == null or path.curve.point_count < 2:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _challenge_constraints.get("seed", 0) as int
+	var tower_types: Array = [
+		Enums.TowerType.PULSE_CANNON, Enums.TowerType.ARC_EMITTER,
+		Enums.TowerType.CRYO_ARRAY, Enums.TowerType.MISSILE_POD,
+	]
+	var path_length: float = path.curve.get_baked_length()
+	var tower_count: int = rng.randi_range(8, 12)
+	for i in range(tower_count):
+		var progress: float = path_length * (float(i + 1) / float(tower_count + 1))
+		var path_pos: Vector2 = path.to_global(path.curve.sample_baked(progress))
+		# Offset tower away from path so it doesn't block enemies
+		var offset_dir: float = -1.0 if i % 2 == 0 else 1.0
+		var offset_dist: float = rng.randf_range(60.0, 120.0)
+		var tangent: Vector2 = path.curve.sample_baked(minf(progress + 5.0, path_length)) - path.curve.sample_baked(progress)
+		var perp := Vector2(-tangent.y, tangent.x).normalized()
+		var tower_pos: Vector2 = path_pos + perp * offset_dir * offset_dist
+		var tt: int = tower_types[rng.randi() % tower_types.size()]
+		var def: TowerDefinition = _tower_defs.get(tt) as TowerDefinition
+		if def == null:
+			continue
+		var tower := Tower.new()
+		tower.global_position = tower_pos
+		towers.add_child(tower)
+		tower.initialize(def)
+		var bonuses: Dictionary = _progression_manager.get_skill_bonuses(def.tower_type)
+		tower.apply_skill_bonuses(bonuses)
+
 # ---------------------------------------------------------------------------
 # Enemy path setup
 # ---------------------------------------------------------------------------
@@ -340,8 +436,16 @@ func _setup_enemy_paths() -> void:
 	if level_paths.is_empty():
 		# Try procedural generation via PathGenerator
 		var level_def: Dictionary = _level_registry.get_level(_level_id.replace("level_", ""))
+		# Daily challenge and endless use default path settings
 		if level_def.is_empty():
-			return
+			if _level_id in ["daily_challenge", "endless"]:
+				var pt: String = "zigzag"
+				# CHAOS challenge: use branching (2 paths)
+				if not _challenge_constraints.is_empty() and _challenge_constraints.get("type", -1) == Enums.DailyChallengeType.CHAOS:
+					pt = "branching"
+				level_def = {"map_scale": 1.0, "map_mode": Enums.MapMode.FIXED_PATH, "path_type": pt, "level_number": 1}
+			else:
+				return
 		# GRID_MAZE levels: build path from GridManager A*
 		if level_def.get("map_mode", 0) == Enums.MapMode.GRID_MAZE and _grid_manager != null:
 			var grid_world_path: Array = _grid_manager.get_path_world()
@@ -357,6 +461,19 @@ func _setup_enemy_paths() -> void:
 
 	if level_paths.is_empty():
 		return
+
+	# Scale hand-crafted paths from 1280-based coordinates to actual viewport width
+	var vp_w: float = get_viewport_rect().size.x
+	var vp_h: float = get_viewport_rect().size.y
+	if vp_w > 1280.0:
+		var scale_x: float = vp_w / 1280.0
+		for path_arr in level_paths["paths"]:
+			for pi in range(path_arr.size()):
+				var pt: Vector2 = path_arr[pi] as Vector2
+				path_arr[pi] = Vector2(pt.x * scale_x, pt.y)
+		if level_paths.has("exit"):
+			var ex: Vector2 = level_paths["exit"] as Vector2
+			level_paths["exit"] = Vector2(ex.x * scale_x, ex.y)
 
 	var path_colors: Array = [
 		Color(0.2, 0.5, 0.9, 0.6),
@@ -502,6 +619,12 @@ func _on_enemy_spawn_requested(enemy_id: String, path_index: int = 0) -> void:
 	if speed_mod != 0.0:
 		enemy._effective_speed *= (1.0 + speed_mod)
 
+	# Apply daily challenge enemy speed constraint
+	if not _challenge_constraints.is_empty():
+		var cc_speed: float = _challenge_constraints.get("enemy_speed_mult", 1.0) as float
+		if cc_speed != 1.0:
+			enemy._effective_speed *= cc_speed
+
 	# Apply elite modifiers in endless mode
 	_maybe_apply_elite(enemy)
 
@@ -535,13 +658,16 @@ func _input(event: InputEvent) -> void:
 	if mb.button_index != MOUSE_BUTTON_LEFT:
 		return
 
-	# Ignore clicks in the HUD bar areas (top 56px and bottom 72px)
+	# Ignore clicks in the HUD bar areas (account for safe area insets)
 	var vp_size := get_viewport_rect().size
-	if mb.position.y < 56.0 or mb.position.y > vp_size.y - 72.0:
+	var sa := DisplayServer.get_display_safe_area()
+	var top_h: float = maxf(sa.position.y, 8.0) + 56.0
+	var bot_h: float = maxf(DisplayServer.screen_get_size().y - sa.end.y, 4.0) + 72.0
+	if mb.position.y < top_h or mb.position.y > vp_size.y - bot_h:
 		return
 
 	# Ignore clicks on the send wave button area (bottom-right 140x56 above tower bar)
-	if mb.position.x > vp_size.x - 140.0 and mb.position.y > vp_size.y - 72.0 - 56.0:
+	if mb.position.x > vp_size.x - 140.0 and mb.position.y > vp_size.y - bot_h - 56.0:
 		return
 
 	# Ignore clicks on any visible HUD overlay (upgrade panel, ability bar, etc.)
@@ -638,9 +764,12 @@ func _try_place_tower(click_pos: Vector2) -> void:
 			_hud.show_toast(tr("TOAST_PLACEMENT_BLOCKED"))
 			return
 
-	# Check we can afford it (apply tower cost discount from global upgrades)
+	# Check we can afford it (apply tower cost discount from global upgrades + challenge constraint)
 	var discount: int = _progression_manager.get_tower_cost_discount()
 	var cost: int = maxi(def.cost - int(float(def.cost) * float(discount) / 100.0), 1)
+	if not _challenge_constraints.is_empty():
+		var cost_mult: float = _challenge_constraints.get("tower_cost_mult", 1.0) as float
+		cost = maxi(int(float(cost) * cost_mult), 1)
 	if not EconomyManager.can_afford(cost):
 		_hud.show_toast(tr("TOAST_NOT_ENOUGH_GOLD"))
 		return
@@ -1021,10 +1150,12 @@ func _setup_hud() -> void:
 	_hud = HUD.new()
 	add_child(_hud)
 
-	# Dark background for sci-fi feel
+	# Dark background for sci-fi feel — fill entire viewport including expanded area
 	var bg := ColorRect.new()
 	bg.color = Color(0.02, 0.03, 0.06, 1.0)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var vp_size := get_viewport_rect().size
+	bg.position = Vector2(-vp_size.x, -vp_size.y)
+	bg.size = vp_size * 3.0  # oversized to cover any pan/zoom
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.z_index = -10
 	map.add_child(bg)

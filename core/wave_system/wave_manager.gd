@@ -66,6 +66,9 @@ var _in_break: bool = false
 ## Remaining break time in seconds.
 var _break_timer: float = 0.0
 
+## Override for wave break duration (-1 = use constant default).
+var break_duration_override: float = -1.0
+
 # ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
@@ -200,8 +203,12 @@ func _on_wave_enemies_cleared() -> void:
 	wave_complete.emit(finished_wave.wave_number)
 
 	if has_more_waves():
+		var bd: float = break_duration_override if break_duration_override >= 0.0 else Constants.WAVE_BREAK_DURATION
 		_in_break = true
-		_break_timer = Constants.WAVE_BREAK_DURATION
-		break_started.emit(Constants.WAVE_BREAK_DURATION)
+		_break_timer = bd
+		break_started.emit(bd)
+		if bd <= 0.0:
+			_in_break = false
+			_start_next_wave()
 	else:
 		all_waves_complete.emit()

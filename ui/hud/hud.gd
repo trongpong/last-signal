@@ -38,6 +38,19 @@ func _ready() -> void:
 	_build_hud()
 
 
+func _get_safe_margin() -> float:
+	## Returns horizontal safe area margin for rounded screen corners.
+	## Falls back to a sensible default (16px) on devices without safe area info.
+	var screen_size := DisplayServer.screen_get_size()
+	var safe_area := DisplayServer.get_display_safe_area()
+	var left_inset: float = safe_area.position.x
+	var top_inset: float = safe_area.position.y
+	var right_inset: float = maxf(screen_size.x - safe_area.end.x, 0.0)
+	var margin: float = maxf(maxf(left_inset, right_inset), maxf(top_inset, 0.0))
+	# Use at least 16px on any device for comfort, cap at 48px
+	return clampf(margin, 16.0, 48.0)
+
+
 func _build_hud() -> void:
 	# Root control that fills the viewport
 	_root = Control.new()
@@ -46,6 +59,14 @@ func _build_hud() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
+	var safe: float = _get_safe_margin()
+
+	# Detect top safe area inset (status bar, notch, rounded corners)
+	var screen_size := DisplayServer.screen_get_size()
+	var safe_area := DisplayServer.get_display_safe_area()
+	var top_inset: float = maxf(safe_area.position.y, 8.0)
+	var bot_inset: float = maxf(screen_size.y - safe_area.end.y, 4.0)
+
 	# Top bar background (semi-transparent dark)
 	var top_bar_bg := ColorRect.new()
 	top_bar_bg.color = Color(0.0, 0.0, 0.0, 0.7)
@@ -53,19 +74,19 @@ func _build_hud() -> void:
 	top_bar_bg.anchor_top = 0.0
 	top_bar_bg.anchor_bottom = 0.0
 	top_bar_bg.offset_top = 0.0
-	top_bar_bg.offset_bottom = 56.0
+	top_bar_bg.offset_bottom = top_inset + 56.0
 	top_bar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(top_bar_bg)
 
-	# Top bar (anchored to top, 56px height, with horizontal padding)
+	# Top bar (pushed down by top inset for status bar / rounded corners)
 	_top_bar = TopBar.new()
 	_top_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_top_bar.anchor_top = 0.0
 	_top_bar.anchor_bottom = 0.0
-	_top_bar.offset_top = 0.0
-	_top_bar.offset_bottom = 56.0
-	_top_bar.offset_left = 4.0
-	_top_bar.offset_right = -4.0
+	_top_bar.offset_top = top_inset
+	_top_bar.offset_bottom = top_inset + 56.0
+	_top_bar.offset_left = safe
+	_top_bar.offset_right = -safe
 	root.add_child(_top_bar)
 	_top_bar.speed_changed.connect(_on_speed_changed)
 	_top_bar.toast_requested.connect(show_toast)
@@ -77,8 +98,8 @@ func _build_hud() -> void:
 	top_bar_border.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	top_bar_border.anchor_top = 0.0
 	top_bar_border.anchor_bottom = 0.0
-	top_bar_border.offset_top = 56.0
-	top_bar_border.offset_bottom = 57.0
+	top_bar_border.offset_top = top_inset + 56.0
+	top_bar_border.offset_bottom = top_inset + 57.0
 	top_bar_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(top_bar_border)
 
@@ -88,31 +109,35 @@ func _build_hud() -> void:
 	tower_bar_border.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	tower_bar_border.anchor_top = 1.0
 	tower_bar_border.anchor_bottom = 1.0
-	tower_bar_border.offset_top = -73.0
-	tower_bar_border.offset_bottom = -72.0
+	tower_bar_border.offset_top = -(73.0 + bot_inset)
+	tower_bar_border.offset_bottom = -(72.0 + bot_inset)
 	tower_bar_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(tower_bar_border)
 
-	# Tower bar background (semi-transparent dark)
+	# Tower bar background (semi-transparent dark, extended to screen bottom)
 	var tower_bar_bg := ColorRect.new()
 	tower_bar_bg.color = Color(0.0, 0.0, 0.0, 0.7)
 	tower_bar_bg.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	tower_bar_bg.anchor_top = 1.0
 	tower_bar_bg.anchor_bottom = 1.0
-	tower_bar_bg.offset_top = -72.0
+	tower_bar_bg.offset_top = -(72.0 + bot_inset)
 	tower_bar_bg.offset_bottom = 0.0
 	tower_bar_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(tower_bar_bg)
 
-	# Tower bar (anchored to bottom, 72px height)
+	# Tower bar (pushed up by bottom inset for navigation bar / rounded corners)
 	_tower_bar = TowerBar.new()
 	_tower_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_tower_bar.anchor_top = 1.0
 	_tower_bar.anchor_bottom = 1.0
-	_tower_bar.offset_top = -72.0
-	_tower_bar.offset_bottom = 0.0
+	_tower_bar.offset_top = -(72.0 + bot_inset)
+	_tower_bar.offset_bottom = -bot_inset
+	_tower_bar.offset_left = safe
+	_tower_bar.offset_right = -safe
 	root.add_child(_tower_bar)
 	_tower_bar.tower_build_requested.connect(_on_build_requested)
+
+	var tower_bar_total: float = 72.0 + bot_inset
 
 	# Tower upgrade panel (slides up from bottom, centered 70% width, hidden by default)
 	_upgrade_panel = TowerUpgradePanel.new()
@@ -120,8 +145,8 @@ func _build_hud() -> void:
 	_upgrade_panel.anchor_bottom = 1.0
 	_upgrade_panel.anchor_left = 0.15
 	_upgrade_panel.anchor_right = 0.85
-	_upgrade_panel.offset_top = -300.0
-	_upgrade_panel.offset_bottom = -72.0
+	_upgrade_panel.offset_top = -(300.0 + bot_inset)
+	_upgrade_panel.offset_bottom = -tower_bar_total
 	root.add_child(_upgrade_panel)
 	_upgrade_panel.upgrade_requested.connect(_on_upgrade_requested)
 	_upgrade_panel.sell_requested.connect(_on_sell_requested)
@@ -133,12 +158,10 @@ func _build_hud() -> void:
 	_ability_bar.anchor_right = 0.0
 	_ability_bar.anchor_top = 1.0
 	_ability_bar.anchor_bottom = 1.0
-	_ability_bar.offset_left = 0.0
-	_ability_bar.offset_right = 80.0
-	_ability_bar.offset_bottom = -72.0
-	# offset_top is set dynamically after ability buttons are created;
-	# use a default that accommodates ~3 ability slots (3 * 64 + margins)
-	_ability_bar.offset_top = -(72.0 + 210.0)
+	_ability_bar.offset_left = safe
+	_ability_bar.offset_right = safe + 80.0
+	_ability_bar.offset_bottom = -tower_bar_total
+	_ability_bar.offset_top = -(tower_bar_total + 210.0)
 	root.add_child(_ability_bar)
 	_ability_bar.ability_activated.connect(_on_ability_used)
 	_ability_bar.hero_summoned.connect(_on_hero_summon)
@@ -153,10 +176,10 @@ func _build_hud() -> void:
 	_send_wave_btn.anchor_right = 1.0
 	_send_wave_btn.anchor_top = 1.0
 	_send_wave_btn.anchor_left = 1.0
-	_send_wave_btn.offset_bottom = -72.0
-	_send_wave_btn.offset_top = -72.0 - 56.0
-	_send_wave_btn.offset_right = 0.0
-	_send_wave_btn.offset_left = -140.0
+	_send_wave_btn.offset_bottom = -tower_bar_total
+	_send_wave_btn.offset_top = -tower_bar_total - 56.0
+	_send_wave_btn.offset_right = -safe
+	_send_wave_btn.offset_left = -140.0 - safe
 	_send_wave_btn.pressed.connect(_on_send_wave_pressed)
 	root.add_child(_send_wave_btn)
 
@@ -170,17 +193,17 @@ func _build_hud() -> void:
 	root.add_child(_adaptation_warning)
 
 	# Resistance meter panel (collapsible, top-right)
-	_build_resistance_panel(root)
+	_build_resistance_panel(root, safe, top_inset)
 
-func _build_resistance_panel(root: Control) -> void:
+func _build_resistance_panel(root: Control, safe: float = 16.0, top_inset: float = 8.0) -> void:
 	_resistance_panel = VBoxContainer.new()
 	_resistance_panel.anchor_left = 1.0
 	_resistance_panel.anchor_right = 1.0
 	_resistance_panel.anchor_top = 0.0
 	_resistance_panel.anchor_bottom = 0.0
-	_resistance_panel.offset_left = -160.0
-	_resistance_panel.offset_right = -4.0
-	_resistance_panel.offset_top = 60.0
+	_resistance_panel.offset_left = -160.0 - safe
+	_resistance_panel.offset_right = -safe
+	_resistance_panel.offset_top = top_inset + 60.0
 	_resistance_panel.offset_bottom = 250.0
 	_resistance_panel.add_theme_constant_override("separation", 2)
 	_resistance_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE

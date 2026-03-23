@@ -27,24 +27,24 @@ class_name LevelData
 ## Per-level enemy path waypoints keyed by normalised level id (e.g. "1_1").
 const _PATH_POINTS: Dictionary = {
 	"1_1": [
-		Vector2(-33, 360), Vector2(200, 200), Vector2(467, 400),
-		Vector2(734, 133), Vector2(1000, 334), Vector2(1314, 360),
+		Vector2(-33, 360), Vector2(200, 120), Vector2(467, 550),
+		Vector2(734, 100), Vector2(1000, 520), Vector2(1314, 360),
 	],
 	"1_2": [
-		Vector2(-33, 200), Vector2(267, 334), Vector2(534, 133),
-		Vector2(800, 400), Vector2(1067, 200), Vector2(1314, 267),
+		Vector2(-33, 150), Vector2(267, 520), Vector2(534, 100),
+		Vector2(800, 580), Vector2(1067, 130), Vector2(1314, 360),
 	],
 	"1_3": [
-		Vector2(-33, 467), Vector2(200, 267), Vector2(400, 467),
-		Vector2(600, 200), Vector2(800, 400), Vector2(1000, 200),
-		Vector2(1314, 334),
+		Vector2(-33, 550), Vector2(200, 120), Vector2(400, 570),
+		Vector2(600, 90), Vector2(800, 560), Vector2(1000, 110),
+		Vector2(1314, 360),
 	],
 }
 
 ## Default path used when a level has no hand-crafted path data.
 const _DEFAULT_PATH_POINTS: Array = [
-	Vector2(-33, 360), Vector2(200, 200), Vector2(467, 400),
-	Vector2(734, 133), Vector2(1000, 334), Vector2(1314, 360),
+	Vector2(-33, 360), Vector2(200, 120), Vector2(467, 550),
+	Vector2(734, 100), Vector2(1000, 520), Vector2(1314, 360),
 ]
 
 # ---------------------------------------------------------------------------
@@ -58,57 +58,57 @@ const _LEVEL_PATHS: Dictionary = {
 	# Region 1 — map_scale 1.0, X: -33..1314, Y: 0..720
 	"1_1": {
 		"type": "zigzag",
-		"paths": [[Vector2(-33, 360), Vector2(200, 200), Vector2(467, 400),
-			Vector2(734, 133), Vector2(1000, 334), Vector2(1314, 360)]],
+		"paths": [[Vector2(-33, 360), Vector2(200, 120), Vector2(467, 550),
+			Vector2(734, 100), Vector2(1000, 520), Vector2(1314, 360)]],
 		"exit": Vector2(1314, 360),
 	},
 	"1_2": {
 		"type": "zigzag",
-		"paths": [[Vector2(-33, 200), Vector2(267, 334), Vector2(534, 133),
-			Vector2(800, 400), Vector2(1067, 200), Vector2(1314, 267)]],
-		"exit": Vector2(1314, 267),
+		"paths": [[Vector2(-33, 150), Vector2(267, 520), Vector2(534, 100),
+			Vector2(800, 580), Vector2(1067, 130), Vector2(1314, 360)]],
+		"exit": Vector2(1314, 360),
 	},
 	"1_3": {
 		"type": "zigzag",
-		"paths": [[Vector2(-33, 467), Vector2(200, 267), Vector2(400, 467),
-			Vector2(600, 200), Vector2(800, 400), Vector2(1000, 200), Vector2(1314, 334)]],
-		"exit": Vector2(1314, 334),
+		"paths": [[Vector2(-33, 550), Vector2(200, 120), Vector2(400, 570),
+			Vector2(600, 90), Vector2(800, 560), Vector2(1000, 110), Vector2(1314, 360)]],
+		"exit": Vector2(1314, 360),
 	},
 	"1_5": {
 		"type": "branching",
 		"paths": [
-			[Vector2(-33, 360), Vector2(250, 360), Vector2(450, 180),
-				Vector2(750, 180), Vector2(950, 360), Vector2(1314, 360)],
-			[Vector2(-33, 360), Vector2(250, 360), Vector2(450, 540),
-				Vector2(750, 540), Vector2(950, 360), Vector2(1314, 360)],
+			[Vector2(-33, 360), Vector2(250, 360), Vector2(450, 100),
+				Vector2(750, 100), Vector2(950, 360), Vector2(1314, 360)],
+			[Vector2(-33, 360), Vector2(250, 360), Vector2(450, 600),
+				Vector2(750, 600), Vector2(950, 360), Vector2(1314, 360)],
 		],
 		"merge_point": Vector2(950, 360),
 		"exit": Vector2(1314, 360),
 	},
 	"1_10": {
 		"type": "spiral",
-		"paths": [[Vector2(-33, 360), Vector2(200, 180), Vector2(500, 500),
-			Vector2(400, 550), Vector2(350, 300), Vector2(600, 150),
-			Vector2(850, 400), Vector2(1100, 250), Vector2(1314, 360)]],
+		"paths": [[Vector2(-33, 360), Vector2(200, 100), Vector2(500, 580),
+			Vector2(400, 600), Vector2(350, 300), Vector2(600, 80),
+			Vector2(850, 550), Vector2(1100, 120), Vector2(1314, 360)]],
 		"exit": Vector2(1314, 360),
 	},
 	# Region 3 — map_scale 2.0, X: -33..2593, Y: 57..1368
 	"3_1": {
 		"type": "spiral",
-		"paths": [[Vector2(-33, 720), Vector2(400, 360), Vector2(1000, 1000),
-			Vector2(800, 1100), Vector2(700, 600), Vector2(1200, 300),
-			Vector2(1700, 800), Vector2(2200, 500), Vector2(2593, 720)]],
+		"paths": [[Vector2(-33, 720), Vector2(400, 150), Vector2(1000, 1200),
+			Vector2(800, 1300), Vector2(700, 500), Vector2(1200, 120),
+			Vector2(1700, 1100), Vector2(2200, 200), Vector2(2593, 720)]],
 		"exit": Vector2(2593, 720),
 	},
 	"3_9": {
 		"type": "multi_entry",
 		"paths": [
-			[Vector2(-33, 360), Vector2(400, 500), Vector2(900, 600),
-				Vector2(1400, 500), Vector2(1900, 600), Vector2(2593, 720)],
-			[Vector2(-33, 720), Vector2(500, 800), Vector2(1000, 700),
-				Vector2(1500, 900), Vector2(2000, 700), Vector2(2593, 720)],
-			[Vector2(-33, 1080), Vector2(400, 1000), Vector2(900, 1100),
-				Vector2(1400, 900), Vector2(1900, 1000), Vector2(2593, 720)],
+			[Vector2(-33, 200), Vector2(400, 350), Vector2(900, 150),
+				Vector2(1400, 400), Vector2(1900, 200), Vector2(2593, 720)],
+			[Vector2(-33, 720), Vector2(500, 600), Vector2(1000, 800),
+				Vector2(1500, 650), Vector2(2000, 750), Vector2(2593, 720)],
+			[Vector2(-33, 1250), Vector2(400, 1100), Vector2(900, 1300),
+				Vector2(1400, 1050), Vector2(1900, 1200), Vector2(2593, 720)],
 		],
 		"exit": Vector2(2593, 720),
 	},

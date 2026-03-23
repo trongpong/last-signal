@@ -28,6 +28,9 @@ signal level_defeat(level_id: String)
 var _gm = null
 var _em = null
 var _wm: WaveManager = null
+
+## Extra diamond multiplier from daily challenge constraints.
+var diamond_reward_mult: float = 1.0
 var _am: AdaptationManager = null
 
 # ---------------------------------------------------------------------------
@@ -136,7 +139,7 @@ func _on_all_waves_complete() -> void:
 	var diamond_mult: float = constants.DIFFICULTY_DIAMOND_MULT.get(_difficulty, 1.0)
 
 	var base_diamonds: int = 25 + stars * 15
-	var diamonds: int = int(float(base_diamonds) * diamond_mult)
+	var diamonds: int = int(float(base_diamonds) * diamond_mult * diamond_reward_mult)
 	_em.add_diamonds(diamonds)
 
 	_gm.complete_level()

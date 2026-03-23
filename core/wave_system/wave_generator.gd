@@ -42,8 +42,8 @@ const UNLOCK_WAVE: Array = [
 	25,  # shielder_elite
 ]
 
-## Wave interval between boss waves.
-const BOSS_WAVE_INTERVAL: int = 10
+## Wave interval between boss waves (can be overridden for daily challenges).
+var boss_wave_interval: int = 10
 
 ## Base enemy count for the first wave.
 const BASE_ENEMY_COUNT: int = 8
@@ -87,7 +87,7 @@ func generate_wave(wave_number: int, difficulty: int) -> WaveDefinition:
 
 ## Returns true if this is a boss wave (every BOSS_WAVE_INTERVAL).
 func _is_boss_wave(wave_number: int) -> bool:
-	return wave_number % BOSS_WAVE_INTERVAL == 0
+	return wave_number % boss_wave_interval == 0
 
 
 ## Returns all enemy IDs unlocked at or before the given wave number.
@@ -167,7 +167,7 @@ func _build_boss_sub_waves(available: Array, total_count: int, wave_number: int)
 
 	# Choose a boss-type enemy: prefer the last available (strongest)
 	var boss_id: String = available[available.size() - 1]
-	var boss_count: int = clampi(wave_number / BOSS_WAVE_INTERVAL, 1, 5)
+	var boss_count: int = clampi(wave_number / boss_wave_interval, 1, 5)
 
 	var boss_sw := SubWaveDefinition.new(boss_id, boss_count, 2.0, 0.0)
 	result.append(boss_sw)

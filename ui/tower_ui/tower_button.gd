@@ -29,20 +29,18 @@ var _cost_label: Label = null
 func setup(def: TowerDefinition) -> void:
 	_tower_type = def.tower_type as int
 	_cost = def.cost
-	# Use tr() to look up the localised tower name; fall back to the id.
-	var name_key: String = "TOWER_" + def.id.to_upper()
-	text = tr(name_key)
+	# Clear default text — we use a VBox with separate labels instead
+	text = ""
 	# Touch-friendly minimum size
-	custom_minimum_size = Vector2(64, 64)
-	# Card-style default background matching unified design
+	custom_minimum_size = Vector2(90, 64)
+	# Card-style default background
 	var default_sb := StyleBoxFlat.new()
 	default_sb.bg_color = Color(0.06, 0.06, 0.1, 0.8)
 	default_sb.border_color = Color(0.2, 0.3, 0.4, 0.5)
 	default_sb.set_border_width_all(1)
 	default_sb.set_corner_radius_all(4)
-	default_sb.set_content_margin_all(4)
+	default_sb.set_content_margin_all(6)
 	add_theme_stylebox_override("normal", default_sb)
-	# Save default stylebox for deselection restore
 	_default_stylebox = default_sb
 	# Hover style
 	var hover_sb := StyleBoxFlat.new()
@@ -50,16 +48,36 @@ func setup(def: TowerDefinition) -> void:
 	hover_sb.border_color = Color(0.4, 0.5, 0.6, 0.6)
 	hover_sb.set_border_width_all(1)
 	hover_sb.set_corner_radius_all(4)
-	hover_sb.set_content_margin_all(4)
+	hover_sb.set_content_margin_all(6)
 	add_theme_stylebox_override("hover", hover_sb)
-	add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
-	# Cost label below button name, colored gold
+	# VBox layout: tower name on top, cost below
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 6.0
+	vbox.offset_right = -6.0
+	vbox.offset_top = 6.0
+	vbox.offset_bottom = -6.0
+	vbox.add_theme_constant_override("separation", 2)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(vbox)
+	# Tower name
+	var name_key: String = "TOWER_" + def.id.to_upper()
+	var name_lbl := Label.new()
+	name_lbl.text = tr(name_key)
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_font_size_override("font_size", 13)
+	name_lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
+	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(name_lbl)
+	# Cost
 	_cost_label = Label.new()
 	_cost_label.text = str(def.cost)
 	_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_cost_label.add_theme_font_size_override("font_size", 12)
+	_cost_label.add_theme_font_size_override("font_size", 14)
 	_cost_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-	add_child(_cost_label)
+	_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_cost_label)
 	pressed.connect(_on_pressed)
 
 

@@ -167,7 +167,15 @@ func _start_daily_challenge() -> void:
 	var game_scene := load("res://scenes/game.tscn").instantiate() as Node
 	_switch_screen(game_scene)
 	_disconnect_level_signals()
-	GameManager.start_level("daily_challenge", _pending_difficulty)
+	# Pass challenge constraints to the game scene before starting
+	var constraints: Dictionary = _daily_challenge_manager.get_constraints()
+	var challenge: Dictionary = _daily_challenge_manager.get_today_challenge()
+	constraints["seed"] = challenge.get("seed", 0)
+	game_scene._challenge_constraints = constraints
+	# Connect completion/failure handlers
+	GameManager.level_completed.connect(_on_daily_challenge_complete)
+	GameManager.level_failed.connect(_on_daily_challenge_failed)
+	game_scene.start_level("daily_challenge", Enums.Difficulty.NORMAL)
 
 func _show_tower_lab() -> void:
 	AudioManager.set_music_state(Enums.GameState.MENU)
@@ -267,10 +275,14 @@ func _switch_screen(new_screen: Node) -> void:
 func _disconnect_level_signals() -> void:
 	if GameManager.level_completed.is_connected(_on_campaign_level_complete):
 		GameManager.level_completed.disconnect(_on_campaign_level_complete)
+	if GameManager.level_completed.is_connected(_on_daily_challenge_complete):
+		GameManager.level_completed.disconnect(_on_daily_challenge_complete)
 	if GameManager.level_failed.is_connected(_on_campaign_level_failed):
 		GameManager.level_failed.disconnect(_on_campaign_level_failed)
 	if GameManager.level_failed.is_connected(_on_endless_failed):
 		GameManager.level_failed.disconnect(_on_endless_failed)
+	if GameManager.level_failed.is_connected(_on_daily_challenge_failed):
+		GameManager.level_failed.disconnect(_on_daily_challenge_failed)
 
 
 func _on_campaign_level_complete(level_id: String, stars: int) -> void:
@@ -286,6 +298,16 @@ func _on_campaign_level_failed(_level_id: String) -> void:
 	# Return to campaign map after a short delay or immediately
 	_show_campaign_map()
 
+
+func _on_daily_challenge_complete(_level_id: String, stars: int) -> void:
+	_daily_challenge_manager.mark_completed(stars)
+	var diamonds: int = _daily_challenge_manager.get_reward_diamonds(stars)
+	EconomyManager.add_diamonds(diamonds)
+	SaveManager.sync_economy(EconomyManager)
+	SaveManager.save_game()
+
+func _on_daily_challenge_failed(_level_id: String) -> void:
+	_show_main_menu()
 
 func _on_endless_failed(_level_id: String) -> void:
 	_show_main_menu()

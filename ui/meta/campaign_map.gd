@@ -62,6 +62,14 @@ func _ready() -> void:
 	_build_layout()
 
 
+func _get_safe_margin() -> float:
+	var screen_size := DisplayServer.screen_get_size()
+	var safe_area := DisplayServer.get_display_safe_area()
+	var left: float = safe_area.position.x
+	var right: float = maxf(screen_size.x - safe_area.end.x, 0.0)
+	return clampf(maxf(left, right), 16.0, 48.0)
+
+
 func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -72,8 +80,11 @@ func _build_layout() -> void:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
+	var safe: float = _get_safe_margin()
 	var main_hbox := HBoxContainer.new()
 	main_hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	main_hbox.offset_left = safe
+	main_hbox.offset_right = -safe
 	main_hbox.add_theme_constant_override("separation", 0)
 	add_child(main_hbox)
 

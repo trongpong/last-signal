@@ -48,8 +48,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _get_safe_margin() -> float:
+	var screen_size := DisplayServer.screen_get_size()
+	var safe_area := DisplayServer.get_display_safe_area()
+	var left: float = safe_area.position.x
+	var right: float = maxf(screen_size.x - safe_area.end.x, 0.0)
+	return clampf(maxf(left, right), 16.0, 48.0)
+
+
 func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var safe: float = _get_safe_margin()
 
 	# Dark background
 	var bg := ColorRect.new()
@@ -64,8 +73,8 @@ func _build_layout() -> void:
 	header.anchor_bottom = 0.0
 	header.offset_top = 8.0
 	header.offset_bottom = 52.0
-	header.offset_left = 16.0
-	header.offset_right = -16.0
+	header.offset_left = safe
+	header.offset_right = -safe
 	header.add_theme_constant_override("separation", 12)
 	add_child(header)
 
@@ -94,6 +103,8 @@ func _build_layout() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	scroll.offset_top = 56.0
+	scroll.offset_left = safe
+	scroll.offset_right = -safe
 	add_child(scroll)
 
 	var scroll_margin := MarginContainer.new()

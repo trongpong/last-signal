@@ -27,14 +27,23 @@ func generate(path_type: String, map_scale: float, level_number: int, path_seed:
 
 # --- Helper accessors ---
 
-func _playable_y_min(map_scale: float) -> float:
+func _playable_y_min(_map_scale: float) -> float:
 	return 57.0
 
 func _playable_y_max(map_scale: float) -> float:
-	return 720.0 * map_scale - 72.0
+	var vp_h: float = ProjectSettings.get_setting("display/window/size/viewport_height", 720)
+	return vp_h * map_scale - 72.0
 
 func _world_width(map_scale: float) -> float:
-	return 1280.0 * map_scale
+	## Use actual viewport width to support expanded aspect ratios (e.g., 19.5:9)
+	var vp_w: float = ProjectSettings.get_setting("display/window/size/viewport_width", 1280)
+	if DisplayServer.window_get_size().x > 0:
+		var actual_w: float = DisplayServer.window_get_size().x
+		var actual_h: float = DisplayServer.window_get_size().y
+		var base_h: float = ProjectSettings.get_setting("display/window/size/viewport_height", 720)
+		# With "expand" aspect, viewport width scales to match device aspect ratio
+		vp_w = base_h * (actual_w / maxf(actual_h, 1.0))
+	return vp_w * map_scale
 
 # --- Path generators ---
 
