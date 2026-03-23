@@ -105,3 +105,19 @@ SPEED_X3,x3 Speed,Tốc độ x3
 TOAST_UNLOCK_X2,x2 Speed can be unlocked in Diamond Shop,Tốc độ x2 có thể mở khóa trong Cửa hàng Kim cương
 TOAST_UNLOCK_X3,x3 Speed can be unlocked in Diamond Shop,Tốc độ x3 có thể mở khóa trong Cửa hàng Kim cương
 TOAST_RESISTANCE_ACTIVE,Enemies now resist: {0},Kẻ địch giờ kháng: {0}
+TOAST_TAP_TO_TARGET,Tap to select target,Chạm để chọn mục tiêu
+UI_DAILY_CHALLENGE,Daily Challenge,Thử thách Hàng ngày
+UI_CONFIRM_QUIT,Are you sure you want to quit?,Bạn có chắc muốn thoát?
+UI_ENEMIES_KILLED,Enemies Killed,Kẻ địch đã hạ
+UI_GOLD_EARNED,Gold Earned,Vàng kiếm được
+UI_WAVE_REACHED,Wave Reached,Đợt đã đạt
+UI_YES,Yes,Có
+UI_NO,No,Không
+DAILY_CHALLENGE,Daily Challenge,Thử thách Hàng ngày
+DAILY_COMPLETED,Completed,Đã hoàn thành
+DAILY_PLAY,Play,Chơi
+SETTINGS_FULLSCREEN,Fullscreen,Toàn màn hình
+SIGNAL_DECODE_PROMPT,Decode the signal!,Giải mã tín hiệu!
+SIGNAL_DECODE_SUCCESS,Signal decoded!,Giải mã thành công!
+SIGNAL_DECODE_FAIL,Decoding failed!,Giải mã thất bại!
+SYNERGY_DISCOVERED,Synergy Discovered,Phát hiện Hiệp lực

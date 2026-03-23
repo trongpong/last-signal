@@ -16,10 +16,7 @@ signal back_pressed
 
 const _LANGUAGES: Array = [
 	["en", "English"],
-	["id", "Bahasa Indonesia"],
-	["zh", "中文"],
-	["ja", "日本語"],
-	["ko", "한국어"],
+	["vi", "Tiếng Việt"],
 ]
 
 # ---------------------------------------------------------------------------
