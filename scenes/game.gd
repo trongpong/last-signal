@@ -1108,7 +1108,7 @@ func _on_enemy_died(enemy: Enemy) -> void:
 		_wave_manager.on_enemy_died()
 
 func _on_enemy_reached_exit(enemy: Enemy) -> void:
-	var esc := AudioManager.event_router.get_escalation() if AudioManager.event_router != null else 0.0
+	var esc: float = AudioManager.event_router.get_escalation() if AudioManager.event_router != null else 0.0
 	AudioManager.play_enemy_escape(esc)
 	GameManager.lose_life()
 	if _wave_manager:

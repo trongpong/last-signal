@@ -307,7 +307,7 @@ func generate_ui_panel_close() -> AudioStreamWAV:
 
 
 func generate_glyph_tone(glyph_index: int) -> AudioStreamWAV:
-	var freq := PENTATONIC_SCALE[glyph_index % PENTATONIC_SCALE.size()]
+	var freq: float = PENTATONIC_SCALE[glyph_index % PENTATONIC_SCALE.size()]
 	var samples := SynthEngine.generate_sine(freq, 0.1, SAMPLE_RATE)
 	samples = SynthEngine.apply_adsr(samples, 0.005, 0.015, 0.7, 0.03, SAMPLE_RATE)
 	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
