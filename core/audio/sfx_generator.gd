@@ -226,6 +226,39 @@ func generate_defeat(escalation: float) -> AudioStreamWAV:
 	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
 
 
+func generate_gold_earn() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_sine(1200.0, 0.04, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.002, 0.005, 0.6, 0.015, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_gold_spend() -> AudioStreamWAV:
+	var samples := _generate_sweep(900.0, 700.0, 0.05)
+	samples = SynthEngine.apply_adsr(samples, 0.003, 0.008, 0.5, 0.02, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_diamond_earn() -> AudioStreamWAV:
+	var tap1 := SynthEngine.generate_sine(1800.0, 0.03, SAMPLE_RATE)
+	tap1 = SynthEngine.apply_adsr(tap1, 0.002, 0.005, 0.7, 0.01, SAMPLE_RATE)
+	var gap := PackedFloat32Array()
+	gap.resize(int(0.02 * SAMPLE_RATE))
+	gap.fill(0.0)
+	var tap2 := SynthEngine.generate_sine(2200.0, 0.03, SAMPLE_RATE)
+	tap2 = SynthEngine.apply_adsr(tap2, 0.002, 0.005, 0.7, 0.01, SAMPLE_RATE)
+	var samples := PackedFloat32Array()
+	samples.append_array(tap1)
+	samples.append_array(gap)
+	samples.append_array(tap2)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_cannot_afford() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_square(120.0, 0.08, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.002, 0.01, 0.4, 0.02, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
 func _generate_sweep(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
 	var sample_count := int(duration * SAMPLE_RATE)
 	var samples := PackedFloat32Array()

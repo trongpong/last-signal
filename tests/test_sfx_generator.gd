@@ -245,3 +245,26 @@ func test_generate_defeat_scales_with_escalation() -> void:
 	var stream_low := _gen.generate_defeat(0.0)
 	var stream_high := _gen.generate_defeat(1.0)
 	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation defeat should be longer")
+
+
+# --- Economy sounds ---
+
+func test_generate_gold_earn_returns_valid_stream() -> void:
+	var stream := _gen.generate_gold_earn()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_gold_spend_returns_valid_stream() -> void:
+	var stream := _gen.generate_gold_spend()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_diamond_earn_returns_valid_stream() -> void:
+	var stream := _gen.generate_diamond_earn()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_cannot_afford_returns_valid_stream() -> void:
+	var stream := _gen.generate_cannot_afford()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
