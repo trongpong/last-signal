@@ -774,6 +774,7 @@ func _try_place_tower(click_pos: Vector2) -> void:
 		cost = maxi(int(float(cost) * cost_mult), 1)
 	if not EconomyManager.can_afford(cost):
 		_hud.show_toast(tr("TOAST_NOT_ENOUGH_GOLD"))
+		AudioManager.play_cannot_afford()
 		return
 
 	# Spend gold and place tower
@@ -807,6 +808,8 @@ func _try_place_tower(click_pos: Vector2) -> void:
 		var cell: Vector2i = _grid_manager.world_to_cell(click_pos)
 		_grid_manager.place_tower(cell)
 		tower.set_meta("grid_cell", cell)
+
+	AudioManager.play_tower_place()
 
 	# Recalculate support tower buffs and synergies
 	_recalculate_all_buffs()
@@ -1065,6 +1068,9 @@ func _deal_damage_to_enemy(enemy: Enemy, damage: float, damage_type: int, ignore
 	# Focus Fire debuff: enemy takes increased damage from all sources
 	var effective_damage: float = damage * enemy.get_damage_multiplier()
 	health.take_damage(effective_damage, damage_type as Enums.DamageType, ignore_armor)
+	if AudioManager.event_router != null:
+		if AudioManager.event_router._can_play_hit():
+			AudioManager.play_enemy_hit()
 
 	# Floating damage number (show actual damage dealt, not pre-debuff value)
 	_show_damage_popup(enemy.global_position, effective_damage, damage_type)
@@ -1102,6 +1108,8 @@ func _on_enemy_died(enemy: Enemy) -> void:
 		_wave_manager.on_enemy_died()
 
 func _on_enemy_reached_exit(enemy: Enemy) -> void:
+	var esc := AudioManager.event_router.get_escalation() if AudioManager.event_router != null else 0.0
+	AudioManager.play_enemy_escape(esc)
 	GameManager.lose_life()
 	if _wave_manager:
 		_wave_manager.on_enemy_reached_exit()
@@ -1382,6 +1390,7 @@ func _on_sell_tower_requested(tower: Tower) -> void:
 		_progression_manager.get_sell_refund_bonus()
 	)
 	EconomyManager.add_gold(sell_value)
+	AudioManager.play_tower_sell()
 	# Free grid cell in maze mode
 	if _grid_manager != null and tower.has_meta("grid_cell"):
 		_grid_manager.remove_tower(tower.get_meta("grid_cell") as Vector2i)
@@ -1403,9 +1412,11 @@ func _on_upgrade_tower_requested(tower: Tower, choice: int) -> void:
 	var branch: Dictionary = options[choice]
 	var cost: int = branch.get("cost", 0) as int
 	if not EconomyManager.can_afford(cost):
+		AudioManager.play_cannot_afford()
 		return
 	EconomyManager.spend_gold(cost)
 	tower.apply_upgrade(choice)
+	AudioManager.play_tower_upgrade(tower.current_tier)
 	# Upgrade pulse VFX
 	var upgrade_tw := create_tween()
 	upgrade_tw.tween_property(tower, "scale", Vector2(1.2, 1.2), 0.1)
