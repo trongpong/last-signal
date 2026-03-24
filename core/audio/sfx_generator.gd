@@ -259,6 +259,52 @@ func generate_cannot_afford() -> AudioStreamWAV:
 	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
 
 
+func generate_ui_click() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_sine(800.0, 0.03, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.001, 0.005, 0.6, 0.01, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_ui_hover() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_sine(600.0, 0.015, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.001, 0.003, 0.4, 0.005, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_ui_panel_open() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_noise(0.1, SAMPLE_RATE)
+	var chunk_count := 10
+	var chunk_size := samples.size() / chunk_count
+	var result := PackedFloat32Array()
+	for i in chunk_count:
+		var t := float(i) / float(chunk_count)
+		var cutoff := 200.0 + t * 600.0
+		var start := i * chunk_size
+		var end := start + chunk_size if i < chunk_count - 1 else samples.size()
+		var chunk := samples.slice(start, end)
+		chunk = SynthEngine.apply_filter_lowpass(chunk, cutoff, SAMPLE_RATE)
+		result.append_array(chunk)
+	result = SynthEngine.apply_adsr(result, 0.005, 0.02, 0.6, 0.03, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(result, SAMPLE_RATE)
+
+
+func generate_ui_panel_close() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_noise(0.08, SAMPLE_RATE)
+	var chunk_count := 8
+	var chunk_size := samples.size() / chunk_count
+	var result := PackedFloat32Array()
+	for i in chunk_count:
+		var t := float(i) / float(chunk_count)
+		var cutoff := 800.0 - t * 600.0
+		var start := i * chunk_size
+		var end := start + chunk_size if i < chunk_count - 1 else samples.size()
+		var chunk := samples.slice(start, end)
+		chunk = SynthEngine.apply_filter_lowpass(chunk, cutoff, SAMPLE_RATE)
+		result.append_array(chunk)
+	result = SynthEngine.apply_adsr(result, 0.003, 0.015, 0.5, 0.025, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(result, SAMPLE_RATE)
+
+
 func _generate_sweep(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
 	var sample_count := int(duration * SAMPLE_RATE)
 	var samples := PackedFloat32Array()

@@ -268,3 +268,26 @@ func test_generate_cannot_afford_returns_valid_stream() -> void:
 	var stream := _gen.generate_cannot_afford()
 	assert_not_null(stream)
 	assert_gt(stream.data.size(), 0)
+
+
+# --- UI sounds ---
+
+func test_generate_ui_click_returns_valid_stream() -> void:
+	var stream := _gen.generate_ui_click()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_ui_hover_returns_valid_stream() -> void:
+	var stream := _gen.generate_ui_hover()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_ui_panel_open_returns_valid_stream() -> void:
+	var stream := _gen.generate_ui_panel_open()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_ui_panel_close_returns_valid_stream() -> void:
+	var stream := _gen.generate_ui_panel_close()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
