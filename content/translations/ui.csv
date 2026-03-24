@@ -13,22 +13,12 @@ UI_RESUME,Resume,Tiếp tục
 UI_RESTART,Restart,Chơi lại
 UI_QUIT_LEVEL,Quit Level,Thoát màn
 UI_WAVE,Wave,Đợt
-UI_WAVE_OF,Wave {0} of {1},Đợt {0} / {1}
-UI_LIVES,Lives,Mạng
 UI_GOLD,Gold,Vàng
 UI_DIAMONDS,Diamonds,Kim cương
-UI_SPEED,Speed,Tốc độ
-UI_SELL,Sell,Bán
-UI_UPGRADE,Upgrade,Nâng cấp
-UI_NEXT_WAVE,Next Wave,Đợt tiếp theo
-UI_SEND_EARLY,Send Early (+{0} Gold),Gọi sớm (+{0} Vàng)
 UI_VICTORY,Victory!,Chiến thắng!
 UI_DEFEAT,Defeated!,Thất bại!
 UI_STARS,Stars,Sao
 UI_CONTINUE,Continue,Tiếp tục
-UI_SCORE,Score,Điểm
-UI_HIGH_SCORE,High Score,Điểm cao
-UI_BEST,Best,Tốt nhất
 UI_LOCKED,Locked,Đã khóa
 UI_UNLOCK,Unlock,Mở khóa
 UI_LEVEL_SELECT,Level Select,Chọn màn
@@ -38,7 +28,7 @@ TOWER_PULSE_CANNON,Pulse Cannon,Pháo Xung
 TOWER_ARC_EMITTER,Arc Emitter,Pháo Hồ Quang
 TOWER_CRYO_ARRAY,Cryo Array,Tháp Băng Giá
 TOWER_MISSILE_POD,Missile Pod,Bệ Tên Lửa
-TOWER_BEAM_SPIRE,Beam Spire,Tháp Tia sáng
+TOWER_BEAM_SPIRE,Beam Spire,Tháp Tia Sáng
 TOWER_NANO_HIVE,Nano Hive,Tổ Nano
 TOWER_HARVESTER,Harvester,Tháp Thu Hoạch
 DIFFICULTY_NORMAL,Normal,Bình thường
@@ -51,11 +41,6 @@ HUD_UPGRADE,Upgrade,Nâng cấp
 HUD_LIVES,Lives,Mạng
 HUD_GOLD,Gold,Vàng
 HUD_SPEED,Speed,Tốc độ
-HUD_WAVE_COMPLETE,Wave Complete!,Hoàn thành đợt!
-HUD_BUILDING_PHASE,Build Phase,Giai đoạn xây dựng
-HUD_PREPARE,Prepare Defenses,Chuẩn bị phòng thủ
-HUD_INCOMING,Incoming!,Địch tới!
-HUD_ENEMIES_REMAINING,Enemies: {0},Kẻ địch: {0}
 HUD_TARGETING,Targeting,Ngắm mục tiêu
 TARGETING_NEAREST,Nearest,Gần nhất
 TARGETING_STRONGEST,Strongest,Mạnh nhất
@@ -80,9 +65,6 @@ ABILITY_REPAIR_WAVE,Repair Wave,Sóng Hồi Phục
 ABILITY_SHIELD_MATRIX,Shield Matrix,Lưới Khiên
 ABILITY_OVERCLOCK,Overclock,Ép xung
 ABILITY_SCRAP_SALVAGE,Scrap Salvage,Thu hồi Phế liệu
-ABILITY_UNLOCK_COST,Unlock: {0} Diamonds,Mở khóa: {0} Kim cương
-ABILITY_UPGRADE,Upgrade Ability,Nâng cấp Kỹ năng
-ABILITY_COOLDOWN,Cooldown: {0}s,Hồi chiêu: {0}s
 SETTINGS_MUSIC_VOLUME,Music Volume,Âm lượng Nhạc
 SETTINGS_SFX_VOLUME,SFX Volume,Âm lượng Hiệu ứng
 SETTINGS_DAMAGE_NUMBERS,Damage Numbers,Số sát thương
@@ -92,8 +74,6 @@ GLOBAL_UPGRADES,Global Upgrades,Nâng cấp Toàn cục
 SKILL_TREE,Skill Tree,Cây Kỹ năng
 TIER,Tier {0},Cấp {0}
 SELL_VALUE,Sell Value: {0},Giá bán: {0}
-REFUND,Refund: {0}%,Hoàn lại: {0}%
-ENDLESS_WAVE,Endless Wave {0},Đợt Vô tận {0}
 ENDLESS_RESISTANCE,Resistance Active,Kháng Cự Đang Hoạt Động
 ADS_REMAINING,Watch Ad (+{2} ◆) — {0}/{1} left today,Xem QC (+{2} ◆) — còn {0}/{1} hôm nay
 WATCH_AD,Watch Ad (+{0} Diamonds),Xem quảng cáo (+{0} Kim cương)
@@ -104,7 +84,6 @@ SPEED_X2,x2 Speed,Tốc độ x2
 SPEED_X3,x3 Speed,Tốc độ x3
 TOAST_UNLOCK_X2,x2 Speed can be unlocked in Diamond Shop,Tốc độ x2 có thể mở khóa trong Cửa hàng Kim cương
 TOAST_UNLOCK_X3,x3 Speed can be unlocked in Diamond Shop,Tốc độ x3 có thể mở khóa trong Cửa hàng Kim cương
-TOAST_RESISTANCE_ACTIVE,Enemies now resist: {0},Kẻ địch giờ kháng: {0}
 TOAST_TAP_TO_TARGET,Tap to select target,Chạm để chọn mục tiêu
 UI_DAILY_CHALLENGE,Daily Challenge,Thử thách Hàng ngày
 UI_CONFIRM_QUIT,Are you sure you want to quit?,Bạn có chắc muốn thoát?
@@ -209,8 +188,8 @@ SYNERGY_BARRAGE,Barrage,Trận Mưa Đạn
 SYNERGY_BARRAGE_PAIR,Pulse + Missile,Xung + Tên Lửa
 SYNERGY_BARRAGE_EFFECT,Both gain +15% fire rate,Cả hai tăng +15% tốc độ bắn
 SYNERGY_AMPLIFY,Amplify,Khuếch Đại
-SYNERGY_AMPLIFY_PAIR,Nano Hive + Beam,Tổ Nano + Tia sáng
-SYNERGY_AMPLIFY_EFFECT,Beam pierces through first target,Tia sáng xuyên qua mục tiêu đầu tiên
+SYNERGY_AMPLIFY_PAIR,Nano Hive + Beam,Tổ Nano + Tia Sáng
+SYNERGY_AMPLIFY_EFFECT,Beam pierces through first target,Tia Sáng xuyên qua mục tiêu đầu tiên
 SYNERGY_FROSTBITE,Frostbite,Tê Cóng
 SYNERGY_FROSTBITE_PAIR,Cryo + Missile,Băng Giá + Tên Lửa
 SYNERGY_FROSTBITE_EFFECT,Slowed enemies take +25% splash damage,Kẻ địch bị chậm nhận +25% sát thương vùng
@@ -221,14 +200,14 @@ SYNERGY_COLD_SNAP,Cold Snap,Sóng Lạnh
 SYNERGY_COLD_SNAP_PAIR,Pulse + Cryo,Xung + Băng Giá
 SYNERGY_COLD_SNAP_EFFECT,Pulse hits on slowed enemies extend slow +0.5s,Đòn Xung vào kẻ địch bị chậm kéo dài hiệu ứng +0.5s
 SYNERGY_CONDUIT,Conduit,Dẫn Truyền
-SYNERGY_CONDUIT_PAIR,Arc + Beam,Hồ Quang + Tia sáng
-SYNERGY_CONDUIT_EFFECT,Beam can chain to 1 additional target,Tia sáng lan sang thêm 1 mục tiêu
+SYNERGY_CONDUIT_PAIR,Arc + Beam,Hồ Quang + Tia Sáng
+SYNERGY_CONDUIT_EFFECT,Beam can chain to 1 additional target,Tia Sáng lan sang thêm 1 mục tiêu
 SYNERGY_FOCUS_FIRE,Focus Fire,Tập Trung Hỏa Lực
-SYNERGY_FOCUS_FIRE_PAIR,Missile + Beam,Tên Lửa + Tia sáng
+SYNERGY_FOCUS_FIRE_PAIR,Missile + Beam,Tên Lửa + Tia Sáng
 SYNERGY_FOCUS_FIRE_EFFECT,Same target takes +20% damage for 2s,Cùng mục tiêu nhận +20% sát thương trong 2s
 ABILITY_HERO,Hero,Anh hùng
 DAILY_STREAK,Streak: {0} days (+{1} bonus diamonds),Chuỗi: {0} ngày (+{1} kim cương thưởng)
-DAILY_REWARD_INFO,"Reward: 50 diamonds (100 for 3 stars)","Phần thưởng: 50 kim cương (100 cho 3 sao)"
+DAILY_REWARD_INFO,Reward: 50 diamonds (100 for 3 stars),Phần thưởng: 50 kim cương (100 cho 3 sao)
 UI_BOSS,BOSS,BOSS
 DAMAGE_TYPE_PULSE,Pulse,Xung
 DAMAGE_TYPE_ARC,Arc,Hồ Quang
