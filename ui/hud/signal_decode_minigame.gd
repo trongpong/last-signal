@@ -189,6 +189,7 @@ func _build_ui() -> void:
 func _highlight_sequence_label(idx: int) -> void:
 	if idx < _sequence_labels.size():
 		_sequence_labels[idx].add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+		AudioManager.play_glyph_tone(idx)
 
 func _start_input_phase() -> void:
 	_phase = Phase.INPUT
@@ -209,11 +210,13 @@ func _on_glyph_pressed(glyph_index: int) -> void:
 		# Correct — highlight this position
 		if _input_index < _sequence_labels.size():
 			_sequence_labels[_input_index].add_theme_color_override("font_color", Color(0.2, 1.0, 0.2))
+		AudioManager.play_decode_correct()
 		_input_index += 1
 		if _input_index >= _sequence.size():
 			_finish(true)
 	else:
 		# Wrong
+		AudioManager.play_decode_wrong()
 		_finish(false)
 
 func _finish(success: bool) -> void:
@@ -227,10 +230,12 @@ func _finish(success: bool) -> void:
 		if success:
 			_status_label.text = tr("SIGNAL_DECODE_SUCCESS")
 			_status_label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.2))
+			AudioManager.play_decode_success()
 			_emit_reward()
 		else:
 			_status_label.text = tr("SIGNAL_DECODE_FAIL")
 			_status_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
+			AudioManager.play_decode_fail()
 
 func _roll_reward() -> void:
 	var roll: float = randf()
