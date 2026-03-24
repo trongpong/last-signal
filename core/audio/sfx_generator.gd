@@ -107,6 +107,72 @@ func generate_ability_activate() -> PackedFloat32Array:
 	return SynthEngine.apply_adsr(mixed, 0.01, 0.05, 0.6, 0.08, SAMPLE_RATE)
 
 
+func generate_tower_place() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_square(180.0, 0.12, SAMPLE_RATE)
+	samples = SynthEngine.apply_filter_lowpass(samples, 400.0, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.02, 0.5, 0.04, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_tower_upgrade(tier: int) -> AudioStreamWAV:
+	var base_freq := 440.0 + (tier - 1) * 110.0
+	var target_freq := base_freq * 1.5
+	var step1 := _generate_sweep(base_freq, target_freq, 0.15)
+	var step2 := _generate_sweep(target_freq, target_freq * 1.33, 0.1)
+	var samples := PackedFloat32Array()
+	samples.append_array(step1)
+	samples.append_array(step2)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.02, 0.8, 0.03, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_tower_sell() -> AudioStreamWAV:
+	var samples := _generate_sweep_square(180.0, 100.0, 0.1)
+	samples = SynthEngine.apply_filter_lowpass(samples, 400.0, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.02, 0.4, 0.03, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_enemy_hit() -> AudioStreamWAV:
+	var samples := SynthEngine.generate_noise(0.03, SAMPLE_RATE)
+	samples = SynthEngine.apply_filter_lowpass(samples, 300.0, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.001, 0.005, 0.3, 0.01, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_enemy_escape(escalation: float) -> AudioStreamWAV:
+	var duration := 0.15 + escalation * 0.15
+	var samples := _generate_sweep(600.0, 200.0, duration)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.02, 0.6, duration * 0.3, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func _generate_sweep(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
+	var sample_count := int(duration * SAMPLE_RATE)
+	var samples := PackedFloat32Array()
+	samples.resize(sample_count)
+	var phase := 0.0
+	for i in sample_count:
+		var t := float(i) / float(sample_count)
+		var freq := freq_start + (freq_end - freq_start) * t
+		phase += freq / SAMPLE_RATE
+		samples[i] = sin(phase * TAU)
+	return samples
+
+
+func _generate_sweep_square(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
+	var sample_count := int(duration * SAMPLE_RATE)
+	var samples := PackedFloat32Array()
+	samples.resize(sample_count)
+	var phase := 0.0
+	for i in sample_count:
+		var t := float(i) / float(sample_count)
+		var freq := freq_start + (freq_end - freq_start) * t
+		phase += freq / SAMPLE_RATE
+		samples[i] = 1.0 if fmod(phase, 1.0) < 0.5 else -1.0
+	return samples
+
+
 func _generate_wave(wave: String, freq: float, duration: float) -> PackedFloat32Array:
 	match wave:
 		"sine":

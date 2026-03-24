@@ -151,3 +151,44 @@ func test_tower_sfx_entries_have_required_keys() -> void:
 		assert_true(cfg.has("wave"), "TOWER_SFX[%d] missing 'wave'" % tower_type)
 		assert_true(cfg.has("freq"), "TOWER_SFX[%d] missing 'freq'" % tower_type)
 		assert_true(cfg.has("duration"), "TOWER_SFX[%d] missing 'duration'" % tower_type)
+
+
+# --- Tower interaction sounds ---
+
+func test_generate_tower_place_returns_valid_stream() -> void:
+	var stream := _gen.generate_tower_place()
+	assert_not_null(stream, "tower_place should return a stream")
+	assert_gt(stream.data.size(), 0, "tower_place should have audio data")
+
+func test_generate_tower_upgrade_returns_valid_stream() -> void:
+	var stream := _gen.generate_tower_upgrade(1)
+	assert_not_null(stream, "tower_upgrade should return a stream")
+	assert_gt(stream.data.size(), 0, "tower_upgrade should have audio data")
+
+func test_generate_tower_upgrade_pitch_increases_with_tier() -> void:
+	var stream_t1 := _gen.generate_tower_upgrade(1)
+	var stream_t2 := _gen.generate_tower_upgrade(2)
+	var stream_t3 := _gen.generate_tower_upgrade(3)
+	assert_ne(stream_t1.data, stream_t2.data, "tier 1 and 2 should differ")
+	assert_ne(stream_t2.data, stream_t3.data, "tier 2 and 3 should differ")
+
+func test_generate_tower_sell_returns_valid_stream() -> void:
+	var stream := _gen.generate_tower_sell()
+	assert_not_null(stream, "tower_sell should return a stream")
+	assert_gt(stream.data.size(), 0, "tower_sell should have audio data")
+
+func test_generate_enemy_hit_returns_valid_stream() -> void:
+	var stream := _gen.generate_enemy_hit()
+	assert_not_null(stream, "enemy_hit should return a stream")
+	assert_gt(stream.data.size(), 0, "enemy_hit should have audio data")
+
+func test_generate_enemy_escape_returns_valid_stream() -> void:
+	var stream := _gen.generate_enemy_escape(0.0)
+	assert_not_null(stream, "enemy_escape should return a stream")
+	assert_gt(stream.data.size(), 0, "enemy_escape should have audio data")
+
+func test_generate_enemy_escape_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_enemy_escape(0.0)
+	var stream_high := _gen.generate_enemy_escape(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(),
+		"high escalation should produce longer sound")
