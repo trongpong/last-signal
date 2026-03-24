@@ -189,6 +189,10 @@ func get_total_stars() -> int:
 	var total: int = 0
 	for record in completed.values():
 		if record is Dictionary:
+			# Legacy flat format: {"completed": true, "best_stars": 3}
+			if record.has("best_stars"):
+				total += record.get("best_stars", 0) as int
+				continue
 			var best: int = 0
 			for diff_record in record.values():
 				if diff_record is Dictionary:

@@ -143,6 +143,8 @@ func _on_all_waves_complete() -> void:
 	# Skip diamond award for daily challenges — the daily challenge manager handles it
 	if _level_id != "daily_challenge":
 		_em.add_diamonds(diamonds)
+	else:
+		diamonds = 0
 
 	_gm.complete_level()
 	level_victory.emit(_level_id, stars, diamonds)

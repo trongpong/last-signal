@@ -93,6 +93,8 @@ func _trigger_defeat() -> void:
 
 ## Adds lives (e.g. from minigame reward).
 func add_lives(amount: int) -> void:
+	if amount <= 0:
+		return
 	lives += amount
 	lives_changed.emit(lives, lives_lost)
 

@@ -124,7 +124,7 @@ tier_branches = [{
 			"fire_rate_mult": 1.5,
 			"range_mult": 1.2,
 			"cost": 380,
-			"special": "slow_factor-0.1",
+			"special": "splash+15",
 			"branches": []
 		}]
 	}, {
