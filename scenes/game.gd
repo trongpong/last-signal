@@ -1069,7 +1069,7 @@ func _deal_damage_to_enemy(enemy: Enemy, damage: float, damage_type: int, ignore
 	var effective_damage: float = damage * enemy.get_damage_multiplier()
 	health.take_damage(effective_damage, damage_type as Enums.DamageType, ignore_armor)
 	if AudioManager.event_router != null:
-		if AudioManager.event_router._can_play_hit():
+		if AudioManager.event_router.can_play_hit():
 			AudioManager.play_enemy_hit()
 
 	# Floating damage number (show actual damage dealt, not pre-debuff value)

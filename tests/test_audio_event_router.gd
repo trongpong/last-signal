@@ -34,12 +34,12 @@ func test_escalation_endless_wave_15() -> void:
 	assert_almost_eq(_router.get_escalation(), 0.5, 0.01)
 
 func test_hit_rate_limiting_allows_first_hit() -> void:
-	assert_true(_router._can_play_hit())
+	assert_true(_router.can_play_hit())
 
 func test_hit_rate_limiting_blocks_after_max() -> void:
 	for i in 6:
-		_router._can_play_hit()
-	assert_false(_router._can_play_hit(), "7th hit within window should be blocked")
+		_router.can_play_hit()
+	assert_false(_router.can_play_hit(), "7th hit within window should be blocked")
 
 func test_gold_rate_limiting_allows_first() -> void:
 	assert_true(_router._can_play_gold_earn())
