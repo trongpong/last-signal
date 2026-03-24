@@ -147,6 +147,85 @@ func generate_enemy_escape(escalation: float) -> AudioStreamWAV:
 	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
 
 
+func generate_wave_start(escalation: float) -> AudioStreamWAV:
+	var duration := 0.1 + escalation * 0.3
+	var base := SynthEngine.generate_saw(330.0, duration, SAMPLE_RATE)
+	if escalation > 0.3:
+		var mid := SynthEngine.generate_saw(440.0, duration, SAMPLE_RATE)
+		base = SynthEngine.mix(base, mid, 1.0, escalation)
+	if escalation > 0.6:
+		var high := SynthEngine.generate_saw(550.0, duration, SAMPLE_RATE)
+		base = SynthEngine.mix(base, high, 1.0, escalation * 0.7)
+	var attack := 0.005 + escalation * 0.04
+	base = SynthEngine.apply_adsr(base, attack, 0.02, 0.7, duration * 0.3, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(base, SAMPLE_RATE)
+
+
+func generate_wave_complete(escalation: float) -> AudioStreamWAV:
+	var duration := 0.2 + escalation * 0.3
+	var note1 := SynthEngine.generate_sine(440.0, duration, SAMPLE_RATE)
+	var note2 := SynthEngine.generate_sine(550.0, duration, SAMPLE_RATE)
+	var samples := SynthEngine.mix(note1, note2, 0.7, 0.7)
+	if escalation > 0.5:
+		var note3 := SynthEngine.generate_sine(660.0, duration, SAMPLE_RATE)
+		samples = SynthEngine.mix(samples, note3, 1.0, escalation * 0.6)
+	samples = SynthEngine.apply_adsr(samples, 0.01, 0.03, 0.7, duration * 0.4, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_lives_lost(escalation: float) -> AudioStreamWAV:
+	var duration := 0.1 + escalation * 0.2
+	var tone := SynthEngine.generate_square(150.0, duration, SAMPLE_RATE)
+	var noise := SynthEngine.generate_noise(duration, SAMPLE_RATE)
+	noise = SynthEngine.apply_filter_lowpass(noise, 500.0, SAMPLE_RATE)
+	var samples := SynthEngine.mix(tone, noise, 0.7, 0.5)
+	if escalation > 0.5:
+		var sub := SynthEngine.generate_sine(60.0, duration, SAMPLE_RATE)
+		samples = SynthEngine.mix(samples, sub, 1.0, escalation * 0.6)
+	samples = SynthEngine.apply_adsr(samples, 0.002, 0.02, 0.5, duration * 0.4, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_victory(escalation: float) -> AudioStreamWAV:
+	var freqs := [523.25, 659.25, 783.99, 1046.50]
+	var note_dur := 0.12 + escalation * 0.12
+	var samples := PackedFloat32Array()
+	for freq in freqs:
+		var note := SynthEngine.generate_sine(freq, note_dur, SAMPLE_RATE)
+		if escalation > 0.5:
+			var harm := SynthEngine.generate_saw(freq, note_dur, SAMPLE_RATE)
+			note = SynthEngine.mix(note, harm, 0.8, escalation * 0.3)
+		note = SynthEngine.apply_adsr(note, 0.005, 0.02, 0.8, note_dur * 0.3, SAMPLE_RATE)
+		samples.append_array(note)
+	if escalation > 0.5:
+		var tail := SynthEngine.generate_sine(1046.50, escalation * 0.5, SAMPLE_RATE)
+		tail = SynthEngine.apply_adsr(tail, 0.01, 0.05, 0.6, escalation * 0.3, SAMPLE_RATE)
+		samples.append_array(tail)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_defeat(escalation: float) -> AudioStreamWAV:
+	var freqs := [261.63, 220.00, 174.61]
+	var note_dur := 0.15 + escalation * 0.15
+	var cutoff := 800.0
+	var samples := PackedFloat32Array()
+	for freq in freqs:
+		var note := SynthEngine.generate_sine(freq, note_dur, SAMPLE_RATE)
+		note = SynthEngine.apply_filter_lowpass(note, cutoff, SAMPLE_RATE)
+		note = SynthEngine.apply_adsr(note, 0.01, 0.03, 0.7, note_dur * 0.3, SAMPLE_RATE)
+		samples.append_array(note)
+		cutoff *= 0.7
+	if escalation > 0.5:
+		var drone_dur := escalation * 1.0
+		var e3 := SynthEngine.generate_sine(164.81, drone_dur, SAMPLE_RATE)
+		var f3 := SynthEngine.generate_sine(174.61, drone_dur, SAMPLE_RATE)
+		var drone := SynthEngine.mix(e3, f3, 0.5, 0.5)
+		drone = SynthEngine.apply_filter_lowpass(drone, 200.0, SAMPLE_RATE)
+		drone = SynthEngine.apply_adsr(drone, 0.05, 0.1, 0.4, drone_dur * 0.5, SAMPLE_RATE)
+		samples.append_array(drone)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
 func _generate_sweep(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
 	var sample_count := int(duration * SAMPLE_RATE)
 	var samples := PackedFloat32Array()

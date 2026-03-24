@@ -192,3 +192,56 @@ func test_generate_enemy_escape_scales_with_escalation() -> void:
 	var stream_high := _gen.generate_enemy_escape(1.0)
 	assert_gt(stream_high.data.size(), stream_low.data.size(),
 		"high escalation should produce longer sound")
+
+
+# --- Wave event sounds ---
+
+func test_generate_wave_start_returns_valid_stream() -> void:
+	var stream := _gen.generate_wave_start(0.0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_wave_start_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_wave_start(0.0)
+	var stream_high := _gen.generate_wave_start(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation wave start should be longer")
+
+func test_generate_wave_complete_returns_valid_stream() -> void:
+	var stream := _gen.generate_wave_complete(0.0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_wave_complete_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_wave_complete(0.0)
+	var stream_high := _gen.generate_wave_complete(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation wave complete should be longer")
+
+func test_generate_lives_lost_returns_valid_stream() -> void:
+	var stream := _gen.generate_lives_lost(0.0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_lives_lost_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_lives_lost(0.0)
+	var stream_high := _gen.generate_lives_lost(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation lives_lost should be longer")
+
+func test_generate_victory_returns_valid_stream() -> void:
+	var stream := _gen.generate_victory(0.0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_victory_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_victory(0.0)
+	var stream_high := _gen.generate_victory(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation victory should be longer")
+
+func test_generate_defeat_returns_valid_stream() -> void:
+	var stream := _gen.generate_defeat(0.0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_defeat_scales_with_escalation() -> void:
+	var stream_low := _gen.generate_defeat(0.0)
+	var stream_high := _gen.generate_defeat(1.0)
+	assert_gt(stream_high.data.size(), stream_low.data.size(), "high escalation defeat should be longer")
