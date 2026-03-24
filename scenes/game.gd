@@ -1492,13 +1492,13 @@ func _on_pause_settings() -> void:
 
 func _on_adaptation_changed(resistances: Dictionary) -> void:
 	var type_names: Dictionary = {
-		Enums.DamageType.PULSE: "Pulse",
-		Enums.DamageType.ARC: "Arc",
-		Enums.DamageType.CRYO: "Cryo",
-		Enums.DamageType.MISSILE: "Missile",
-		Enums.DamageType.BEAM: "Beam",
-		Enums.DamageType.NANO: "Nano",
-		Enums.DamageType.HARVEST: "Harvest",
+		Enums.DamageType.PULSE: tr("DAMAGE_TYPE_PULSE"),
+		Enums.DamageType.ARC: tr("DAMAGE_TYPE_ARC"),
+		Enums.DamageType.CRYO: tr("DAMAGE_TYPE_CRYO"),
+		Enums.DamageType.MISSILE: tr("DAMAGE_TYPE_MISSILE"),
+		Enums.DamageType.BEAM: tr("DAMAGE_TYPE_BEAM"),
+		Enums.DamageType.NANO: tr("DAMAGE_TYPE_NANO"),
+		Enums.DamageType.HARVEST: tr("DAMAGE_TYPE_HARVEST"),
 	}
 	# Show rising/falling banners comparing to previous state
 	var rising: PackedStringArray = PackedStringArray()
@@ -1506,7 +1506,7 @@ func _on_adaptation_changed(resistances: Dictionary) -> void:
 	for key in resistances.keys():
 		var cur: float = resistances[key] as float
 		var prev: float = _previous_resistances.get(key, 0.0) as float
-		var dtype_name: String = type_names.get(key, "Unknown")
+		var dtype_name: String = type_names.get(key, tr("DAMAGE_TYPE_UNKNOWN"))
 		if cur > prev:
 			rising.append(dtype_name)
 		elif cur < prev and cur >= 0.0:
@@ -1573,7 +1573,7 @@ func _ability_emp_burst() -> void:
 	for child in enemies.get_children():
 		if child is Enemy and child.is_alive():
 			child.apply_slow(0.0, 3.0)
-	_hud.show_toast("EMP BURST!")
+	_hud.show_toast(tr("TOAST_EMP_BURST"))
 
 func _ability_repair_wave() -> void:
 	# Cap at the actual starting lives for this run (respects daily challenge overrides)
@@ -1581,7 +1581,7 @@ func _ability_repair_wave() -> void:
 	if GameManager.lives < max_lives:
 		GameManager.lives += 1
 		GameManager.lives_changed.emit(GameManager.lives, GameManager.lives_lost)
-	_hud.show_toast("+1 " + tr("HUD_LIVES"))
+	_hud.show_toast(tr("TOAST_REPAIR_WAVE"))
 
 func _ability_shield_matrix(pos: Vector2) -> void:
 	var zone := _AbilityZone.new()
@@ -1597,7 +1597,7 @@ func _ability_overclock(tower: Tower) -> void:
 		if is_instance_valid(tower):
 			tower.remove_buff(self)
 	)
-	_hud.show_toast("OVERCLOCK!")
+	_hud.show_toast(tr("TOAST_OVERCLOCK"))
 
 func _ability_scrap_salvage() -> void:
 	var original: float = EconomyManager.get_gold_modifier()
@@ -1606,7 +1606,7 @@ func _ability_scrap_salvage() -> void:
 		if is_inside_tree():
 			EconomyManager.set_gold_modifier(original)
 	)
-	_hud.show_toast("2x GOLD!")
+	_hud.show_toast(tr("TOAST_SCRAP_SALVAGE"))
 
 # ---------------------------------------------------------------------------
 # Combat helpers (chain, pierce, buffs, income)
@@ -1849,7 +1849,7 @@ func _apply_wave_reward_modifiers() -> void:
 	var picked: Array = _wave_reward_manager.get_picked_rewards()
 	if picked.size() > 0:
 		var last: Dictionary = picked[picked.size() - 1]
-		_hud.show_toast(last.get("display_name", "Buff") as String)
+		_hud.show_toast(last.get("display_name", tr("TOAST_BUFF_DEFAULT")) as String)
 
 ## Helper to get wave reward modifier value (0.0 if no manager).
 func _get_reward_mod(key: String, default: float = 0.0) -> float:
@@ -1879,13 +1879,13 @@ func _on_decode_succeeded(reward_type: int, reward_value: float) -> void:
 	match reward_type:
 		0:  # GOLD
 			EconomyManager.add_gold(int(reward_value))
-			_hud.show_toast("+%d gold" % int(reward_value))
+			_hud.show_toast(tr("TOAST_DECODE_GOLD").replace("{0}", str(int(reward_value))))
 		1:  # DAMAGE_BUFF
 			_signal_decode_damage_buff += reward_value
-			_hud.show_toast("+%d%% damage" % int(reward_value * 100))
+			_hud.show_toast(tr("TOAST_DECODE_DAMAGE").replace("{0}", str(int(reward_value * 100))))
 		2:  # EXTRA_LIFE
 			GameManager.add_lives(int(reward_value))
-			_hud.show_toast("+%d life" % int(reward_value))
+			_hud.show_toast(tr("TOAST_DECODE_LIFE").replace("{0}", str(int(reward_value))))
 
 func _on_decode_finished() -> void:
 	if _signal_decode_minigame != null:

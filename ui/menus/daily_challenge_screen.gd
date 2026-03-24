@@ -60,7 +60,7 @@ func _build_ui() -> void:
 	var streak: int = _challenge.get("streak", 0) as int
 	if streak > 0:
 		var streak_label := Label.new()
-		streak_label.text = "Streak: %d days (+%d bonus diamonds)" % [streak, mini(streak, 7) * 10]
+		streak_label.text = tr("DAILY_STREAK").replace("{0}", str(streak)).replace("{1}", str(mini(streak, 7) * 10))
 		streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		streak_label.add_theme_font_size_override("font_size", 13)
 		streak_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0))
@@ -68,7 +68,7 @@ func _build_ui() -> void:
 
 	# Reward info
 	var reward_label := Label.new()
-	reward_label.text = "Reward: 50 diamonds (100 for 3 stars)"
+	reward_label.text = tr("DAILY_REWARD_INFO")
 	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reward_label.add_theme_font_size_override("font_size", 13)
 	reward_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))

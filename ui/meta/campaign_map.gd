@@ -336,7 +336,7 @@ func _rebuild_levels() -> void:
 			var is_boss: bool = level_def.get("is_boss_level", false) as bool
 			var display: String = "%d-%d" % [region_num, level_num]
 			if is_boss:
-				display += "\nBOSS"
+				display += "\n" + tr("UI_BOSS")
 			var diff_record: Dictionary = _get_diff_record(completed, id, selected_diff)
 			var stars: int = diff_record.get("best_stars", 0) as int
 			var locked: bool = not prev_completed

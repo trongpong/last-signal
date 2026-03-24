@@ -168,7 +168,7 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 
 	# Section label
 	var towers_lbl := Label.new()
-	towers_lbl.text = "TOWERS"
+	towers_lbl.text = tr("LAB_TOWERS")
 	towers_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	towers_lbl.add_theme_font_size_override("font_size", 11)
 	towers_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
@@ -249,7 +249,7 @@ func _build_content_area(parent: HBoxContainer) -> void:
 	right_vbox.add_child(header)
 
 	_content_title = Label.new()
-	_content_title.text = "Select a tower"
+	_content_title.text = tr("LAB_SELECT_TOWER")
 	_content_title.add_theme_font_size_override("font_size", 22)
 	_content_title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 	_content_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -329,7 +329,7 @@ func _build_content_area(parent: HBoxContainer) -> void:
 	_skill_detail_panel.add_child(detail_vbox)
 
 	_detail_title = Label.new()
-	_detail_title.text = "Hover a skill to see details"
+	_detail_title.text = tr("LAB_HOVER_SKILL")
 	_detail_title.add_theme_font_size_override("font_size", 16)
 	_detail_title.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	detail_vbox.add_child(_detail_title)
@@ -543,7 +543,7 @@ func _show_skill_tree(tower_type: int) -> void:
 		name_row.add_child(name_lbl)
 
 		var level_lbl := Label.new()
-		level_lbl.text = "Level %d/%d" % [current_level, sn.max_level]
+		level_lbl.text = tr("LAB_SKILL_LEVEL").replace("{0}", str(current_level)).replace("{1}", str(sn.max_level))
 		level_lbl.add_theme_font_size_override("font_size", 12)
 		if is_maxed:
 			level_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
@@ -560,27 +560,27 @@ func _show_skill_tree(tower_type: int) -> void:
 			# Show total effect at max level
 			var total_parts: PackedStringArray = PackedStringArray()
 			if sn.damage_bonus != 0.0:
-				total_parts.append("Damage +%.1f" % (sn.damage_bonus * float(sn.max_level)))
+				total_parts.append(tr("STAT_DAMAGE") + " +%.1f" % (sn.damage_bonus * float(sn.max_level)))
 			if sn.fire_rate_bonus != 0.0:
-				total_parts.append("Fire Rate +%.2f" % (sn.fire_rate_bonus * float(sn.max_level)))
+				total_parts.append(tr("STAT_FIRE_RATE") + " +%.2f" % (sn.fire_rate_bonus * float(sn.max_level)))
 			if sn.range_bonus != 0.0:
-				total_parts.append("Range +%.0f" % (sn.range_bonus * float(sn.max_level)))
+				total_parts.append(tr("STAT_RANGE") + " +%.0f" % (sn.range_bonus * float(sn.max_level)))
 			if sn.special != "":
-				total_parts.append("Special: %s" % sn.special)
-			bonus_lbl.text = "  ".join(total_parts) if total_parts.size() > 0 else "Max level reached"
+				total_parts.append(tr("STAT_SPECIAL") + ": %s" % sn.special)
+			bonus_lbl.text = "  ".join(total_parts) if total_parts.size() > 0 else tr("LAB_MAX_LEVEL")
 			bonus_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 			info_vbox.add_child(bonus_lbl)
 		elif has_levels:
 			# Show current total → next total
 			var parts: PackedStringArray = PackedStringArray()
 			if sn.damage_bonus != 0.0:
-				parts.append("Dmg +%.1f → +%.1f" % [sn.damage_bonus * float(current_level), sn.damage_bonus * float(current_level + 1)])
+				parts.append(tr("STAT_DAMAGE_SHORT") + " +%.1f → +%.1f" % [sn.damage_bonus * float(current_level), sn.damage_bonus * float(current_level + 1)])
 			if sn.fire_rate_bonus != 0.0:
-				parts.append("Rate +%.2f → +%.2f" % [sn.fire_rate_bonus * float(current_level), sn.fire_rate_bonus * float(current_level + 1)])
+				parts.append(tr("STAT_FIRE_RATE_SHORT") + " +%.2f → +%.2f" % [sn.fire_rate_bonus * float(current_level), sn.fire_rate_bonus * float(current_level + 1)])
 			if sn.range_bonus != 0.0:
-				parts.append("Range +%.0f → +%.0f" % [sn.range_bonus * float(current_level), sn.range_bonus * float(current_level + 1)])
+				parts.append(tr("STAT_RANGE") + " +%.0f → +%.0f" % [sn.range_bonus * float(current_level), sn.range_bonus * float(current_level + 1)])
 			if sn.special != "":
-				parts.append("Special: %s" % sn.special)
+				parts.append(tr("STAT_SPECIAL") + ": %s" % sn.special)
 			bonus_lbl.text = "  ".join(parts) if parts.size() > 0 else ""
 			bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))
 			if bonus_lbl.text != "":
@@ -589,13 +589,13 @@ func _show_skill_tree(tower_type: int) -> void:
 			# Show per-level info for unstarted skills
 			var parts: PackedStringArray = PackedStringArray()
 			if sn.damage_bonus != 0.0:
-				parts.append("Damage +%.1f/lvl (max +%.1f)" % [sn.damage_bonus, sn.damage_bonus * float(sn.max_level)])
+				parts.append(tr("LAB_STAT_PER_LEVEL").replace("{stat}", tr("STAT_DAMAGE")).replace("{per}", "%.1f" % sn.damage_bonus).replace("{max}", "%.1f" % (sn.damage_bonus * float(sn.max_level))))
 			if sn.fire_rate_bonus != 0.0:
-				parts.append("Fire Rate +%.2f/lvl (max +%.2f)" % [sn.fire_rate_bonus, sn.fire_rate_bonus * float(sn.max_level)])
+				parts.append(tr("LAB_STAT_PER_LEVEL").replace("{stat}", tr("STAT_FIRE_RATE")).replace("{per}", "%.2f" % sn.fire_rate_bonus).replace("{max}", "%.2f" % (sn.fire_rate_bonus * float(sn.max_level))))
 			if sn.range_bonus != 0.0:
-				parts.append("Range +%.0f/lvl (max +%.0f)" % [sn.range_bonus, sn.range_bonus * float(sn.max_level)])
+				parts.append(tr("LAB_STAT_PER_LEVEL").replace("{stat}", tr("STAT_RANGE")).replace("{per}", "%.0f" % sn.range_bonus).replace("{max}", "%.0f" % (sn.range_bonus * float(sn.max_level))))
 			if sn.special != "":
-				parts.append("Special: %s" % sn.special)
+				parts.append(tr("STAT_SPECIAL") + ": %s" % sn.special)
 			bonus_lbl.text = "  ".join(parts) if parts.size() > 0 else ""
 			bonus_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 			if bonus_lbl.text != "":
@@ -606,7 +606,7 @@ func _show_skill_tree(tower_type: int) -> void:
 		btn.custom_minimum_size = Vector2(90, 40)
 		btn.add_theme_font_size_override("font_size", 14)
 		if is_maxed:
-			btn.text = "MAX"
+			btn.text = tr("LAB_MAX")
 			btn.disabled = true
 			btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 		else:
@@ -664,8 +664,8 @@ func _populate_global_upgrades() -> void:
 		info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(info_vbox)
 
-		# Upgrade name (prettified)
-		var display_name: String = upgrade_id.replace("_", " ").capitalize()
+		# Upgrade name (translated)
+		var display_name: String = tr("GLOBAL_" + upgrade_id.to_upper())
 		var name_lbl := Label.new()
 		name_lbl.text = display_name
 		name_lbl.add_theme_font_size_override("font_size", 16)
@@ -687,7 +687,7 @@ func _populate_global_upgrades() -> void:
 		info_vbox.add_child(progress_row)
 
 		var tier_lbl := Label.new()
-		tier_lbl.text = "Tier %d/10" % tier
+		tier_lbl.text = tr("LAB_TIER").replace("{0}", str(tier)).replace("{1}", "10")
 		tier_lbl.add_theme_font_size_override("font_size", 12)
 		tier_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 		progress_row.add_child(tier_lbl)
@@ -711,7 +711,7 @@ func _populate_global_upgrades() -> void:
 		btn.custom_minimum_size = Vector2(90, 40)
 		btn.add_theme_font_size_override("font_size", 14)
 		if is_maxed:
-			btn.text = "MAX"
+			btn.text = tr("LAB_MAX")
 			btn.disabled = true
 			btn.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 		else:
@@ -731,37 +731,37 @@ func _get_upgrade_description(upgrade_id: String, per_tier: float, current_tier:
 	match upgrade_id:
 		"starting_gold":
 			if is_maxed:
-				return "+%d starting gold" % int(current_val)
-			return "+%d gold  →  +%d gold" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_STARTING_GOLD_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_STARTING_GOLD").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"tower_cost_reduction":
 			if is_maxed:
-				return "-%d%% tower cost" % int(current_val)
-			return "-%d%% cost  →  -%d%% cost" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_TOWER_COST_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_TOWER_COST").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"extra_lives":
 			if is_maxed:
-				return "+%d extra lives" % int(current_val)
-			return "+%d lives  →  +%d lives" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_EXTRA_LIVES_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_EXTRA_LIVES").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"ability_cooldown":
 			if is_maxed:
-				return "-%.1fs ability cooldown" % current_val
-			return "-%.1fs CD  →  -%.1fs CD" % [current_val, next_val]
+				return tr("LAB_UPGRADE_ABILITY_CD_MAX").replace("{0}", "%.1f" % current_val)
+			return tr("LAB_UPGRADE_ABILITY_CD").replace("{0}", "%.1f" % current_val).replace("{1}", "%.1f" % next_val)
 		"adaptation_slowdown":
 			if is_maxed:
-				return "+%d%% adaptation delay" % int(current_val)
-			return "+%d%% delay  →  +%d%% delay" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_ADAPT_DELAY_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_ADAPT_DELAY").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"gold_per_kill":
 			if is_maxed:
-				return "+%d gold per kill" % int(current_val)
-			return "+%d gold/kill  →  +%d gold/kill" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_GOLD_KILL_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_GOLD_KILL").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"tower_sell_refund":
 			if is_maxed:
-				return "+%d%% sell refund" % int(current_val)
-			return "+%d%% refund  →  +%d%% refund" % [int(current_val), int(next_val)]
+				return tr("LAB_UPGRADE_SELL_REFUND_MAX").replace("{0}", str(int(current_val)))
+			return tr("LAB_UPGRADE_SELL_REFUND").replace("{0}", str(int(current_val))).replace("{1}", str(int(next_val)))
 		"hero_duration":
 			if is_maxed:
-				return "+%.1fs hero duration" % current_val
-			return "+%.1fs duration  →  +%.1fs duration" % [current_val, next_val]
-	return "+%.1f per tier" % per_tier
+				return tr("LAB_UPGRADE_HERO_DUR_MAX").replace("{0}", "%.1f" % current_val)
+			return tr("LAB_UPGRADE_HERO_DUR").replace("{0}", "%.1f" % current_val).replace("{1}", "%.1f" % next_val)
+	return tr("LAB_UPGRADE_PER_TIER").replace("{0}", "%.1f" % per_tier)
 
 
 # ---------------------------------------------------------------------------
@@ -772,7 +772,7 @@ func _show_skill_detail(sn: SkillNode, current_level: int) -> void:
 	if _detail_title == null:
 		return
 	var is_maxed: bool = current_level >= sn.max_level
-	_detail_title.text = "%s  (Level %d/%d)" % [sn.display_name, current_level, sn.max_level]
+	_detail_title.text = "%s  (%s)" % [sn.display_name, tr("LAB_SKILL_LEVEL").replace("{0}", str(current_level)).replace("{1}", str(sn.max_level))]
 	if is_maxed:
 		_detail_title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 	elif current_level > 0:
@@ -782,30 +782,30 @@ func _show_skill_detail(sn: SkillNode, current_level: int) -> void:
 
 	var parts: PackedStringArray = PackedStringArray()
 	if sn.damage_bonus != 0.0:
-		parts.append("Damage +%.1f per level" % sn.damage_bonus)
+		parts.append(tr("LAB_STAT_PER_LVL").replace("{stat}", tr("STAT_DAMAGE")).replace("{0}", "%.1f" % sn.damage_bonus))
 	if sn.fire_rate_bonus != 0.0:
-		parts.append("Fire Rate +%.2f per level" % sn.fire_rate_bonus)
+		parts.append(tr("LAB_STAT_PER_LVL").replace("{stat}", tr("STAT_FIRE_RATE")).replace("{0}", "%.2f" % sn.fire_rate_bonus))
 	if sn.range_bonus != 0.0:
-		parts.append("Range +%.0f per level" % sn.range_bonus)
+		parts.append(tr("LAB_STAT_PER_LVL").replace("{stat}", tr("STAT_RANGE")).replace("{0}", "%.0f" % sn.range_bonus))
 	if sn.special != "":
-		parts.append("Special: %s" % sn.special)
+		parts.append(tr("STAT_SPECIAL") + ": %s" % sn.special)
 	if sn.description != "":
 		parts.append(sn.description)
 	# Show current total bonuses if any levels invested
 	if current_level > 0:
 		var total_parts: PackedStringArray = PackedStringArray()
 		if sn.damage_bonus != 0.0:
-			total_parts.append("Damage +%.1f" % (sn.damage_bonus * float(current_level)))
+			total_parts.append(tr("STAT_DAMAGE") + " +%.1f" % (sn.damage_bonus * float(current_level)))
 		if sn.fire_rate_bonus != 0.0:
-			total_parts.append("Fire Rate +%.2f" % (sn.fire_rate_bonus * float(current_level)))
+			total_parts.append(tr("STAT_FIRE_RATE") + " +%.2f" % (sn.fire_rate_bonus * float(current_level)))
 		if sn.range_bonus != 0.0:
-			total_parts.append("Range +%.0f" % (sn.range_bonus * float(current_level)))
+			total_parts.append(tr("STAT_RANGE") + " +%.0f" % (sn.range_bonus * float(current_level)))
 		if total_parts.size() > 0:
-			parts.append("Current total: " + ", ".join(total_parts))
-	_detail_desc.text = " | ".join(parts) if parts.size() > 0 else "No bonuses"
+			parts.append(tr("LAB_CURRENT_TOTAL") + ": " + ", ".join(total_parts))
+	_detail_desc.text = " | ".join(parts) if parts.size() > 0 else tr("LAB_NO_BONUSES")
 
 	if is_maxed:
-		_detail_cost.text = "MAX LEVEL"
+		_detail_cost.text = tr("LAB_MAX_LEVEL_REACHED")
 		_detail_cost.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 	else:
 		# Show cost for next level
@@ -818,13 +818,13 @@ func _show_skill_detail(sn: SkillNode, current_level: int) -> void:
 		var next_cost: int = 0
 		if tree != null:
 			next_cost = tree.get_node_cost(sn.node_index, unlocked)
-		_detail_cost.text = "Next level cost: %d ◆" % next_cost
+		_detail_cost.text = tr("LAB_NEXT_COST").replace("{0}", str(next_cost))
 		_detail_cost.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
 
 
 func _clear_skill_detail() -> void:
 	if _detail_title != null:
-		_detail_title.text = "Hover a skill to see details"
+		_detail_title.text = tr("LAB_HOVER_SKILL")
 		_detail_title.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	if _detail_desc != null:
 		_detail_desc.text = ""
@@ -860,14 +860,14 @@ func _on_diamonds_changed(new_diamonds: int, _delta: int) -> void:
 # ---------------------------------------------------------------------------
 
 const _SYNERGY_DEFS: Array = [
-	{"type": Enums.SynergyType.SHATTER, "name": "Shatter", "pair": "Cryo + Arc", "effect": "Frozen/slowed enemies take 2x chain damage"},
-	{"type": Enums.SynergyType.BARRAGE, "name": "Barrage", "pair": "Pulse + Missile", "effect": "Both gain +15% fire rate"},
-	{"type": Enums.SynergyType.AMPLIFY, "name": "Amplify", "pair": "Nano Hive + Beam", "effect": "Beam pierces through first target"},
-	{"type": Enums.SynergyType.FROSTBITE, "name": "Frostbite", "pair": "Cryo + Missile", "effect": "Slowed enemies take +25% splash damage"},
-	{"type": Enums.SynergyType.EFFICIENCY, "name": "Efficiency", "pair": "Harvester + Nano", "effect": "Harvester income +30%"},
-	{"type": Enums.SynergyType.COLD_SNAP, "name": "Cold Snap", "pair": "Pulse + Cryo", "effect": "Pulse hits on slowed enemies extend slow +0.5s"},
-	{"type": Enums.SynergyType.CONDUIT, "name": "Conduit", "pair": "Arc + Beam", "effect": "Beam can chain to 1 additional target"},
-	{"type": Enums.SynergyType.FOCUS_FIRE, "name": "Focus Fire", "pair": "Missile + Beam", "effect": "Same target takes +20% damage for 2s"},
+	{"type": Enums.SynergyType.SHATTER, "name_key": "SYNERGY_SHATTER", "pair_key": "SYNERGY_SHATTER_PAIR", "effect_key": "SYNERGY_SHATTER_EFFECT"},
+	{"type": Enums.SynergyType.BARRAGE, "name_key": "SYNERGY_BARRAGE", "pair_key": "SYNERGY_BARRAGE_PAIR", "effect_key": "SYNERGY_BARRAGE_EFFECT"},
+	{"type": Enums.SynergyType.AMPLIFY, "name_key": "SYNERGY_AMPLIFY", "pair_key": "SYNERGY_AMPLIFY_PAIR", "effect_key": "SYNERGY_AMPLIFY_EFFECT"},
+	{"type": Enums.SynergyType.FROSTBITE, "name_key": "SYNERGY_FROSTBITE", "pair_key": "SYNERGY_FROSTBITE_PAIR", "effect_key": "SYNERGY_FROSTBITE_EFFECT"},
+	{"type": Enums.SynergyType.EFFICIENCY, "name_key": "SYNERGY_EFFICIENCY", "pair_key": "SYNERGY_EFFICIENCY_PAIR", "effect_key": "SYNERGY_EFFICIENCY_EFFECT"},
+	{"type": Enums.SynergyType.COLD_SNAP, "name_key": "SYNERGY_COLD_SNAP", "pair_key": "SYNERGY_COLD_SNAP_PAIR", "effect_key": "SYNERGY_COLD_SNAP_EFFECT"},
+	{"type": Enums.SynergyType.CONDUIT, "name_key": "SYNERGY_CONDUIT", "pair_key": "SYNERGY_CONDUIT_PAIR", "effect_key": "SYNERGY_CONDUIT_EFFECT"},
+	{"type": Enums.SynergyType.FOCUS_FIRE, "name_key": "SYNERGY_FOCUS_FIRE", "pair_key": "SYNERGY_FOCUS_FIRE_PAIR", "effect_key": "SYNERGY_FOCUS_FIRE_EFFECT"},
 ]
 
 func _populate_synergies() -> void:
@@ -879,7 +879,7 @@ func _populate_synergies() -> void:
 	var discovered: Array = SaveManager.data.get("progression", {}).get("synergies_discovered", [])
 
 	for syn in _SYNERGY_DEFS:
-		var syn_name: String = syn["name"] as String
+		var syn_name: String = tr(syn["name_key"] as String)
 		var syn_type: int = syn["type"] as int
 		var is_found: bool = discovered.has(syn_type)
 
@@ -910,16 +910,16 @@ func _populate_synergies() -> void:
 		var pair_lbl := Label.new()
 		pair_lbl.add_theme_font_size_override("font_size", 13)
 		if is_found:
-			pair_lbl.text = syn["pair"] as String
+			pair_lbl.text = tr(syn["pair_key"] as String)
 			pair_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 		else:
-			pair_lbl.text = "??? + ???"
+			pair_lbl.text = tr("LAB_SYNERGY_UNKNOWN")
 			pair_lbl.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3))
 		vbox.add_child(pair_lbl)
 
 		if is_found:
 			var effect_lbl := Label.new()
-			effect_lbl.text = syn["effect"] as String
+			effect_lbl.text = tr(syn["effect_key"] as String)
 			effect_lbl.add_theme_font_size_override("font_size", 12)
 			effect_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.5))
 			effect_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

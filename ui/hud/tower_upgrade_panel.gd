@@ -283,7 +283,7 @@ func _populate_upgrade_choices(tower: Tower) -> void:
 		top_row.add_child(name_lbl)
 
 		var btn := Button.new()
-		btn.text = "%d gold" % cost
+		btn.text = tr("UI_COST_GOLD").replace("{0}", str(cost))
 		btn.custom_minimum_size = Vector2(80, 32)
 		btn.add_theme_font_size_override("font_size", 13)
 		btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))

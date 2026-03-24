@@ -255,15 +255,15 @@ func _on_purchase_pressed(pack_id: String) -> void:
 			price_label = pack["price_label"] as String
 			break
 	if pack_id == "speed_x2":
-		_confirm_label.text = "Unlock x2 Speed for 500 diamonds?"
+		_confirm_label.text = tr("SHOP_CONFIRM_SPEED_X2").replace("{0}", str(PACKS[5]["diamonds"]))
 	elif pack_id == "speed_x3":
-		_confirm_label.text = "Unlock x3 Speed for %s?" % price_label
+		_confirm_label.text = tr("SHOP_CONFIRM_SPEED_X3").replace("{0}", price_label)
 	elif pack_id == "no_ads":
-		_confirm_label.text = "Remove all ads for %s?" % price_label
+		_confirm_label.text = tr("SHOP_CONFIRM_NO_ADS").replace("{0}", price_label)
 	elif pack_id == "doubler":
-		_confirm_label.text = "Buy Diamond Doubler for %s?" % price_label
+		_confirm_label.text = tr("SHOP_CONFIRM_DOUBLER").replace("{0}", price_label)
 	elif diamonds > 0:
-		_confirm_label.text = "Buy %d diamonds for %s?" % [diamonds, price_label]
+		_confirm_label.text = tr("SHOP_CONFIRM_PACK").replace("{0}", str(diamonds)).replace("{1}", price_label)
 	_confirm_overlay.visible = true
 
 

@@ -126,7 +126,7 @@ func _build_layout() -> void:
 
 	# --- Audio section ---
 	var audio_header := Label.new()
-	audio_header.text = "Audio"
+	audio_header.text = tr("SETTINGS_AUDIO")
 	audio_header.add_theme_font_size_override("font_size", 16)
 	audio_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(audio_header)
@@ -167,7 +167,7 @@ func _build_layout() -> void:
 
 	# --- Gameplay section ---
 	var gameplay_header := Label.new()
-	gameplay_header.text = "Gameplay"
+	gameplay_header.text = tr("SETTINGS_GAMEPLAY")
 	gameplay_header.add_theme_font_size_override("font_size", 16)
 	gameplay_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(gameplay_header)
@@ -200,7 +200,7 @@ func _build_layout() -> void:
 
 	# --- Display section ---
 	var display_header := Label.new()
-	display_header.text = "Display"
+	display_header.text = tr("SETTINGS_DISPLAY")
 	display_header.add_theme_font_size_override("font_size", 16)
 	display_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(display_header)
@@ -220,7 +220,7 @@ func _build_layout() -> void:
 
 	# Colorblind mode toggle
 	var cb_lbl := Label.new()
-	cb_lbl.text = "Colorblind Mode"
+	cb_lbl.text = tr("SETTINGS_COLORBLIND")
 	cb_lbl.add_theme_font_size_override("font_size", 18)
 	vbox.add_child(cb_lbl)
 
@@ -234,7 +234,7 @@ func _build_layout() -> void:
 
 	# --- Language section ---
 	var lang_header := Label.new()
-	lang_header.text = "Language"
+	lang_header.text = tr("SETTINGS_LANGUAGE_SECTION")
 	lang_header.add_theme_font_size_override("font_size", 16)
 	lang_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(lang_header)

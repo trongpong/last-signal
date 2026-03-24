@@ -62,7 +62,7 @@ func setup(ability_ids: Array, hero_available: bool) -> void:
 	# Hero summon button
 	if hero_available:
 		_hero_btn = Button.new()
-		_hero_btn.text = "Hero"
+		_hero_btn.text = tr("ABILITY_HERO")
 		_hero_btn.custom_minimum_size = Vector2(64, 64)
 		_hero_btn.pressed.connect(_on_hero_pressed)
 		add_child(_hero_btn)

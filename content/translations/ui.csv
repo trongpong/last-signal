@@ -146,3 +146,103 @@ UI_PROGRESS_COMPLETED,{0} / {1} completed,{0} / {1} hoàn thành
 UI_BEST_VALUE,Best Value,Giá trị tốt nhất
 UI_DOUBLE_DIAMONDS,x2 Diamonds (Watch Ad),x2 Kim cương (Xem QC)
 UI_DOUBLED,x2 Doubled!,x2 Đã nhân đôi!
+SHOP_CONFIRM_SPEED_X2,Unlock x2 Speed for {0} diamonds?,Mở khóa Tốc độ x2 với {0} kim cương?
+SHOP_CONFIRM_SPEED_X3,Unlock x3 Speed for {0}?,Mở khóa Tốc độ x3 với {0}?
+SHOP_CONFIRM_NO_ADS,Remove all ads for {0}?,Xóa tất cả quảng cáo với {0}?
+SHOP_CONFIRM_DOUBLER,Buy Diamond Doubler for {0}?,Mua Nhân đôi Kim cương với {0}?
+SHOP_CONFIRM_PACK,Buy {0} diamonds for {1}?,Mua {0} kim cương với {1}?
+UI_COST_GOLD,{0} gold,{0} vàng
+SETTINGS_AUDIO,Audio,Âm thanh
+SETTINGS_GAMEPLAY,Gameplay,Lối chơi
+SETTINGS_DISPLAY,Display,Hiển thị
+SETTINGS_COLORBLIND,Colorblind Mode,Chế độ Mù màu
+SETTINGS_LANGUAGE_SECTION,Language,Ngôn ngữ
+LAB_TOWERS,TOWERS,THÁP
+LAB_SELECT_TOWER,Select a tower,Chọn một tháp
+LAB_HOVER_SKILL,Hover a skill to see details,Rê chuột vào kỹ năng để xem chi tiết
+LAB_SKILL_LEVEL,Level {0}/{1},Cấp {0}/{1}
+LAB_MAX_LEVEL,Max level reached,Đã đạt cấp tối đa
+LAB_MAX,MAX,TĐ
+LAB_TIER,Tier {0}/{1},Bậc {0}/{1}
+LAB_NEXT_COST,Next level cost: {0} ◆,Chi phí cấp tiếp: {0} ◆
+LAB_MAX_LEVEL_REACHED,MAX LEVEL,CẤP TỐI ĐA
+LAB_CURRENT_TOTAL,Current total,Tổng hiện tại
+LAB_NO_BONUSES,No bonuses,Không có thưởng
+LAB_SYNERGY_UNKNOWN,??? + ???,??? + ???
+LAB_STAT_PER_LEVEL,{stat} +{per}/lvl (max +{max}),{stat} +{per}/cấp (tối đa +{max})
+LAB_STAT_PER_LVL,{stat} +{0} per level,{stat} +{0} mỗi cấp
+STAT_DAMAGE,Damage,Sát thương
+STAT_FIRE_RATE,Fire Rate,Tốc độ bắn
+STAT_RANGE,Range,Tầm bắn
+STAT_SPECIAL,Special,Đặc biệt
+STAT_DAMAGE_SHORT,Dmg,ST
+STAT_FIRE_RATE_SHORT,Rate,Tốc độ
+GLOBAL_STARTING_GOLD,Starting Gold,Vàng Khởi đầu
+GLOBAL_TOWER_COST_REDUCTION,Tower Cost Reduction,Giảm Chi phí Tháp
+GLOBAL_EXTRA_LIVES,Extra Lives,Mạng Thêm
+GLOBAL_ABILITY_COOLDOWN,Ability Cooldown,Hồi chiêu Kỹ năng
+GLOBAL_ADAPTATION_SLOWDOWN,Adaptation Slowdown,Làm chậm Thích ứng
+GLOBAL_GOLD_PER_KILL,Gold Per Kill,Vàng Mỗi Hạ gục
+GLOBAL_TOWER_SELL_REFUND,Tower Sell Refund,Hoàn tiền Bán Tháp
+GLOBAL_HERO_DURATION,Hero Duration,Thời gian Anh hùng
+LAB_UPGRADE_STARTING_GOLD_MAX,+{0} starting gold,+{0} vàng khởi đầu
+LAB_UPGRADE_STARTING_GOLD,+{0} gold  →  +{1} gold,+{0} vàng  →  +{1} vàng
+LAB_UPGRADE_TOWER_COST_MAX,-{0}% tower cost,-{0}% chi phí tháp
+LAB_UPGRADE_TOWER_COST,-{0}% cost  →  -{1}% cost,-{0}% chi phí  →  -{1}% chi phí
+LAB_UPGRADE_EXTRA_LIVES_MAX,+{0} extra lives,+{0} mạng thêm
+LAB_UPGRADE_EXTRA_LIVES,+{0} lives  →  +{1} lives,+{0} mạng  →  +{1} mạng
+LAB_UPGRADE_ABILITY_CD_MAX,-{0}s ability cooldown,-{0}s hồi chiêu kỹ năng
+LAB_UPGRADE_ABILITY_CD,-{0}s CD  →  -{1}s CD,-{0}s hồi chiêu  →  -{1}s hồi chiêu
+LAB_UPGRADE_ADAPT_DELAY_MAX,+{0}% adaptation delay,+{0}% trì hoãn thích ứng
+LAB_UPGRADE_ADAPT_DELAY,+{0}% delay  →  +{1}% delay,+{0}% trì hoãn  →  +{1}% trì hoãn
+LAB_UPGRADE_GOLD_KILL_MAX,+{0} gold per kill,+{0} vàng mỗi hạ gục
+LAB_UPGRADE_GOLD_KILL,+{0} gold/kill  →  +{1} gold/kill,+{0} vàng/hạ gục  →  +{1} vàng/hạ gục
+LAB_UPGRADE_SELL_REFUND_MAX,+{0}% sell refund,+{0}% hoàn tiền bán
+LAB_UPGRADE_SELL_REFUND,+{0}% refund  →  +{1}% refund,+{0}% hoàn tiền  →  +{1}% hoàn tiền
+LAB_UPGRADE_HERO_DUR_MAX,+{0}s hero duration,+{0}s thời gian anh hùng
+LAB_UPGRADE_HERO_DUR,+{0}s duration  →  +{1}s duration,+{0}s thời gian  →  +{1}s thời gian
+LAB_UPGRADE_PER_TIER,+{0} per tier,+{0} mỗi bậc
+SYNERGY_SHATTER,Shatter,Phá Vỡ
+SYNERGY_SHATTER_PAIR,Cryo + Arc,Băng Giá + Hồ Quang
+SYNERGY_SHATTER_EFFECT,Frozen/slowed enemies take 2x chain damage,Kẻ địch bị đóng băng/chậm nhận x2 sát thương dây chuyền
+SYNERGY_BARRAGE,Barrage,Trận Mưa Đạn
+SYNERGY_BARRAGE_PAIR,Pulse + Missile,Xung + Tên Lửa
+SYNERGY_BARRAGE_EFFECT,Both gain +15% fire rate,Cả hai tăng +15% tốc độ bắn
+SYNERGY_AMPLIFY,Amplify,Khuếch Đại
+SYNERGY_AMPLIFY_PAIR,Nano Hive + Beam,Tổ Nano + Tia sáng
+SYNERGY_AMPLIFY_EFFECT,Beam pierces through first target,Tia sáng xuyên qua mục tiêu đầu tiên
+SYNERGY_FROSTBITE,Frostbite,Tê Cóng
+SYNERGY_FROSTBITE_PAIR,Cryo + Missile,Băng Giá + Tên Lửa
+SYNERGY_FROSTBITE_EFFECT,Slowed enemies take +25% splash damage,Kẻ địch bị chậm nhận +25% sát thương vùng
+SYNERGY_EFFICIENCY,Efficiency,Hiệu Suất
+SYNERGY_EFFICIENCY_PAIR,Harvester + Nano,Thu Hoạch + Nano
+SYNERGY_EFFICIENCY_EFFECT,Harvester income +30%,Thu nhập Thu Hoạch +30%
+SYNERGY_COLD_SNAP,Cold Snap,Sóng Lạnh
+SYNERGY_COLD_SNAP_PAIR,Pulse + Cryo,Xung + Băng Giá
+SYNERGY_COLD_SNAP_EFFECT,Pulse hits on slowed enemies extend slow +0.5s,Đòn Xung vào kẻ địch bị chậm kéo dài hiệu ứng +0.5s
+SYNERGY_CONDUIT,Conduit,Dẫn Truyền
+SYNERGY_CONDUIT_PAIR,Arc + Beam,Hồ Quang + Tia sáng
+SYNERGY_CONDUIT_EFFECT,Beam can chain to 1 additional target,Tia sáng lan sang thêm 1 mục tiêu
+SYNERGY_FOCUS_FIRE,Focus Fire,Tập Trung Hỏa Lực
+SYNERGY_FOCUS_FIRE_PAIR,Missile + Beam,Tên Lửa + Tia sáng
+SYNERGY_FOCUS_FIRE_EFFECT,Same target takes +20% damage for 2s,Cùng mục tiêu nhận +20% sát thương trong 2s
+ABILITY_HERO,Hero,Anh hùng
+DAILY_STREAK,Streak: {0} days (+{1} bonus diamonds),Chuỗi: {0} ngày (+{1} kim cương thưởng)
+DAILY_REWARD_INFO,"Reward: 50 diamonds (100 for 3 stars)","Phần thưởng: 50 kim cương (100 cho 3 sao)"
+UI_BOSS,BOSS,BOSS
+DAMAGE_TYPE_PULSE,Pulse,Xung
+DAMAGE_TYPE_ARC,Arc,Hồ Quang
+DAMAGE_TYPE_CRYO,Cryo,Băng Giá
+DAMAGE_TYPE_MISSILE,Missile,Tên Lửa
+DAMAGE_TYPE_BEAM,Beam,Tia Sáng
+DAMAGE_TYPE_NANO,Nano,Nano
+DAMAGE_TYPE_HARVEST,Harvest,Thu Hoạch
+DAMAGE_TYPE_UNKNOWN,Unknown,Không rõ
+TOAST_EMP_BURST,EMP BURST!,NỔ EMP!
+TOAST_REPAIR_WAVE,+1 Life,+1 Mạng
+TOAST_OVERCLOCK,OVERCLOCK!,ÉP XUNG!
+TOAST_SCRAP_SALVAGE,2x GOLD!,x2 VÀNG!
+TOAST_BUFF_DEFAULT,Buff,Tăng cường
+TOAST_DECODE_GOLD,+{0} gold,+{0} vàng
+TOAST_DECODE_DAMAGE,+{0}% damage,+{0}% sát thương
+TOAST_DECODE_LIFE,+{0} life,+{0} mạng
