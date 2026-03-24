@@ -4,7 +4,7 @@ extends Node
 ## Manages music via MusicSystem and SFX via a pooled AudioStreamPlayer set.
 ## Registered as an autoload in project.godot.
 
-const SFX_POOL_SIZE := 8
+const SFX_POOL_SIZE := 12
 const MAX_SFX_CACHE: int = 64
 
 var _music_system: MusicSystem
@@ -84,6 +84,148 @@ func play_ability_activate() -> void:
 	_play_sfx(stream)
 
 
+# --- Gameplay SFX ---
+
+func play_tower_place() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("tower_place", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_tower_place())
+	_play_sfx(stream)
+
+
+func play_tower_upgrade(tier: int) -> void:
+	var key := "tower_upgrade_%d" % tier
+	var stream: AudioStreamWAV = _get_or_generate(key, func() -> AudioStreamWAV:
+		return _sfx_generator.generate_tower_upgrade(tier))
+	_play_sfx(stream)
+
+
+func play_tower_sell() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("tower_sell", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_tower_sell())
+	_play_sfx(stream)
+
+
+func play_enemy_hit() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("enemy_hit", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_enemy_hit())
+	_play_sfx(stream, 0.6)
+
+
+func play_enemy_escape(escalation: float) -> void:
+	var stream := _sfx_generator.generate_enemy_escape(escalation)
+	_play_sfx(stream)
+
+
+func play_wave_start(escalation: float) -> void:
+	var stream := _sfx_generator.generate_wave_start(escalation)
+	_play_sfx(stream)
+
+
+func play_wave_complete(escalation: float) -> void:
+	var stream := _sfx_generator.generate_wave_complete(escalation)
+	_play_sfx(stream)
+
+
+func play_lives_lost(escalation: float) -> void:
+	var stream := _sfx_generator.generate_lives_lost(escalation)
+	_play_sfx(stream)
+
+
+func play_victory(escalation: float) -> void:
+	var stream := _sfx_generator.generate_victory(escalation)
+	_play_sfx(stream)
+
+
+func play_defeat(escalation: float) -> void:
+	var stream := _sfx_generator.generate_defeat(escalation)
+	_play_sfx(stream)
+
+
+# --- Economy SFX (all cached) ---
+
+func play_gold_earn() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("gold_earn", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_gold_earn())
+	_play_sfx(stream)
+
+
+func play_gold_spend() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("gold_spend", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_gold_spend())
+	_play_sfx(stream)
+
+
+func play_diamond_earn() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("diamond_earn", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_diamond_earn())
+	_play_sfx(stream)
+
+
+func play_cannot_afford() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("cannot_afford", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_cannot_afford())
+	_play_sfx(stream)
+
+
+# --- UI SFX (all cached) ---
+
+func play_ui_click() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("ui_click", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_ui_click())
+	_play_sfx(stream)
+
+
+func play_ui_hover() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("ui_hover", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_ui_hover())
+	_play_sfx(stream, 0.4)
+
+
+func play_ui_panel_open() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("ui_panel_open", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_ui_panel_open())
+	_play_sfx(stream)
+
+
+func play_ui_panel_close() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("ui_panel_close", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_ui_panel_close())
+	_play_sfx(stream)
+
+
+# --- Minigame SFX (glyph tones cached per index) ---
+
+func play_glyph_tone(glyph_index: int) -> void:
+	var key := "glyph_tone_%d" % (glyph_index % SFXGenerator.PENTATONIC_SCALE.size())
+	var stream: AudioStreamWAV = _get_or_generate(key, func() -> AudioStreamWAV:
+		return _sfx_generator.generate_glyph_tone(glyph_index))
+	_play_sfx(stream)
+
+
+func play_decode_correct() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("decode_correct", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_decode_correct())
+	_play_sfx(stream)
+
+
+func play_decode_wrong() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("decode_wrong", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_decode_wrong())
+	_play_sfx(stream)
+
+
+func play_decode_success() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("decode_success", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_decode_success())
+	_play_sfx(stream)
+
+
+func play_decode_fail() -> void:
+	var stream: AudioStreamWAV = _get_or_generate("decode_fail", func() -> AudioStreamWAV:
+		return _sfx_generator.generate_decode_fail())
+	_play_sfx(stream)
+
+
 # ---------------------------------------------------------------------------
 # Procedural background music
 # ---------------------------------------------------------------------------
@@ -154,30 +296,37 @@ func set_sfx_volume(vol: float) -> void:
 # ---------------------------------------------------------------------------
 
 ## Find a free SFX player in the pool and play the stream on it.
-func _play_sfx(stream: AudioStreamWAV) -> void:
+func _play_sfx(stream: AudioStreamWAV, volume: float = 1.0) -> void:
 	if stream == null:
 		return
 	for player in _sfx_players:
 		if not player.playing:
 			player.stream = stream
+			player.volume_db = linear_to_db(volume)
 			player.play()
 			return
 	# All players busy — steal the first one
 	_sfx_players[0].stop()
 	_sfx_players[0].stream = stream
+	_sfx_players[0].volume_db = linear_to_db(volume)
 	_sfx_players[0].play()
 
 
 ## Return a cached AudioStreamWAV or generate and cache a new one.
 ## Uses LRU eviction to keep the cache within MAX_SFX_CACHE entries.
+## The generator callable may return either PackedFloat32Array or AudioStreamWAV.
 func _get_or_generate(key: String, generator: Callable) -> AudioStreamWAV:
 	if _sfx_cache.has(key):
 		# Move to end of access order (most recently used)
 		_sfx_access_order.erase(key)
 		_sfx_access_order.append(key)
 		return _sfx_cache[key]
-	var samples: PackedFloat32Array = generator.call()
-	var stream := _samples_to_stream(samples)
+	var result = generator.call()
+	var stream: AudioStreamWAV
+	if result is AudioStreamWAV:
+		stream = result
+	else:
+		stream = _samples_to_stream(result)
 	# Evict oldest entry if cache is full
 	if _sfx_cache.size() >= MAX_SFX_CACHE:
 		var oldest_key = _sfx_access_order.pop_front()
