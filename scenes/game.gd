@@ -1129,13 +1129,13 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 		screen.hide_double_button()
 	else:
 		screen.double_diamonds_requested.connect(func() -> void:
-			ad_mgr.show_bonus_ad(EconomyManager, SaveManager, diamonds)
 			ad_mgr.bonus_ad_reward_granted.connect(func(_bonus: int) -> void:
 				screen.on_double_diamonds_granted()
 			, CONNECT_ONE_SHOT)
 			ad_mgr.bonus_ad_failed.connect(func() -> void:
 				screen.hide_double_button()
 			, CONNECT_ONE_SHOT)
+			ad_mgr.show_bonus_ad(EconomyManager, SaveManager, diamonds)
 		)
 
 func _on_level_failed(level_id: String) -> void:
@@ -1861,9 +1861,12 @@ func _get_reward_mod(key: String, default: float = 0.0) -> float:
 func _show_signal_decode(_duration: float) -> void:
 	if _wave_reward_ui != null:
 		return
+	# Pause the break timer so it doesn't expire while the minigame is active
+	_wave_manager.pause_break()
+	_hud.pause_break_countdown()
 	var wave_num: int = _wave_manager.current_wave_index + 1
 	var minigame = load("res://ui/hud/signal_decode_minigame.gd").new()
-	minigame.setup(wave_num)
+	minigame.setup(wave_num, _hud.tower_bar_total)
 	minigame.decode_succeeded.connect(_on_decode_succeeded)
 	minigame.decode_finished.connect(_on_decode_finished)
 	ui.add_child(minigame)
@@ -1875,23 +1878,24 @@ func _on_decode_succeeded(reward_type: int, reward_value: float) -> void:
 			EconomyManager.add_gold(int(reward_value))
 			_hud.show_toast("+%d gold" % int(reward_value))
 		1:  # DAMAGE_BUFF
-			_signal_decode_damage_buff = reward_value
-			_hud.show_toast("+%d%% damage next wave" % int(reward_value * 100))
-		2:  # COOLDOWN_REDUCTION
-			if _ability_manager != null:
-				_ability_manager.reduce_all_cooldowns(reward_value)
-			_hud.show_toast("-%ds cooldowns" % int(reward_value))
+			_signal_decode_damage_buff += reward_value
+			_hud.show_toast("+%d%% damage" % int(reward_value * 100))
+		2:  # EXTRA_LIFE
+			GameManager.add_lives(int(reward_value))
+			_hud.show_toast("+%d life" % int(reward_value))
 
 func _on_decode_finished() -> void:
 	if _signal_decode_minigame != null:
 		_signal_decode_minigame.queue_free()
 		_signal_decode_minigame = null
+	# Resume the break timer from where it was paused (no re-emit to avoid re-triggering minigame)
+	_wave_manager.unpause_break()
+	_hud.unpause_break_countdown()
 
 func _on_wave_started_dismiss_decode(_wave_number: int, _total_waves: int) -> void:
 	if _signal_decode_minigame != null:
 		_signal_decode_minigame.skip()
-	# Reset decode damage buff (only lasts one wave)
-	_signal_decode_damage_buff = 0.0
+
 
 # ---------------------------------------------------------------------------
 # Juice: Screen Flash + Life Effects

@@ -264,6 +264,5 @@ const MASTERY_TIERS: Array = [
 const SIGNAL_DECODE_GLYPHS: Array = ["◆", "◇", "○", "△", "□", "☆"]
 const SIGNAL_DECODE_DISPLAY_TIME: float = 2.0
 const SIGNAL_DECODE_INPUT_TIME: float = 4.0
-const SIGNAL_DECODE_REWARD_GOLD: int = 20
+const SIGNAL_DECODE_REWARD_GOLD: int = 50
 const SIGNAL_DECODE_REWARD_DAMAGE_MULT: float = 0.05
-const SIGNAL_DECODE_REWARD_COOLDOWN_SECS: float = 3.0

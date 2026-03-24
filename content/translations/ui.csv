@@ -95,7 +95,7 @@ SELL_VALUE,Sell Value: {0},Giá bán: {0}
 REFUND,Refund: {0}%,Hoàn lại: {0}%
 ENDLESS_WAVE,Endless Wave {0},Đợt Vô tận {0}
 ENDLESS_RESISTANCE,Resistance Active,Kháng Cự Đang Hoạt Động
-ADS_REMAINING,Ads Today: {0}/{1},Quảng cáo hôm nay: {0}/{1}
+ADS_REMAINING,Watch Ad (+{2} ◆) — {0}/{1} left today,Xem QC (+{2} ◆) — còn {0}/{1} hôm nay
 WATCH_AD,Watch Ad (+{0} Diamonds),Xem quảng cáo (+{0} Kim cương)
 NO_ADS,Remove Ads,Xóa quảng cáo
 DIAMOND_DOUBLER,Diamond Doubler,Nhân đôi Kim cương
@@ -117,9 +117,11 @@ DAILY_CHALLENGE,Daily Challenge,Thử thách Hàng ngày
 DAILY_COMPLETED,Completed,Đã hoàn thành
 DAILY_PLAY,Play,Chơi
 SETTINGS_FULLSCREEN,Fullscreen,Toàn màn hình
-SIGNAL_DECODE_PROMPT,Decode the signal!,Giải mã tín hiệu!
+SIGNAL_DECODE_PROMPT,Memorize for:,Ghi nhớ để nhận:
 SIGNAL_DECODE_SUCCESS,Signal decoded!,Giải mã thành công!
 SIGNAL_DECODE_FAIL,Decoding failed!,Giải mã thất bại!
+SIGNAL_DECODE_REWARD_DAMAGE,damage,sát thương
+SIGNAL_DECODE_REWARD_LIFE,life,mạng
 SYNERGY_DISCOVERED,Synergy Discovered,Phát hiện Hiệp lực
 TOAST_PLACEMENT_BLOCKED,Position occupied!,Vị trí đã bị chiếm!
 TOAST_NOT_ENOUGH_GOLD,Not enough gold!,Không đủ vàng!
@@ -137,7 +139,7 @@ HUD_LEVEL_STATS,Level Stats,Thống kê Màn chơi
 HUD_SIGNAL_INTERCEPTED,SIGNAL INTERCEPTED,TÍN HIỆU BỊ CHẶN
 HUD_CHOOSE_BUFF,Choose a buff,Chọn một tăng cường
 HUD_CHOOSE,Choose,Chọn
-SIGNAL_DECODE_INPUT_PROMPT,Tap the sequence!,Chạm theo trình tự!
+SIGNAL_DECODE_INPUT_PROMPT,Now tap it back!,Giờ chạm lại theo thứ tự!
 UI_REGIONS,REGIONS,KHU VỰC
 UI_DIFFICULTY,DIFFICULTY,ĐỘ KHÓ
 UI_PROGRESS_COMPLETED,{0} / {1} completed,{0} / {1} hoàn thành

@@ -25,10 +25,15 @@ var _tower_bar: TowerBar
 var _upgrade_panel: TowerUpgradePanel
 var _ability_bar: AbilityBar
 var _send_wave_btn: Button
+var _break_countdown_label: Label
+var _break_remaining: float = 0.0
+var _break_active: bool = false
+var _break_paused: bool = false
 var _adaptation_warning: Label
 var _resistance_panel: VBoxContainer
 var _resistance_bars: Dictionary = {}  # DamageType -> ProgressBar
 var _root: Control
+var tower_bar_total: float = 72.0
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -36,6 +41,17 @@ var _root: Control
 
 func _ready() -> void:
 	_build_hud()
+
+func _process(delta: float) -> void:
+	if _break_active and not _break_paused and _break_countdown_label != null:
+		_break_remaining -= delta
+		if _break_remaining <= 0.0:
+			_break_remaining = 0.0
+			_break_active = false
+			_break_countdown_label.visible = false
+		else:
+			_break_countdown_label.text = "%ds" % ceili(_break_remaining)
+			_break_countdown_label.visible = true
 
 
 func _get_safe_margin() -> float:
@@ -65,7 +81,7 @@ func _build_hud() -> void:
 	var screen_size := DisplayServer.screen_get_size()
 	var safe_area := DisplayServer.get_display_safe_area()
 	var top_inset: float = maxf(safe_area.position.y, 8.0)
-	var bot_inset: float = maxf(screen_size.y - safe_area.end.y, 4.0)
+	var bot_inset: float = maxf(screen_size.y - safe_area.end.y, 0.0)
 
 	# Top bar background (semi-transparent dark)
 	var top_bar_bg := ColorRect.new()
@@ -137,7 +153,7 @@ func _build_hud() -> void:
 	root.add_child(_tower_bar)
 	_tower_bar.tower_build_requested.connect(_on_build_requested)
 
-	var tower_bar_total: float = 72.0 + bot_inset
+	tower_bar_total = 72.0 + bot_inset
 
 	# Tower upgrade panel (slides up from bottom, centered 70% width, hidden by default)
 	_upgrade_panel = TowerUpgradePanel.new()
@@ -182,6 +198,23 @@ func _build_hud() -> void:
 	_send_wave_btn.offset_left = -140.0 - safe
 	_send_wave_btn.pressed.connect(_on_send_wave_pressed)
 	root.add_child(_send_wave_btn)
+
+	# Break countdown label (above send wave button)
+	_break_countdown_label = Label.new()
+	_break_countdown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_break_countdown_label.add_theme_font_size_override("font_size", 14)
+	_break_countdown_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	_break_countdown_label.anchor_top = 1.0
+	_break_countdown_label.anchor_bottom = 1.0
+	_break_countdown_label.anchor_left = 1.0
+	_break_countdown_label.anchor_right = 1.0
+	_break_countdown_label.offset_bottom = -tower_bar_total - 58.0
+	_break_countdown_label.offset_top = -tower_bar_total - 76.0
+	_break_countdown_label.offset_right = -safe
+	_break_countdown_label.offset_left = -140.0 - safe
+	_break_countdown_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_break_countdown_label.visible = false
+	root.add_child(_break_countdown_label)
 
 	# Adaptation warning label (centre screen, hidden by default)
 	_adaptation_warning = Label.new()
@@ -428,15 +461,27 @@ func _on_wave_started(wave_number: int, total_waves: int) -> void:
 	_top_bar.update_wave(wave_number, total_waves)
 	if _send_wave_btn != null:
 		_send_wave_btn.disabled = true
+	_break_active = false
+	if _break_countdown_label != null:
+		_break_countdown_label.visible = false
 
 
 func _on_wave_complete(_wave_number: int) -> void:
 	pass  # break_started will enable the send button
 
 
-func _on_break_started(_duration: float) -> void:
+func pause_break_countdown() -> void:
+	_break_paused = true
+
+func unpause_break_countdown() -> void:
+	_break_paused = false
+
+func _on_break_started(duration: float) -> void:
 	if _send_wave_btn != null:
 		_send_wave_btn.disabled = false
+	_break_remaining = duration
+	_break_active = true
+	_break_paused = false
 
 
 func _on_state_changed(new_state: int, _old_state: int) -> void:

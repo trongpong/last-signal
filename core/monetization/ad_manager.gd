@@ -14,8 +14,8 @@ extends Node
 const AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4258670828"
 const AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5224354917"
 
-const RI_AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4258670828"
-const RI_AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5354046379"
+const DC_AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/5883745702"
+const DC_AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5354046379"
 
 # ---------------------------------------------------------------------------
 # Signals
@@ -72,8 +72,8 @@ func _get_ad_unit_id() -> String:
 
 func _get_ri_ad_unit_id() -> String:
 	if OS.is_debug_build():
-		return RI_AD_UNIT_ID_TEST
-	return RI_AD_UNIT_ID_ANDROID
+		return DC_AD_UNIT_ID_TEST
+	return DC_AD_UNIT_ID_ANDROID
 
 ## Safely get a GDScript class by name from the global scope.
 ## Returns null if the class doesn't exist (e.g., plugin not loaded).

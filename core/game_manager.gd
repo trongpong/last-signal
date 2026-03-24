@@ -91,6 +91,11 @@ func _trigger_defeat() -> void:
 # Lives
 # ---------------------------------------------------------------------------
 
+## Adds lives (e.g. from minigame reward).
+func add_lives(amount: int) -> void:
+	lives += amount
+	lives_changed.emit(lives, lives_lost)
+
 ## Decrements lives by 1. Triggers defeat if lives reach 0.
 func lose_life() -> void:
 	if current_state == Enums.GameState.DEFEAT:

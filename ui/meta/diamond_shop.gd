@@ -237,7 +237,7 @@ func update_ad_button(ads_remaining: int) -> void:
 		return
 	_ad_btn.visible = true
 	var max_ads: int = Constants.MAX_ADS_PER_DAY
-	_ad_btn.text = tr("ADS_REMAINING").replace("{0}", str(ads_remaining)).replace("{1}", str(max_ads))
+	_ad_btn.text = tr("ADS_REMAINING").replace("{0}", str(ads_remaining)).replace("{1}", str(max_ads)).replace("{2}", str(Constants.DIAMONDS_PER_AD))
 	_ad_btn.disabled = ads_remaining <= 0
 
 # ---------------------------------------------------------------------------

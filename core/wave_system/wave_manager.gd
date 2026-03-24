@@ -154,6 +154,10 @@ func resume_break(duration: float) -> void:
 	_break_timer = duration
 	break_started.emit(duration)
 
+## Resumes the break timer from where it was paused, without re-emitting break_started.
+func unpause_break() -> void:
+	_in_break = true
+
 ## Registers an extra enemy spawned mid-wave (e.g. elite splits).
 func register_extra_enemy() -> void:
 	_enemies_alive += 1

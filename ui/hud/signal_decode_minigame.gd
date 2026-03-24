@@ -14,7 +14,7 @@ signal decode_finished
 # Reward types
 # ---------------------------------------------------------------------------
 
-enum RewardType { GOLD, DAMAGE_BUFF, COOLDOWN_REDUCTION }
+enum RewardType { GOLD, DAMAGE_BUFF, EXTRA_LIFE }
 
 # ---------------------------------------------------------------------------
 # State
@@ -29,6 +29,8 @@ var _timer: float = 0.0
 var _display_index: int = 0
 var _display_interval: float = 0.0
 var _succeeded: bool = false
+var _reward_type: int = RewardType.GOLD
+var _reward_value: float = 0.0
 
 # UI refs
 var _glyph_buttons: Array = []
@@ -37,22 +39,25 @@ var _timer_bar: ColorRect = null
 var _timer_bg: ColorRect = null
 var _status_label: Label = null
 var _prompt_label: Label = null
+var _bottom_offset: float = 80.0
 
 # ---------------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------------
 
-func setup(wave_number: int) -> void:
+func setup(wave_number: int, tower_bar_height: float = 72.0) -> void:
+	_bottom_offset = tower_bar_height
 	var seq_length: int = _get_sequence_length(wave_number)
 	_sequence.clear()
 	for i in range(seq_length):
 		_sequence.append(randi() % Constants.SIGNAL_DECODE_GLYPHS.size())
 	_phase = Phase.SHOWING
-	_display_index = 0
+	_display_index = -1
 	_display_interval = Constants.SIGNAL_DECODE_DISPLAY_TIME / float(seq_length)
 	_timer = 0.0
 	_input_index = 0
 	_succeeded = false
+	_roll_reward()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_ui()
 
@@ -64,7 +69,9 @@ func skip() -> void:
 # ---------------------------------------------------------------------------
 
 func _process(delta: float) -> void:
-	_timer += delta
+	# Run at real-time speed regardless of Engine.time_scale (x2, x3)
+	var real_delta: float = delta / maxf(Engine.time_scale, 0.001)
+	_timer += real_delta
 	match _phase:
 		Phase.SHOWING:
 			var idx: int = int(_timer / _display_interval)
@@ -95,8 +102,8 @@ func _build_ui() -> void:
 	anchor_right = 0.75
 	anchor_top = 1.0
 	anchor_bottom = 1.0
-	offset_top = -210.0
-	offset_bottom = -80.0
+	offset_top = -(_bottom_offset + 160.0)
+	offset_bottom = -_bottom_offset
 
 	# Background panel
 	var bg := ColorRect.new()
@@ -112,12 +119,12 @@ func _build_ui() -> void:
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(vbox)
 
-	# Prompt
+	# Prompt — show the reward so the player knows what they're playing for
 	_prompt_label = Label.new()
-	_prompt_label.text = tr("SIGNAL_DECODE_PROMPT")
+	_prompt_label.text = tr("SIGNAL_DECODE_PROMPT") + "  " + _get_reward_text()
 	_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt_label.add_theme_font_size_override("font_size", 12)
-	_prompt_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.6))
+	_prompt_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 	_prompt_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(_prompt_label)
 
@@ -223,14 +230,30 @@ func _finish(success: bool) -> void:
 			_status_label.text = tr("SIGNAL_DECODE_FAIL")
 			_status_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.2))
 
-func _emit_reward() -> void:
+func _roll_reward() -> void:
 	var roll: float = randf()
 	if roll < 0.33:
-		decode_succeeded.emit(RewardType.GOLD, float(Constants.SIGNAL_DECODE_REWARD_GOLD))
+		_reward_type = RewardType.GOLD
+		_reward_value = float(Constants.SIGNAL_DECODE_REWARD_GOLD)
 	elif roll < 0.66:
-		decode_succeeded.emit(RewardType.DAMAGE_BUFF, Constants.SIGNAL_DECODE_REWARD_DAMAGE_MULT)
+		_reward_type = RewardType.DAMAGE_BUFF
+		_reward_value = Constants.SIGNAL_DECODE_REWARD_DAMAGE_MULT
 	else:
-		decode_succeeded.emit(RewardType.COOLDOWN_REDUCTION, Constants.SIGNAL_DECODE_REWARD_COOLDOWN_SECS)
+		_reward_type = RewardType.EXTRA_LIFE
+		_reward_value = 1.0
+
+func _get_reward_text() -> String:
+	match _reward_type:
+		RewardType.GOLD:
+			return "+%d " % int(_reward_value) + tr("UI_GOLD")
+		RewardType.DAMAGE_BUFF:
+			return "+%d%% " % int(_reward_value * 100) + tr("SIGNAL_DECODE_REWARD_DAMAGE")
+		RewardType.EXTRA_LIFE:
+			return "+%d " % int(_reward_value) + tr("SIGNAL_DECODE_REWARD_LIFE")
+	return ""
+
+func _emit_reward() -> void:
+	decode_succeeded.emit(_reward_type, _reward_value)
 
 # ---------------------------------------------------------------------------
 # Helpers

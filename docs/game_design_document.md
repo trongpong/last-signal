@@ -534,9 +534,11 @@ Between-wave activity during the 6-second break. Purely optional — no penalty 
 
 ### How It Works
 
-1. A non-intrusive prompt appears bottom-center: "Intercepted Convergence transmission — decode it?"
-2. A sequence of sci-fi glyphs flashes (SHOWING phase)
+1. A prompt appears bottom-center showing the specific reward at stake: "Memorize for: +50 Gold"
+2. A sequence of sci-fi glyphs flashes — player memorizes the order (SHOWING phase)
 3. Player taps the glyphs back in order within 4 seconds (INPUT phase)
+
+The minigame runs at real-time speed regardless of game speed (x2/x3). The wave break timer pauses while the minigame is active and resumes after completion. A break countdown indicator is shown above the Send Wave button.
 
 ### Scaling
 
@@ -546,11 +548,11 @@ Between-wave activity during the 6-second break. Purely optional — no penalty 
 | 11–25 | 5 symbols |
 | 26+ | 6 symbols |
 
-### Rewards (random on success)
+### Rewards (random, shown before sequence plays)
 
-- +20 gold
-- +5% tower damage next wave
-- -3s on one ability cooldown
+- **+50 gold** — instant gold bonus
+- **+5% tower damage** — stacks permanently for the entire battle
+- **+1 life** — extra life added immediately
 
 Fail/skip: nothing happens.
 
@@ -572,6 +574,7 @@ Fail/skip: nothing happens.
 - 10 ads per day (resets at UTC midnight)
 - 150 diamonds per ad
 - Daily limit tracked in SaveManager
+- Button always shows diamond amount: "Watch Ad (+150 ◆) — 8/10 left today"
 
 ### 15.3 x2 Diamond Bonus (Level Complete)
 
@@ -608,7 +611,7 @@ All UI built programmatically in code (no .tscn scene files). All text uses `tr(
 
 **Top Bar:**
 - Lives counter, Gold counter, Wave counter (current/total)
-- Send Wave button (with early-send gold bonus display)
+- Send Wave button (with early-send gold bonus display) + break countdown timer above
 - Speed toggle button (1×/2×/3×)
 
 **Bottom Bar:**
