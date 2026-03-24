@@ -272,7 +272,7 @@ func start_level(level_id: String, difficulty: int = Enums.Difficulty.NORMAL) ->
 	# Setup adaptation manager
 	_adaptation_manager = AdaptationManager.new()
 	add_child(_adaptation_manager)
-	_adaptation_manager.setup(difficulty, false)
+	_adaptation_manager.setup(difficulty, _level_id == "endless")
 	# Apply adaptation slowdown from global upgrades
 	var adapt_bonus: float = _progression_manager.get_global_upgrade_tier("adaptation_slowdown") * 0.02
 	if adapt_bonus > 0.0:
@@ -886,6 +886,9 @@ func _process_tower_combat() -> void:
 		var tower := child as Tower
 		if not tower.can_fire():
 			continue
+		# Skip support towers (e.g. Nano Hive) — they buff, not attack
+		if tower.is_support_tower():
+			continue
 
 		# Only check nearby enemies via spatial hash
 		var nearby: Array = _get_nearby_enemies(tower.global_position, tower.current_range)
@@ -1036,8 +1039,8 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 		# Shatter synergy: chain damage doubled on slowed enemies (applied in _apply_chain_damage)
 		_apply_chain_damage(hit_enemies[0].global_position, chain_count, chain_range, chain_damage, damage_type, hit_enemies, armor_pierce, synergy == Enums.SynergyType.SHATTER, src_tower_type)
 
-	# Pierce skill — damage one additional enemy behind the target
-	if source_tower.has_special("pierce") and source_tower.get_special_level("pierce") >= 3:
+	# Pierce — damage additional enemies behind the target (tier upgrades use "pierce+N", skill tree uses bare "pierce")
+	if source_tower.get_effective_pierce() > 0:
 		_apply_pierce(hit_pos, damage * 0.8, damage_type, hit_enemies, armor_pierce, src_tower_type)
 
 	# Amplify synergy: extra pierce for Beam towers

@@ -20,7 +20,7 @@ const PACKS: Array = [
 	{"id": "small",   "diamonds": 500,  "price_label": "$0.99"},
 	{"id": "medium",  "diamonds": 2000, "price_label": "$3.99"},
 	{"id": "large",   "diamonds": 5000, "price_label": "$7.99"},
-	{"id": "doubler",  "diamonds": 0,    "price_label": "$9.99"},  # Diamond doubler
+	{"id": "doubler",  "diamonds": 0,    "price_label": "$4.99"},  # Diamond doubler
 	{"id": "no_ads",   "diamonds": 0,    "price_label": "$1.99"},  # Remove ads
 	{"id": "speed_x2", "diamonds": 500,  "price_label": "500 ◆"},  # x2 speed (diamond purchase)
 	{"id": "speed_x3", "diamonds": 0,    "price_label": "$0.99"},  # x3 speed (IAP)
@@ -52,7 +52,7 @@ func _build_layout() -> void:
 	var bg := ColorRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0.02, 0.03, 0.06, 0.95)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
 
 	var vbox := VBoxContainer.new()

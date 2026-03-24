@@ -201,13 +201,9 @@ func _validate_save_data(d: Dictionary) -> Dictionary:
 	var defaults: Dictionary = get_default_save_data()
 
 	# --- ensure key sections exist and are the right type ---
-	for section in ["economy", "progression", "settings", "campaign"]:
+	for section in ["economy", "progression", "campaign"]:
 		if not d.has(section) or not (d[section] is Dictionary):
-			# profile.settings is nested under "profile" in the defaults
-			if section == "settings":
-				d["profile"] = defaults["profile"].duplicate(true)
-			else:
-				d[section] = defaults[section].duplicate(true)
+			d[section] = defaults[section].duplicate(true)
 
 	# Also ensure profile.settings exists when "settings" section lives there
 	if d.has("profile"):

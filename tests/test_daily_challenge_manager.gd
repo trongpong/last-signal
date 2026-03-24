@@ -88,7 +88,7 @@ func test_reward_base_50() -> void:
 	assert_eq(_dcm.get_reward_diamonds(1), DailyChallengeManager.BASE_REWARD)
 
 func test_reward_three_star_100() -> void:
-	assert_eq(_dcm.get_reward_diamonds(3), DailyChallengeManager.THREE_STAR_REWARD)
+	assert_eq(_dcm.get_reward_diamonds(3), DailyChallengeManager.BASE_REWARD + DailyChallengeManager.THREE_STAR_REWARD)
 
 func test_reward_streak_bonus() -> void:
 	# Simulate a streak by setting save data directly

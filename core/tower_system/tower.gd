@@ -369,6 +369,7 @@ func get_effective_chain_count() -> int:
 	return base
 
 ## Returns the chain range including tier upgrade bonuses.
+## If chain_count > 0 but base chain_range is 0, returns a default range so chains can find targets.
 func get_effective_chain_range() -> float:
 	if _definition == null:
 		return 0.0
@@ -376,6 +377,9 @@ func get_effective_chain_range() -> float:
 	for key in _tier_specials:
 		if key.begins_with("chain_range+"):
 			base += float(key.substr(12)) * float(_tier_specials[key])
+	# Provide a default range when chain_count exists but range is still 0
+	if base <= 0.0 and get_effective_chain_count() > 0:
+		base = 120.0
 	return base
 
 ## Returns effective slow factor including tier upgrade and skill bonuses (lower = stronger).
@@ -442,6 +446,19 @@ func get_effective_buff_fire_rate_mult() -> float:
 		if key.begins_with("buff_fire_rate_mult+"):
 			base += float(key.substr(20)) * float(_tier_specials[key])
 	return base
+
+## Returns the effective pierce count from skill tree and tier upgrades.
+## Skill tree grants bare "pierce" key; tier upgrades use "pierce+N" keys.
+func get_effective_pierce() -> int:
+	var total: int = 0
+	# Skill tree: bare "pierce" key
+	if _skill_specials.has("pierce"):
+		total += _skill_specials["pierce"] as int
+	# Tier upgrades: "pierce+N" keys
+	for key in _tier_specials:
+		if key.begins_with("pierce+"):
+			total += int(key.substr(7)) * _tier_specials[key]
+	return total
 
 ## Returns true if this tower has the named special active (from skill tree or tier upgrades).
 func has_special(special_name: String) -> bool:

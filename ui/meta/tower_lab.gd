@@ -89,7 +89,7 @@ func _build_layout() -> void:
 	var bg := ColorRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0.02, 0.03, 0.06, 0.95)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(bg)
 
 	var safe: float = _get_safe_margin()
