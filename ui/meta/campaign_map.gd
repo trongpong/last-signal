@@ -173,7 +173,10 @@ func _build_layout() -> void:
 	back_btn.custom_minimum_size = Vector2(0, 48)
 	back_btn.add_theme_font_size_override("font_size", 18)
 	back_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	back_btn.pressed.connect(func() -> void: back_pressed.emit())
+	back_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		back_pressed.emit()
+	)
 	inner.add_child(back_btn)
 
 	# Vertical separator line
@@ -285,7 +288,10 @@ func _rebuild_levels() -> void:
 		tab_btn.add_theme_font_size_override("font_size", 14)
 		tab_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var tab_idx: int = idx
-		tab_btn.pressed.connect(func() -> void: _select_region(tab_idx))
+		tab_btn.pressed.connect(func() -> void:
+			AudioManager.play_ui_click()
+			_select_region(tab_idx)
+		)
 
 		# Show completion badge
 		if completed_count == region_levels.size():

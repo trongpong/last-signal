@@ -37,6 +37,7 @@ func _ready() -> void:
 func show_animated() -> void:
 	# Make sure quit confirmation is hidden when the menu opens
 	_quit_confirm_panel.hide()
+	AudioManager.play_ui_panel_open()
 	modulate.a = 0.0
 	show()
 	var tw := create_tween()
@@ -130,7 +131,10 @@ func _build_layout() -> void:
 	resume_btn.add_theme_font_size_override("font_size", 20)
 	resume_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 	resume_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.3))
-	resume_btn.pressed.connect(func() -> void: resume_pressed.emit())
+	resume_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		resume_pressed.emit()
+	)
 	vbox.add_child(resume_btn)
 
 	# Settings
@@ -141,7 +145,10 @@ func _build_layout() -> void:
 	settings_btn.add_theme_font_size_override("font_size", 20)
 	settings_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	settings_btn.add_theme_color_override("font_hover_color", Color(0.85, 0.85, 0.85))
-	settings_btn.pressed.connect(func() -> void: settings_requested.emit())
+	settings_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		settings_requested.emit()
+	)
 	vbox.add_child(settings_btn)
 
 	# Restart
@@ -152,7 +159,10 @@ func _build_layout() -> void:
 	restart_btn.add_theme_font_size_override("font_size", 20)
 	restart_btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))
 	restart_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.75, 0.4))
-	restart_btn.pressed.connect(func() -> void: restart_pressed.emit())
+	restart_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		restart_pressed.emit()
+	)
 	vbox.add_child(restart_btn)
 
 	# Quit to main menu (shows confirmation first)
@@ -163,7 +173,11 @@ func _build_layout() -> void:
 	quit_btn.add_theme_font_size_override("font_size", 20)
 	quit_btn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
 	quit_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.5, 0.5))
-	quit_btn.pressed.connect(func() -> void: _quit_confirm_panel.show(); _quit_confirm_panel.get_node("VBox/ConfirmBtn").grab_focus())
+	quit_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_quit_confirm_panel.show()
+		_quit_confirm_panel.get_node("VBox/ConfirmBtn").grab_focus()
+	)
 	vbox.add_child(quit_btn)
 
 	# -----------------------------------------------------------------------
@@ -188,7 +202,10 @@ func _build_layout() -> void:
 	confirm_btn.focus_mode = Control.FOCUS_ALL
 	confirm_btn.custom_minimum_size = Vector2(260, 56)
 	confirm_btn.add_theme_font_size_override("font_size", 20)
-	confirm_btn.pressed.connect(func() -> void: quit_pressed.emit())
+	confirm_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		quit_pressed.emit()
+	)
 	confirm_vbox.add_child(confirm_btn)
 
 	var cancel_btn := Button.new()
@@ -197,7 +214,11 @@ func _build_layout() -> void:
 	cancel_btn.focus_mode = Control.FOCUS_ALL
 	cancel_btn.custom_minimum_size = Vector2(260, 56)
 	cancel_btn.add_theme_font_size_override("font_size", 20)
-	cancel_btn.pressed.connect(func() -> void: _quit_confirm_panel.hide(); quit_btn.grab_focus())
+	cancel_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_quit_confirm_panel.hide()
+		quit_btn.grab_focus()
+	)
 	confirm_vbox.add_child(cancel_btn)
 
 	# Focus neighbors for arrow key navigation (main buttons)

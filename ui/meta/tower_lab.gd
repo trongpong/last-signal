@@ -205,7 +205,10 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 		btn.add_theme_stylebox_override("hover", hover_style)
 		btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		var tt := tower_type
-		btn.pressed.connect(func() -> void: _on_tower_selected(tt))
+		btn.pressed.connect(func() -> void:
+			AudioManager.play_ui_click()
+			_on_tower_selected(tt)
+		)
 		inner.add_child(btn)
 		_tower_buttons.append(btn)
 
@@ -222,7 +225,10 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 	back_btn.custom_minimum_size = Vector2(0, 48)
 	back_btn.add_theme_font_size_override("font_size", 18)
 	back_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	back_btn.pressed.connect(func() -> void: back_pressed.emit())
+	back_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		back_pressed.emit()
+	)
 	inner.add_child(back_btn)
 
 
@@ -260,21 +266,30 @@ func _build_content_area(parent: HBoxContainer) -> void:
 	_tab_skills_btn.text = tr("SKILL_TREE")
 	_tab_skills_btn.custom_minimum_size = Vector2(100, 36)
 	_tab_skills_btn.add_theme_font_size_override("font_size", 14)
-	_tab_skills_btn.pressed.connect(func() -> void: _switch_tab(0))
+	_tab_skills_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_switch_tab(0)
+	)
 	header.add_child(_tab_skills_btn)
 
 	_tab_globals_btn = Button.new()
 	_tab_globals_btn.text = tr("GLOBAL_UPGRADES")
 	_tab_globals_btn.custom_minimum_size = Vector2(120, 36)
 	_tab_globals_btn.add_theme_font_size_override("font_size", 14)
-	_tab_globals_btn.pressed.connect(func() -> void: _switch_tab(1))
+	_tab_globals_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_switch_tab(1)
+	)
 	header.add_child(_tab_globals_btn)
 
 	_tab_synergies_btn = Button.new()
 	_tab_synergies_btn.text = tr("UI_SYNERGIES")
 	_tab_synergies_btn.custom_minimum_size = Vector2(100, 36)
 	_tab_synergies_btn.add_theme_font_size_override("font_size", 14)
-	_tab_synergies_btn.pressed.connect(func() -> void: _switch_tab(2))
+	_tab_synergies_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_switch_tab(2)
+	)
 	header.add_child(_tab_synergies_btn)
 
 	right_vbox.add_child(HSeparator.new())
@@ -615,7 +630,10 @@ func _show_skill_tree(tower_type: int) -> void:
 			btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
 			var idx: int = sn.node_index
 			var tt: int = tower_type
-			btn.pressed.connect(func() -> void: _on_skill_unlock(tt, idx))
+			btn.pressed.connect(func() -> void:
+				AudioManager.play_ui_click()
+				_on_skill_unlock(tt, idx)
+			)
 		row.add_child(btn)
 
 		# Hover for details
@@ -720,7 +738,10 @@ func _populate_global_upgrades() -> void:
 			btn.text = "◆ %d" % cost
 			btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
 			var uid: String = upgrade_id
-			btn.pressed.connect(func() -> void: _on_global_upgrade(uid))
+			btn.pressed.connect(func() -> void:
+				AudioManager.play_ui_click()
+				_on_global_upgrade(uid)
+			)
 		row.add_child(btn)
 
 

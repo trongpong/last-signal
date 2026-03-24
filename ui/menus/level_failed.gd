@@ -77,7 +77,10 @@ func _build_layout() -> void:
 	_retry_button.custom_minimum_size = Vector2(260, 56)
 	_retry_button.add_theme_font_size_override("font_size", 20)
 	_retry_button.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-	_retry_button.pressed.connect(func() -> void: retry_pressed.emit())
+	_retry_button.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		retry_pressed.emit()
+	)
 	vbox.add_child(_retry_button)
 
 	# Quit to main menu — gray font
@@ -87,7 +90,10 @@ func _build_layout() -> void:
 	_quit_button.custom_minimum_size = Vector2(260, 56)
 	_quit_button.add_theme_font_size_override("font_size", 20)
 	_quit_button.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	_quit_button.pressed.connect(func() -> void: quit_pressed.emit())
+	_quit_button.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		quit_pressed.emit()
+	)
 	vbox.add_child(_quit_button)
 
 	# Focus neighbors for arrow key navigation

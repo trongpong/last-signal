@@ -83,4 +83,5 @@ func setup(id: String, display_name: String, stars: int, locked: bool) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_pressed() -> void:
+	AudioManager.play_ui_click()
 	level_selected.emit(_level_id)

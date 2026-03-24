@@ -86,7 +86,10 @@ func _build_layout() -> void:
 	_continue_btn.custom_minimum_size = Vector2(260, 56)
 	_continue_btn.add_theme_font_size_override("font_size", 20)
 	_continue_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-	_continue_btn.pressed.connect(func() -> void: continue_pressed.emit())
+	_continue_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		continue_pressed.emit()
+	)
 	vbox.add_child(_continue_btn)
 
 	# Restart — gray font (secondary action)
@@ -95,7 +98,10 @@ func _build_layout() -> void:
 	restart_btn.custom_minimum_size = Vector2(260, 56)
 	restart_btn.add_theme_font_size_override("font_size", 20)
 	restart_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	restart_btn.pressed.connect(func() -> void: restart_pressed.emit())
+	restart_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		restart_pressed.emit()
+	)
 	vbox.add_child(restart_btn)
 
 # ---------------------------------------------------------------------------
@@ -134,5 +140,6 @@ func hide_double_button() -> void:
 	_continue_btn.grab_focus()
 
 func _on_double_pressed() -> void:
+	AudioManager.play_ui_click()
 	_double_btn.disabled = true
 	double_diamonds_requested.emit()

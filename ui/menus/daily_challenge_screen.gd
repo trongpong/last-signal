@@ -86,7 +86,10 @@ func _build_ui() -> void:
 		play_btn.disabled = true
 	else:
 		play_btn.text = tr("DAILY_PLAY")
-		play_btn.pressed.connect(func() -> void: play_pressed.emit())
+		play_btn.pressed.connect(func() -> void:
+			AudioManager.play_ui_click()
+			play_pressed.emit()
+		)
 	play_btn.custom_minimum_size = Vector2(200, 48)
 	play_btn.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(play_btn)
@@ -96,5 +99,8 @@ func _build_ui() -> void:
 	back_btn.text = tr("UI_BACK")
 	back_btn.custom_minimum_size = Vector2(120, 40)
 	back_btn.add_theme_font_size_override("font_size", 14)
-	back_btn.pressed.connect(func() -> void: back_pressed.emit())
+	back_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		back_pressed.emit()
+	)
 	vbox.add_child(back_btn)

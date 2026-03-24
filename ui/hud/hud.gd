@@ -505,6 +505,7 @@ func _on_state_changed(new_state: int, _old_state: int) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_send_wave_pressed() -> void:
+	AudioManager.play_ui_click()
 	send_wave_requested.emit()
 
 

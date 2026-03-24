@@ -117,6 +117,7 @@ func set_selected(val: bool) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_pressed() -> void:
+	AudioManager.play_ui_click()
 	# Touch feedback: brief scale tween
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector2(1.1, 1.1), 0.05)

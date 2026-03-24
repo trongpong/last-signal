@@ -112,7 +112,10 @@ func _build_layout() -> void:
 	pause_btn.custom_minimum_size = Vector2(44, 0)
 	pause_btn.add_theme_font_size_override("font_size", 16)
 	pause_btn.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
-	pause_btn.pressed.connect(func() -> void: pause_requested.emit())
+	pause_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		pause_requested.emit()
+	)
 	add_child(pause_btn)
 
 	# Right padding spacer
@@ -222,6 +225,7 @@ func set_available_speeds(has_x2: bool, has_x3: bool) -> void:
 		_speed_btn.text = tr("HUD_SPEED") + " x1"
 
 func _cycle_speed() -> void:
+	AudioManager.play_ui_click()
 	# At max available speed, show toast about locked next tier and reset to x1
 	if _current_speed_index == _available_speeds.size() - 1:
 		if not _has_x2:

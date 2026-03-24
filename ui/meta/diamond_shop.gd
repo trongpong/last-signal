@@ -141,7 +141,10 @@ func _build_layout() -> void:
 		btn.custom_minimum_size = Vector2(100, 48)
 		btn.add_theme_font_size_override("font_size", 18)
 		btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-		btn.pressed.connect(func() -> void: _on_purchase_pressed(pid))
+		btn.pressed.connect(func() -> void:
+			AudioManager.play_ui_click()
+			_on_purchase_pressed(pid)
+		)
 		_pack_buttons[pid] = btn
 		row.add_child(btn)
 
@@ -160,7 +163,10 @@ func _build_layout() -> void:
 	back_btn.custom_minimum_size = Vector2(0, 56)
 	back_btn.add_theme_font_size_override("font_size", 18)
 	back_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	back_btn.pressed.connect(func() -> void: back_pressed.emit())
+	back_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		back_pressed.emit()
+	)
 	vbox.add_child(back_btn)
 
 	# Confirmation overlay (hidden by default)
@@ -196,7 +202,10 @@ func _build_confirm_overlay() -> void:
 	confirm_btn.custom_minimum_size = Vector2(120, 48)
 	confirm_btn.add_theme_font_size_override("font_size", 18)
 	confirm_btn.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
-	confirm_btn.pressed.connect(_on_confirm_purchase)
+	confirm_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_on_confirm_purchase()
+	)
 	btn_row.add_child(confirm_btn)
 
 	var cancel_btn := Button.new()
@@ -204,7 +213,10 @@ func _build_confirm_overlay() -> void:
 	cancel_btn.custom_minimum_size = Vector2(120, 48)
 	cancel_btn.add_theme_font_size_override("font_size", 18)
 	cancel_btn.add_theme_color_override("font_color", Color(1.0, 0.4, 0.3))
-	cancel_btn.pressed.connect(_on_cancel_purchase)
+	cancel_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		_on_cancel_purchase()
+	)
 	btn_row.add_child(cancel_btn)
 
 # ---------------------------------------------------------------------------
@@ -264,10 +276,12 @@ func _on_purchase_pressed(pack_id: String) -> void:
 		_confirm_label.text = tr("SHOP_CONFIRM_DOUBLER").replace("{0}", price_label)
 	elif diamonds > 0:
 		_confirm_label.text = tr("SHOP_CONFIRM_PACK").replace("{0}", str(diamonds)).replace("{1}", price_label)
+	AudioManager.play_ui_panel_open()
 	_confirm_overlay.visible = true
 
 
 func _on_confirm_purchase() -> void:
+	AudioManager.play_ui_panel_close()
 	_confirm_overlay.visible = false
 	if _pending_pack_id != "":
 		purchase_requested.emit(_pending_pack_id)
@@ -275,9 +289,11 @@ func _on_confirm_purchase() -> void:
 
 
 func _on_cancel_purchase() -> void:
+	AudioManager.play_ui_panel_close()
 	_confirm_overlay.visible = false
 	_pending_pack_id = ""
 
 
 func _on_watch_ad_pressed() -> void:
+	AudioManager.play_ui_click()
 	watch_ad_requested.emit()

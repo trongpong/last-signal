@@ -129,6 +129,7 @@ func _build_card(reward: Dictionary, index: int) -> PanelContainer:
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(func() -> void:
 		if _active:
+			AudioManager.play_ui_click()
 			_active = false
 			card_chosen.emit(index)
 	)

@@ -106,8 +106,10 @@ func _get_ability_label(ab_id: String) -> String:
 
 
 func _on_ability_pressed(slot: int) -> void:
+	AudioManager.play_ui_click()
 	ability_activated.emit(slot)
 
 
 func _on_hero_pressed() -> void:
+	AudioManager.play_ui_click()
 	hero_summoned.emit()

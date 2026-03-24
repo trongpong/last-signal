@@ -68,7 +68,10 @@ func _build_layout() -> void:
 	campaign_btn.custom_minimum_size = Vector2(280, 56)
 	campaign_btn.add_theme_font_size_override("font_size", 20)
 	campaign_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-	campaign_btn.pressed.connect(func() -> void: play_campaign.emit())
+	campaign_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		play_campaign.emit()
+	)
 	vbox.add_child(campaign_btn)
 
 	# Endless mode button — orange tint
@@ -78,7 +81,10 @@ func _build_layout() -> void:
 	_endless_btn.custom_minimum_size = Vector2(280, 56)
 	_endless_btn.add_theme_font_size_override("font_size", 20)
 	_endless_btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
-	_endless_btn.pressed.connect(func() -> void: play_endless.emit())
+	_endless_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		play_endless.emit()
+	)
 	_endless_btn.disabled = true  # locked until set_endless_unlocked(true)
 	vbox.add_child(_endless_btn)
 
@@ -89,7 +95,10 @@ func _build_layout() -> void:
 	daily_btn.custom_minimum_size = Vector2(280, 56)
 	daily_btn.add_theme_font_size_override("font_size", 20)
 	daily_btn.add_theme_color_override("font_color", Color(0.0, 1.0, 0.8))
-	daily_btn.pressed.connect(func() -> void: open_daily_challenge.emit())
+	daily_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		open_daily_challenge.emit()
+	)
 	vbox.add_child(daily_btn)
 
 	# Tower lab button — cyan tint
@@ -99,7 +108,10 @@ func _build_layout() -> void:
 	lab_btn.custom_minimum_size = Vector2(280, 56)
 	lab_btn.add_theme_font_size_override("font_size", 20)
 	lab_btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
-	lab_btn.pressed.connect(func() -> void: open_tower_lab.emit())
+	lab_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		open_tower_lab.emit()
+	)
 	vbox.add_child(lab_btn)
 
 	# Diamond shop button — cyan tint
@@ -109,7 +121,10 @@ func _build_layout() -> void:
 	shop_btn.custom_minimum_size = Vector2(280, 56)
 	shop_btn.add_theme_font_size_override("font_size", 20)
 	shop_btn.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
-	shop_btn.pressed.connect(func() -> void: open_diamond_shop.emit())
+	shop_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		open_diamond_shop.emit()
+	)
 	vbox.add_child(shop_btn)
 
 	# Settings button — gray tint
@@ -119,7 +134,10 @@ func _build_layout() -> void:
 	settings_btn.custom_minimum_size = Vector2(280, 56)
 	settings_btn.add_theme_font_size_override("font_size", 20)
 	settings_btn.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	settings_btn.pressed.connect(func() -> void: open_settings.emit())
+	settings_btn.pressed.connect(func() -> void:
+		AudioManager.play_ui_click()
+		open_settings.emit()
+	)
 	vbox.add_child(settings_btn)
 
 	# Focus neighbors for arrow key navigation

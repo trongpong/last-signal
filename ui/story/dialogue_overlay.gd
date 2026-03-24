@@ -124,6 +124,7 @@ func _skip_typewriter() -> void:
 
 ## Advance to the next line, or finish if all lines have been shown.
 func _next() -> void:
+	AudioManager.play_ui_click()
 	_index += 1
 	if _index >= _keys.size():
 		hide()

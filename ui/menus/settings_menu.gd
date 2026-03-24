@@ -342,4 +342,5 @@ func _on_language_selected(index: int) -> void:
 
 
 func _on_back_pressed() -> void:
+	AudioManager.play_ui_click()
 	back_pressed.emit()

@@ -188,6 +188,7 @@ func show_for_tower(tower: Tower, sell_value: int) -> void:
 	_populate_upgrade_choices(tower)
 
 	# Animate
+	AudioManager.play_ui_panel_open()
 	show()
 	var final_offset_top: float = offset_top
 	offset_top = 0.0
@@ -199,6 +200,7 @@ func show_for_tower(tower: Tower, sell_value: int) -> void:
 
 
 func hide_panel() -> void:
+	AudioManager.play_ui_panel_close()
 	_tower = null
 	hide()
 
@@ -209,6 +211,7 @@ func hide_panel() -> void:
 func _cycle_targeting() -> void:
 	if _tower == null:
 		return
+	AudioManager.play_ui_click()
 	_current_targeting_index = (_current_targeting_index + 1) % _TARGETING_MODES.size()
 	var new_mode: int = _TARGETING_MODES[_current_targeting_index]
 	_update_targeting_label()
@@ -288,7 +291,10 @@ func _populate_upgrade_choices(tower: Tower) -> void:
 		btn.add_theme_font_size_override("font_size", 13)
 		btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 		var slot := i
-		btn.pressed.connect(func() -> void: _on_upgrade_pressed(slot))
+		btn.pressed.connect(func() -> void:
+			AudioManager.play_ui_click()
+			_on_upgrade_pressed(slot)
+		)
 		top_row.add_child(btn)
 
 		# Stat preview — multiply only the base+tier portion, then re-add bonuses
@@ -355,4 +361,5 @@ func _on_upgrade_pressed(choice: int) -> void:
 
 func _on_sell_pressed() -> void:
 	if _tower != null:
+		AudioManager.play_ui_click()
 		sell_requested.emit(_tower)
