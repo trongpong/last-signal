@@ -1140,12 +1140,20 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 		screen.hide_double_button()
 	else:
 		screen.double_diamonds_requested.connect(func() -> void:
-			ad_mgr.bonus_ad_reward_granted.connect(func(_bonus: int) -> void:
-				screen.on_double_diamonds_granted()
-			, CONNECT_ONE_SHOT)
-			ad_mgr.bonus_ad_failed.connect(func() -> void:
-				screen.hide_double_button()
-			, CONNECT_ONE_SHOT)
+			var on_success: Callable
+			var on_fail: Callable
+			on_success = func(_bonus: int) -> void:
+				if ad_mgr.bonus_ad_failed.is_connected(on_fail):
+					ad_mgr.bonus_ad_failed.disconnect(on_fail)
+				if is_instance_valid(screen):
+					screen.on_double_diamonds_granted()
+			on_fail = func() -> void:
+				if ad_mgr.bonus_ad_reward_granted.is_connected(on_success):
+					ad_mgr.bonus_ad_reward_granted.disconnect(on_success)
+				if is_instance_valid(screen):
+					screen.hide_double_button()
+			ad_mgr.bonus_ad_reward_granted.connect(on_success, CONNECT_ONE_SHOT)
+			ad_mgr.bonus_ad_failed.connect(on_fail, CONNECT_ONE_SHOT)
 			ad_mgr.show_bonus_ad(EconomyManager, SaveManager, diamonds)
 		)
 

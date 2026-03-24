@@ -58,9 +58,14 @@ func _ready() -> void:
 	_iap_manager.name = "IAPManager"
 	add_child(_iap_manager)
 
+	_iap_manager.purchase_complete.connect(_on_iap_purchase_complete)
+	_iap_manager.purchase_failed.connect(_on_iap_purchase_failed)
+
 	_ad_manager = AdManager.new()
 	_ad_manager.name = "AdManager"
 	add_child(_ad_manager)
+	_ad_manager.ad_reward_granted.connect(_on_ad_reward_granted)
+	_ad_manager.ad_failed.connect(_on_ad_failed)
 
 	# If returning from a completed/failed level, go to campaign map; otherwise main menu
 	if GameManager.current_state in [Enums.GameState.VICTORY, Enums.GameState.DEFEAT]:
@@ -222,30 +227,56 @@ func _on_shop_purchase(pack_id: String) -> void:
 		SaveManager.data["unlocks"]["speed_x2"] = true
 		SaveManager.sync_economy(EconomyManager)
 		SaveManager.save_game()
-	else:
-		_iap_manager.request_purchase(pack_id, EconomyManager, SaveManager)
-	# Refresh shop UI
-	if _current_screen is DiamondShop:
-		var shop: DiamondShop = _current_screen as DiamondShop
-		shop.update_diamonds(EconomyManager.diamonds)
-		if pack_id == "no_ads":
-			shop.mark_purchased("no_ads")
-			shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
-		elif pack_id == "doubler":
-			shop.mark_purchased("doubler")
-		elif pack_id == "speed_x2":
+		# Immediate refresh — this purchase is instant (diamonds, not IAP)
+		if _current_screen is DiamondShop:
+			var shop: DiamondShop = _current_screen as DiamondShop
+			shop.update_diamonds(EconomyManager.diamonds)
 			shop.mark_purchased("speed_x2")
-		elif pack_id == "speed_x3":
-			shop.mark_purchased("speed_x3")
+	else:
+		# Real IAP — UI refresh handled by _on_iap_purchase_complete/failed
+		_iap_manager.request_purchase(pack_id, EconomyManager, SaveManager)
 
 
 func _on_shop_watch_ad() -> void:
+	# UI refresh handled by _on_ad_reward_granted / _on_ad_failed
 	_ad_manager.request_ad(EconomyManager, SaveManager)
-	# Refresh shop UI
-	if _current_screen is DiamondShop:
-		var shop: DiamondShop = _current_screen as DiamondShop
-		shop.update_diamonds(EconomyManager.diamonds)
-		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+
+
+func _on_iap_purchase_complete(pack_id: String, _diamonds: int) -> void:
+	if not (_current_screen is DiamondShop):
+		return
+	var shop: DiamondShop = _current_screen as DiamondShop
+	shop.update_diamonds(EconomyManager.diamonds)
+	match pack_id:
+		"no_ads":
+			shop.mark_purchased("no_ads")
+			shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+		"doubler":
+			shop.mark_purchased("doubler")
+		"speed_x3":
+			shop.mark_purchased("speed_x3")
+
+
+func _on_iap_purchase_failed(_pack_id: String) -> void:
+	if not (_current_screen is DiamondShop):
+		return
+	var shop: DiamondShop = _current_screen as DiamondShop
+	shop.update_diamonds(EconomyManager.diamonds)
+
+
+func _on_ad_reward_granted(_diamonds: int) -> void:
+	if not (_current_screen is DiamondShop):
+		return
+	var shop: DiamondShop = _current_screen as DiamondShop
+	shop.update_diamonds(EconomyManager.diamonds)
+	shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+
+
+func _on_ad_failed() -> void:
+	if not (_current_screen is DiamondShop):
+		return
+	var shop: DiamondShop = _current_screen as DiamondShop
+	shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
 
 
 func _show_settings() -> void:
@@ -305,7 +336,21 @@ func _on_daily_challenge_complete(_level_id: String, stars: int) -> void:
 	# Show rewarded interstitial for bonus diamonds
 	if _ad_manager != null:
 		var bonus: int = Constants.DAILY_CHALLENGE_RI_BONUS
+		_ad_manager.rewarded_interstitial_reward_granted.connect(
+			_on_ri_bonus_granted, CONNECT_ONE_SHOT)
+		_ad_manager.rewarded_interstitial_dismissed.connect(
+			_on_ri_bonus_dismissed, CONNECT_ONE_SHOT)
 		_ad_manager.show_rewarded_interstitial(EconomyManager, SaveManager, bonus)
+
+func _on_ri_bonus_granted(_diamonds: int) -> void:
+	if _ad_manager != null and _ad_manager.rewarded_interstitial_dismissed.is_connected(_on_ri_bonus_dismissed):
+		_ad_manager.rewarded_interstitial_dismissed.disconnect(_on_ri_bonus_dismissed)
+
+
+func _on_ri_bonus_dismissed() -> void:
+	if _ad_manager != null and _ad_manager.rewarded_interstitial_reward_granted.is_connected(_on_ri_bonus_granted):
+		_ad_manager.rewarded_interstitial_reward_granted.disconnect(_on_ri_bonus_granted)
+
 
 func _on_daily_challenge_failed(_level_id: String) -> void:
 	_show_main_menu()

@@ -350,3 +350,4 @@ func _check_date_reset(save) -> void:
 	if today != last_reset:
 		save.data["monetization"]["ads_watched_today"] = 0
 		save.data["monetization"]["ads_last_reset_date"] = today
+		save.save_game()
