@@ -85,7 +85,7 @@ func _build_layout() -> void:
 	# Stats section
 	# -----------------------------------------------------------------------
 	var stats_header := Label.new()
-	stats_header.text = "Level Stats"
+	stats_header.text = tr("HUD_LEVEL_STATS")
 	stats_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_header.add_theme_font_size_override("font_size", 16)
 	stats_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))

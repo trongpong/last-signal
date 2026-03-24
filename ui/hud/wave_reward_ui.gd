@@ -56,14 +56,14 @@ func _build_ui() -> void:
 
 	# Title
 	var title := Label.new()
-	title.text = "SIGNAL INTERCEPTED"
+	title.text = tr("HUD_SIGNAL_INTERCEPTED")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 22)
 	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 	vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Choose a buff"
+	subtitle.text = tr("HUD_CHOOSE_BUFF")
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
@@ -125,7 +125,7 @@ func _build_card(reward: Dictionary, index: int) -> PanelContainer:
 	vbox.add_child(desc_label)
 
 	var btn := Button.new()
-	btn.text = "Choose"
+	btn.text = tr("HUD_CHOOSE")
 	btn.add_theme_font_size_override("font_size", 12)
 	btn.pressed.connect(func() -> void:
 		if _active:

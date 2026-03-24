@@ -58,7 +58,6 @@ func move(speed: float, delta: float) -> void:
 		return
 
 	var remaining: float = speed * delta
-	_distance_traveled += remaining
 
 	while remaining > 0.0 and _waypoint_index < _waypoints.size():
 		var target: Vector2 = _waypoints[_waypoint_index]
@@ -69,11 +68,14 @@ func move(speed: float, delta: float) -> void:
 			_current_pos = target
 			_waypoint_index += 1
 			if _waypoint_index >= _waypoints.size():
+				_distance_traveled += (speed * delta) - remaining
 				_reached_end = true
 				return
 		else:
 			_current_pos = _current_pos.move_toward(target, remaining)
 			remaining = 0.0
+
+	_distance_traveled += speed * delta
 
 ## Returns the current world-space position.
 func get_current_position() -> Vector2:

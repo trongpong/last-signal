@@ -131,7 +131,7 @@ func _build_layout() -> void:
 
 	# Region buttons (vertical list)
 	var region_label := Label.new()
-	region_label.text = "REGIONS"
+	region_label.text = tr("UI_REGIONS")
 	region_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	region_label.add_theme_font_size_override("font_size", 12)
 	region_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
@@ -152,7 +152,7 @@ func _build_layout() -> void:
 
 	# Difficulty selector
 	var diff_label := Label.new()
-	diff_label.text = "DIFFICULTY"
+	diff_label.text = tr("UI_DIFFICULTY")
 	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	diff_label.add_theme_font_size_override("font_size", 12)
 	diff_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
@@ -379,7 +379,7 @@ func _select_region(idx: int) -> void:
 		_region_title_label.text = rname
 		_region_title_label.add_theme_color_override("font_color", color)
 
-		_region_progress_label.text = "%d / %d completed" % [done, total]
+		_region_progress_label.text = tr("UI_PROGRESS_COMPLETED").replace("{0}", str(done)).replace("{1}", str(total))
 		if done == total and total > 0:
 			_region_progress_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 		else:

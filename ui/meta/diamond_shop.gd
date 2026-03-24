@@ -131,7 +131,7 @@ func _build_layout() -> void:
 		# Highlight best value pack
 		if pid == best_pack_id:
 			var best_label := Label.new()
-			best_label.text = "Best Value"
+			best_label.text = tr("UI_BEST_VALUE")
 			best_label.add_theme_font_size_override("font_size", 14)
 			best_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 			row.add_child(best_label)

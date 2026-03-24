@@ -93,9 +93,7 @@ func _show_campaign_map() -> void:
 	map.back_pressed.connect(_show_main_menu)
 	_switch_screen(map)
 	# populate after adding to tree so _ready() creates child nodes first
-	var all_levels: Array = []
-	for region in range(1, _campaign_manager._registry.get_region_count() + 1):
-		all_levels.append_array(_campaign_manager._registry.get_levels_for_region(region))
+	var all_levels: Array = _campaign_manager.get_all_levels()
 	map.populate(all_levels, SaveManager.data["campaign"])
 
 
@@ -114,7 +112,7 @@ func _start_campaign_level() -> void:
 	AudioManager.set_music_state(Enums.GameState.BUILDING)
 
 	# Determine region for adaptive music
-	var level_def: Dictionary = _campaign_manager._registry.get_level(_pending_level_id)
+	var level_def: Dictionary = _campaign_manager.get_level(_pending_level_id)
 	if not level_def.is_empty():
 		var region: int = level_def.get("region", 1) as int
 		AudioManager.set_music_region(region)
@@ -205,10 +203,8 @@ func _show_diamond_shop() -> void:
 	# Update diamond balance display and ad button after adding to tree
 	shop.update_diamonds(EconomyManager.diamonds)
 	if _ad_manager.has_no_ads(SaveManager):
-		shop.update_ad_button(-1)
 		shop.mark_purchased("no_ads")
-	else:
-		shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
+	shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
 	if _iap_manager.has_doubler(SaveManager):
 		shop.mark_purchased("doubler")
 	if SaveManager.data.get("unlocks", {}).get("speed_x2", false):
@@ -233,8 +229,8 @@ func _on_shop_purchase(pack_id: String) -> void:
 		var shop: DiamondShop = _current_screen as DiamondShop
 		shop.update_diamonds(EconomyManager.diamonds)
 		if pack_id == "no_ads":
-			shop.update_ad_button(-1)
 			shop.mark_purchased("no_ads")
+			shop.update_ad_button(_ad_manager.get_remaining_ads(SaveManager))
 		elif pack_id == "doubler":
 			shop.mark_purchased("doubler")
 		elif pack_id == "speed_x2":
@@ -305,6 +301,10 @@ func _on_daily_challenge_complete(_level_id: String, stars: int) -> void:
 	EconomyManager.add_diamonds(diamonds)
 	SaveManager.sync_economy(EconomyManager)
 	SaveManager.save_game()
+	# Show rewarded interstitial for bonus diamonds
+	if _ad_manager != null:
+		var bonus: int = Constants.DAILY_CHALLENGE_RI_BONUS
+		_ad_manager.show_rewarded_interstitial(EconomyManager, SaveManager, bonus)
 
 func _on_daily_challenge_failed(_level_id: String) -> void:
 	_show_main_menu()

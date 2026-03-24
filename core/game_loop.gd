@@ -25,8 +25,8 @@ signal level_defeat(level_id: String)
 # Private references
 # ---------------------------------------------------------------------------
 
-var _gm = null
-var _em = null
+var _gm: Node = null
+var _em: Node = null
 var _wm: WaveManager = null
 
 ## Extra diamond multiplier from daily challenge constraints.
@@ -48,8 +48,8 @@ var _waves_since_adaptation_check: int = 0
 ## Wires the four manager references and connects WaveManager signals.
 ## Call once before start_level.
 func setup(
-	gm,
-	em,
+	gm: Node,
+	em: Node,
 	wm: WaveManager,
 	am: AdaptationManager
 ) -> void:

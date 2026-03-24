@@ -922,7 +922,6 @@ func _process_tower_combat() -> void:
 		tower.set_last_target_id(target_enemy.get_instance_id())
 
 		# Spawn a projectile — use effective stats (base + skill bonuses)
-		var tower_id: int = tower.get_instance_id()
 		_spawn_tower_projectile(tower, target_enemy)
 
 		# Multi-shot skill: fire at additional nearby targets
@@ -1124,6 +1123,20 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 	screen.restart_pressed.connect(func() -> void:
 		get_tree().reload_current_scene()
 	)
+	# x2 diamond ad button
+	var ad_mgr: AdManager = get_node_or_null("/root/Main/AdManager") as AdManager
+	if ad_mgr == null:
+		screen.hide_double_button()
+	else:
+		screen.double_diamonds_requested.connect(func() -> void:
+			ad_mgr.show_bonus_ad(EconomyManager, SaveManager, diamonds)
+			ad_mgr.bonus_ad_reward_granted.connect(func(_bonus: int) -> void:
+				screen.on_double_diamonds_granted()
+			, CONNECT_ONE_SHOT)
+			ad_mgr.bonus_ad_failed.connect(func() -> void:
+				screen.hide_double_button()
+			, CONNECT_ONE_SHOT)
+		)
 
 func _on_level_failed(level_id: String) -> void:
 	if _tower_mastery_manager != null:
@@ -1735,7 +1748,7 @@ func _on_elite_split_requested(pos: Vector2, def: EnemyDefinition, difficulty: i
 		split.enemy_died.connect(_on_enemy_died)
 		split.enemy_reached_exit.connect(_on_enemy_reached_exit)
 		if _wave_manager:
-			_wave_manager.on_enemy_spawned()
+			_wave_manager.register_extra_enemy()
 
 func _recalculate_synergies() -> void:
 	if _synergy_manager == null:

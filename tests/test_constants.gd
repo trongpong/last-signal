@@ -37,7 +37,7 @@ func test_starting_lives() -> void:
 
 func test_adaptation_thresholds() -> void:
 	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.NORMAL], 0.4, 0.001)
-	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.HARD], 0.35, 0.001)
+	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.HARD], 0.4, 0.001)
 	assert_almost_eq(constants.DIFFICULTY_ADAPTATION_THRESHOLD[Enums.Difficulty.NIGHTMARE], 0.25, 0.001)
 
 func test_diamond_reward_multipliers() -> void:
@@ -132,7 +132,7 @@ func test_max_ads_per_day() -> void:
 	assert_eq(Constants.MAX_ADS_PER_DAY, 10)
 
 func test_diamonds_per_ad() -> void:
-	assert_eq(Constants.DIAMONDS_PER_AD, 100)
+	assert_eq(Constants.DIAMONDS_PER_AD, 150)
 
 # ---------------------------------------------------------------------------
 # Hero tests

@@ -21,14 +21,3 @@ extends Resource
 @export var base_cooldown: float = 60.0
 @export var base_duration: float = 5.0
 
-# ---------------------------------------------------------------------------
-# Effect
-# ---------------------------------------------------------------------------
-
-@export var base_value: float = 100.0
-
-## If true, the ability targets a world-space position.
-@export var targets_position: bool = false
-
-## If true, the ability targets a specific tower node.
-@export var targets_tower: bool = false

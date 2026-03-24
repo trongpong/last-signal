@@ -17,7 +17,7 @@ const RANGE_BORDER_ALPHA: float = 0.5
 const RANGE_BORDER_WIDTH: float = 1.5
 const OUTLINE_BASE_WIDTH: float = 1.5
 const OUTLINE_TIER_WIDTH: float = 0.5
-const TIE_DOT_RADIUS: float = 3.0
+const TIER_DOT_RADIUS: float = 3.0
 const TIER_DOT_SPACING: float = 9.0
 const TIER_DOT_OFFSET_Y: float = 22.0
 
@@ -143,8 +143,8 @@ func _draw_tier_dots() -> void:
 	for i in range(_current_tier):
 		var dot_x: float = start_x + float(i) * TIER_DOT_SPACING
 		var dot_pos := Vector2(dot_x, TIER_DOT_OFFSET_Y)
-		draw_circle(dot_pos, TIE_DOT_RADIUS, Color.WHITE)
-		draw_circle(dot_pos, TIE_DOT_RADIUS, Color(0.0, 0.0, 0.0, 0.4), false, 1.0)
+		draw_circle(dot_pos, TIER_DOT_RADIUS, Color.WHITE)
+		draw_circle(dot_pos, TIER_DOT_RADIUS, Color(0.0, 0.0, 0.0, 0.4), false, 1.0)
 
 # ---------------------------------------------------------------------------
 # Helpers

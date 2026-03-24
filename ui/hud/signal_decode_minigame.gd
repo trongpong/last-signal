@@ -191,7 +191,7 @@ func _start_input_phase() -> void:
 	for btn in _glyph_buttons:
 		btn.disabled = false
 	if _prompt_label != null:
-		_prompt_label.text = "Tap the sequence!"
+		_prompt_label.text = tr("SIGNAL_DECODE_INPUT_PROMPT")
 
 func _on_glyph_pressed(glyph_index: int) -> void:
 	if _phase != Phase.INPUT:

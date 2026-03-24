@@ -144,30 +144,28 @@ func on_enemy_died() -> void:
 	_check_wave_clear()
 
 
-## Called by the game when an enemy reaches the exit (counts against lives but still clears).
-func on_enemy_reached_exit() -> void:
-	_enemies_alive = maxi(0, _enemies_alive - 1)
-	_check_wave_clear()
-
-
-## Called when a new enemy is spawned mid-wave (e.g. Splitting elite copies).
-## Increments the alive counter so the wave does not clear prematurely.
-func on_enemy_spawned() -> void:
-	_enemies_alive += 1
-
-
-## Pauses the inter-wave break (e.g. while showing a wave reward UI).
-## The break timer stops until resume_break() is called.
+## Pauses the break timer (e.g. while a reward UI is open).
 func pause_break() -> void:
 	_in_break = false
 
-
-## Resumes the inter-wave break with the given duration.
-## Emits break_started so HUD timers can sync.
+## Resumes the break with the given duration and emits break_started.
 func resume_break(duration: float) -> void:
 	_in_break = true
 	_break_timer = duration
 	break_started.emit(duration)
+
+## Registers an extra enemy spawned mid-wave (e.g. elite splits).
+func register_extra_enemy() -> void:
+	_enemies_alive += 1
+
+## Alias for register_extra_enemy (backward compat).
+func on_enemy_spawned() -> void:
+	register_extra_enemy()
+
+## Called by the game when an enemy reaches the exit (counts against lives but still clears).
+func on_enemy_reached_exit() -> void:
+	_enemies_alive = maxi(0, _enemies_alive - 1)
+	_check_wave_clear()
 
 
 # ---------------------------------------------------------------------------

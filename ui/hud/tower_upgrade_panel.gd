@@ -163,18 +163,18 @@ func show_for_tower(tower: Tower, sell_value: int) -> void:
 	_tower = tower
 	_sell_value = sell_value
 
-	var def: TowerDefinition = tower._definition
+	var def: TowerDefinition = tower.get_definition()
 	var name_key := "TOWER_" + def.id.to_upper()
 	_name_label.text = tr(name_key)
 
-	_tier_label.text = "Tier %d" % tower.current_tier
+	_tier_label.text = tr("TIER").replace("{0}", str(tower.current_tier))
 
 	# Stats
 	for child in _stats_container.get_children():
 		child.queue_free()
-	_add_stat_row("Damage", "%.1f" % tower.current_damage, Color(1.0, 0.5, 0.2))
-	_add_stat_row("Fire Rate", "%.2f/s" % tower.current_fire_rate, Color(0.4, 0.8, 1.0))
-	_add_stat_row("Range", "%.0f" % tower.current_range, Color(0.3, 0.9, 0.3))
+	_add_stat_row(tr("HUD_STAT_DAMAGE"), "%.1f" % tower.current_damage, Color(1.0, 0.5, 0.2))
+	_add_stat_row(tr("HUD_STAT_FIRE_RATE"), "%.2f/s" % tower.current_fire_rate, Color(0.4, 0.8, 1.0))
+	_add_stat_row(tr("HUD_STAT_RANGE"), "%.0f" % tower.current_range, Color(0.3, 0.9, 0.3))
 
 	# Targeting
 	var mode_idx: int = _TARGETING_MODES.find(tower.targeting_mode)
@@ -182,7 +182,7 @@ func show_for_tower(tower: Tower, sell_value: int) -> void:
 	_update_targeting_label()
 
 	# Sell
-	_sell_btn.text = "Sell  (%d gold)" % sell_value
+	_sell_btn.text = tr("SELL_VALUE").replace("{0}", str(sell_value))
 
 	# Upgrades
 	_populate_upgrade_choices(tower)
@@ -218,7 +218,7 @@ func _cycle_targeting() -> void:
 
 func _update_targeting_label() -> void:
 	var key: String = _TARGETING_KEYS[_current_targeting_index]
-	_targeting_btn.text = "Target: " + tr(key)
+	_targeting_btn.text = tr("HUD_TARGETING") + ": " + tr(key)
 
 # ---------------------------------------------------------------------------
 # Upgrade choices
@@ -235,14 +235,14 @@ func _populate_upgrade_choices(tower: Tower) -> void:
 	var options: Array = tier_tree.get_upgrade_options(tower.get_upgrade_path())
 	if options.is_empty():
 		var max_lbl := Label.new()
-		max_lbl.text = "Fully upgraded"
+		max_lbl.text = tr("HUD_FULLY_UPGRADED")
 		max_lbl.add_theme_font_size_override("font_size", 14)
 		max_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
 		_upgrade_container.add_child(max_lbl)
 		return
 
 	var header := Label.new()
-	header.text = "UPGRADES"
+	header.text = tr("HUD_UPGRADES")
 	header.add_theme_font_size_override("font_size", 11)
 	header.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	_upgrade_container.add_child(header)
@@ -297,20 +297,23 @@ func _populate_upgrade_choices(tower: Tower) -> void:
 		var dmg_mult: float = branch.get("damage_mult", 1.0) as float
 		var rof_mult: float = branch.get("fire_rate_mult", 1.0) as float
 		var rng_mult: float = branch.get("range_mult", 1.0) as float
-		var mastery_f: float = 1.0 + tower._mastery_damage_bonus
-		var base_tier_dmg: float = cur_dmg / maxf(mastery_f, 0.01) - tower._skill_damage_bonus
-		var base_tier_rof: float = cur_rof - tower._skill_fire_rate_bonus
-		var base_tier_rng: float = cur_rng - tower._skill_range_bonus
+		var mastery_f: float = 1.0 + tower.get_mastery_damage_bonus()
+		var skill_dmg: float = tower.get_skill_damage_bonus()
+		var skill_rof: float = tower.get_skill_fire_rate_bonus()
+		var skill_rng: float = tower.get_skill_range_bonus()
+		var base_tier_dmg: float = cur_dmg / maxf(mastery_f, 0.01) - skill_dmg
+		var base_tier_rof: float = cur_rof - skill_rof
+		var base_tier_rng: float = cur_rng - skill_rng
 		var preview_parts: PackedStringArray = PackedStringArray()
 		if not is_equal_approx(dmg_mult, 1.0):
-			var new_dmg: float = (base_tier_dmg * dmg_mult + tower._skill_damage_bonus) * mastery_f
-			preview_parts.append("Damage: %.1f → %.1f" % [cur_dmg, new_dmg])
+			var new_dmg: float = (base_tier_dmg * dmg_mult + skill_dmg) * mastery_f
+			preview_parts.append(tr("HUD_STAT_DAMAGE") + ": %.1f → %.1f" % [cur_dmg, new_dmg])
 		if not is_equal_approx(rof_mult, 1.0):
-			var new_rof: float = base_tier_rof * rof_mult + tower._skill_fire_rate_bonus
-			preview_parts.append("Fire Rate: %.2f → %.2f" % [cur_rof, new_rof])
+			var new_rof: float = base_tier_rof * rof_mult + skill_rof
+			preview_parts.append(tr("HUD_STAT_FIRE_RATE") + ": %.2f → %.2f" % [cur_rof, new_rof])
 		if not is_equal_approx(rng_mult, 1.0):
-			var new_rng: float = base_tier_rng * rng_mult + tower._skill_range_bonus
-			preview_parts.append("Range: %.0f → %.0f" % [cur_rng, new_rng])
+			var new_rng: float = base_tier_rng * rng_mult + skill_rng
+			preview_parts.append(tr("HUD_STAT_RANGE") + ": %.0f → %.0f" % [cur_rng, new_rng])
 
 		if preview_parts.size() > 0:
 			var preview_lbl := Label.new()

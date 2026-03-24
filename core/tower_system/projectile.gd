@@ -78,7 +78,6 @@ func reset() -> void:
 func release() -> void:
 	visible = false
 	set_process(false)
-	set_physics_process(false)
 
 # ---------------------------------------------------------------------------
 # Process

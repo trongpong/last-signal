@@ -198,6 +198,18 @@ func get_archetype() -> int:
 		return -1
 	return _definition.archetype
 
+## Returns true if this enemy is a boss.
+func is_boss() -> bool:
+	return _definition != null and _definition.is_boss
+
+## Returns the EnemyDefinition resource, or null.
+func get_definition() -> EnemyDefinition:
+	return _definition
+
+## Multiplies the effective speed by the given factor.
+func scale_speed(factor: float) -> void:
+	_effective_speed *= factor
+
 ## Applies a temporary speed multiplier. Only the strongest active buff is kept.
 func apply_speed_buff(factor: float, duration: float) -> void:
 	_speed_buff_factor = maxf(factor, _speed_buff_factor)
@@ -220,14 +232,14 @@ func is_slowed() -> bool:
 func extend_slow(extra: float) -> void:
 	_slow_timer += extra
 
-## Returns true if this enemy is a boss (defined in its EnemyDefinition).
-func is_boss() -> bool:
-	return _definition != null and _definition.is_boss
-
 ## Sets the spawn context used by Splitting elites and speed modifiers.
 func initialize_spawn_context(path_idx: int, difficulty: int) -> void:
 	_spawn_path_index = path_idx
 	_spawn_difficulty = difficulty
+
+## Alias for initialize_spawn_context (backward compat).
+func set_spawn_context(path_index: int, difficulty: int) -> void:
+	initialize_spawn_context(path_index, difficulty)
 
 ## Multiplies the effective speed by the given factor (stacks multiplicatively).
 func apply_speed_multiplier(mult: float) -> void:
@@ -236,6 +248,10 @@ func apply_speed_multiplier(mult: float) -> void:
 ## Records the tower type that most recently dealt damage (for kill attribution).
 func set_last_damage_source(tower_type: int) -> void:
 	_last_damage_tower_type = tower_type
+
+## Alias for set_last_damage_source (backward compat).
+func set_last_damage_tower_type(tower_type: int) -> void:
+	set_last_damage_source(tower_type)
 
 ## Returns the tower type that last dealt damage, or -1 if none.
 func get_last_damage_source() -> int:

@@ -569,11 +569,30 @@ Fail/skip: nothing happens.
 
 ### 15.2 Rewarded Ads
 
-- 5 ads per day (resets at UTC midnight)
-- 10 diamonds per ad
+- 10 ads per day (resets at UTC midnight)
+- 150 diamonds per ad
 - Daily limit tracked in SaveManager
 
-### 15.3 Speed Unlocks
+### 15.3 x2 Diamond Bonus (Level Complete)
+
+- "x2 Diamonds" button on the level complete screen
+- Player watches a rewarded ad to double the diamond reward for that level
+- Does not count toward the daily rewarded ad limit
+- "Remove Ads" users get the x2 bonus instantly without watching
+
+### 15.4 Rewarded Interstitial
+
+- Shown automatically after completing a daily challenge
+- Rewards +100 bonus diamonds if the player watches the full ad
+- "Remove Ads" users get the bonus instantly without watching
+- Does not count toward the daily rewarded ad limit
+
+### 15.5 "Remove Ads" Perk
+
+- All ad-gated rewards (shop diamonds, x2 bonus, interstitial bonus) are granted instantly without showing ads
+- Daily ad claims in the Diamond Shop remain available with no daily limit
+
+### 15.5 Speed Unlocks
 
 - x2 Speed: purchasable in Diamond Shop
 - x3 Speed: purchasable in Diamond Shop

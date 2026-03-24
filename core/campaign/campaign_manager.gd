@@ -44,6 +44,31 @@ func setup(sm) -> void:
 	_registry.register_levels()
 
 # ---------------------------------------------------------------------------
+# Registry accessors
+# ---------------------------------------------------------------------------
+
+## Returns the total number of regions.
+func get_region_count() -> int:
+	if _registry == null:
+		return 0
+	return _registry.get_region_count()
+
+## Returns the level definition dictionary for the given level_id, or empty dict.
+func get_level(level_id: String) -> Dictionary:
+	if _registry == null:
+		return {}
+	return _registry.get_level(level_id)
+
+## Returns all level definitions across all regions.
+func get_all_levels() -> Array:
+	if _registry == null:
+		return []
+	var result: Array = []
+	for region in range(1, _registry.get_region_count() + 1):
+		result.append_array(_registry.get_levels_for_region(region))
+	return result
+
+# ---------------------------------------------------------------------------
 # Level unlock queries
 # ---------------------------------------------------------------------------
 
@@ -173,14 +198,6 @@ func _is_completed(level_id: String) -> bool:
 	if _save_manager == null:
 		return false
 	var record: Dictionary = _save_manager.get_level_record(level_id)
-	return record.get("completed", false) as bool
-
-
-## Returns true if the given level_id has been completed on a specific difficulty.
-func _is_completed_at(level_id: String, difficulty: int) -> bool:
-	if _save_manager == null:
-		return false
-	var record: Dictionary = _save_manager.get_level_record(level_id, difficulty)
 	return record.get("completed", false) as bool
 
 

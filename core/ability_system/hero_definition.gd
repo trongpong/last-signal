@@ -37,7 +37,6 @@ extends Resource
 
 @export var damage: float = 50.0
 @export var attack_speed: float = 1.0
-@export var movement_speed: float = 80.0
 
 # ---------------------------------------------------------------------------
 # Special Ability

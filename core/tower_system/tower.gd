@@ -118,6 +118,14 @@ func _process(delta: float) -> void:
 func can_fire() -> bool:
 	return _initialized and _fire_cooldown <= 0.0 and current_fire_rate > 0.0
 
+## Adds extra seconds to the fire cooldown (e.g. reflective elite).
+func add_fire_cooldown(seconds: float) -> void:
+	_fire_cooldown += seconds
+
+## Returns the TowerTargeting component.
+func get_targeting() -> TowerTargeting:
+	return _targeting
+
 ## Call after the tower fires to reset the cooldown.
 func on_fired() -> void:
 	if current_fire_rate > 0.0:
@@ -180,17 +188,9 @@ func set_targeting_mode(mode: int) -> void:
 # Accessors
 # ---------------------------------------------------------------------------
 
-## Adds extra time to the fire cooldown (e.g. Reflective elite penalty).
-func add_fire_cooldown(amount: float) -> void:
-	_fire_cooldown += amount
-
-## Records the instance ID of the last enemy this tower targeted.
-func set_last_target_id(enemy_id: int) -> void:
-	_last_target_id = enemy_id
-
-## Returns the instance ID of the last enemy this tower targeted.
-func get_last_target_id() -> int:
-	return _last_target_id
+## Returns the TowerDefinition resource, or null.
+func get_definition() -> TowerDefinition:
+	return _definition
 
 func get_tower_type() -> Enums.TowerType:
 	if _definition == null:
@@ -296,6 +296,12 @@ func has_synergy() -> bool:
 func get_synergy_partner_id() -> int:
 	return _synergy_partner_id
 
+func set_last_target_id(id: int) -> void:
+	_last_target_id = id
+
+func get_last_target_id() -> int:
+	return _last_target_id
+
 # ---------------------------------------------------------------------------
 # Mastery
 # ---------------------------------------------------------------------------
@@ -307,6 +313,18 @@ func apply_mastery_bonuses(bonuses: Dictionary) -> void:
 
 func get_mastery_cost_discount() -> float:
 	return _mastery_cost_discount
+
+func get_mastery_damage_bonus() -> float:
+	return _mastery_damage_bonus
+
+func get_skill_damage_bonus() -> float:
+	return _skill_damage_bonus
+
+func get_skill_fire_rate_bonus() -> float:
+	return _skill_fire_rate_bonus
+
+func get_skill_range_bonus() -> float:
+	return _skill_range_bonus
 
 # ---------------------------------------------------------------------------
 # Sell

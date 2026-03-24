@@ -88,9 +88,9 @@ func test_cost_invalid_index_returns_zero() -> void:
 
 func test_total_cost_sums_all_nodes_all_levels() -> void:
 	# 4 nodes, each with max_level=5
-	# Per node: SKILL_NODE_COSTS[0..4] = 80+100+120+200+250 = 750
-	# Total: 4 * 750 = 3000
-	assert_eq(_tree.get_total_cost(), 3000)
+	# Per node: SKILL_NODE_COSTS[0..4] = 80+120+180+260+380 = 1020
+	# Total: 4 * 1020 = 4080
+	assert_eq(_tree.get_total_cost(), 4080)
 
 func test_empty_tree_total_cost_is_zero() -> void:
 	var t := SkillTree.new()

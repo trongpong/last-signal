@@ -9,6 +9,7 @@ extends Control
 
 signal continue_pressed
 signal restart_pressed
+signal double_diamonds_requested
 
 # ---------------------------------------------------------------------------
 # Node refs
@@ -16,6 +17,9 @@ signal restart_pressed
 
 var _stars_label: Label
 var _diamonds_label: Label
+var _double_btn: Button
+var _continue_btn: Button
+var _diamonds_earned: int = 0
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -67,14 +71,23 @@ func _build_layout() -> void:
 	_diamonds_label.add_theme_color_override("font_color", Color(0.0, 0.85, 1.0))
 	vbox.add_child(_diamonds_label)
 
+	# x2 Diamond button — green, watch ad for double reward
+	_double_btn = Button.new()
+	_double_btn.text = tr("UI_DOUBLE_DIAMONDS")
+	_double_btn.custom_minimum_size = Vector2(260, 56)
+	_double_btn.add_theme_font_size_override("font_size", 18)
+	_double_btn.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
+	_double_btn.pressed.connect(_on_double_pressed)
+	vbox.add_child(_double_btn)
+
 	# Continue (go to next level or back to map) — gold font (primary action)
-	var continue_btn := Button.new()
-	continue_btn.text = tr("UI_CONTINUE")
-	continue_btn.custom_minimum_size = Vector2(260, 56)
-	continue_btn.add_theme_font_size_override("font_size", 20)
-	continue_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
-	continue_btn.pressed.connect(func() -> void: continue_pressed.emit())
-	vbox.add_child(continue_btn)
+	_continue_btn = Button.new()
+	_continue_btn.text = tr("UI_CONTINUE")
+	_continue_btn.custom_minimum_size = Vector2(260, 56)
+	_continue_btn.add_theme_font_size_override("font_size", 20)
+	_continue_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	_continue_btn.pressed.connect(func() -> void: continue_pressed.emit())
+	vbox.add_child(_continue_btn)
 
 	# Restart — gray font (secondary action)
 	var restart_btn := Button.new()
@@ -93,9 +106,9 @@ func _build_layout() -> void:
 ## stars: 1–3
 ## diamonds: diamonds awarded for this run
 func show_results(stars: int, diamonds: int) -> void:
+	_diamonds_earned = diamonds
 	var star_str: String = "★".repeat(stars) + "☆".repeat(3 - stars)
 	_stars_label.text = tr("UI_STARS") + ": " + star_str
-	# Color stars gold (earned stars dominate the visual)
 	_stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 	_diamonds_label.text = "◆ " + tr("UI_DIAMONDS") + ": +" + str(diamonds)
 	# Fade-in animation
@@ -104,3 +117,22 @@ func show_results(stars: int, diamonds: int) -> void:
 	var tw := create_tween()
 	tw.set_process_mode(Tween.TWEEN_PROCESS_IDLE)
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+	_double_btn.grab_focus()
+
+## Called by the parent after a successful x2 ad reward.
+func on_double_diamonds_granted() -> void:
+	_diamonds_earned *= 2
+	_diamonds_label.text = "◆ " + tr("UI_DIAMONDS") + ": +" + str(_diamonds_earned)
+	_diamonds_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
+	_double_btn.text = tr("UI_DOUBLED")
+	_double_btn.disabled = true
+	_continue_btn.grab_focus()
+
+## Hide the x2 button (e.g. player purchased no-ads or ad unavailable).
+func hide_double_button() -> void:
+	_double_btn.visible = false
+	_continue_btn.grab_focus()
+
+func _on_double_pressed() -> void:
+	_double_btn.disabled = true
+	double_diamonds_requested.emit()

@@ -137,10 +137,13 @@ const ABILITY_UPGRADE_COSTS: Array = [100, 200, 300, 450, 600]
 # ---------------------------------------------------------------------------
 
 ## Maximum ad views rewarded per day
-const MAX_ADS_PER_DAY: int = 5
+const MAX_ADS_PER_DAY: int = 10
 
 ## Diamonds earned per ad view
-const DIAMONDS_PER_AD: int = 10
+const DIAMONDS_PER_AD: int = 150
+
+## Bonus diamonds from rewarded interstitial after daily challenge
+const DAILY_CHALLENGE_RI_BONUS: int = 100
 
 # ---------------------------------------------------------------------------
 # Hero Abilities

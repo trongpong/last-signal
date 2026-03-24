@@ -118,6 +118,13 @@ func get_max_hp() -> float:
 func get_shield() -> float:
 	return _shield
 
+## Scales max HP by multiplier, preserving the current HP fraction.
+func scale_max_hp(multiplier: float) -> void:
+	var frac: float = _hp / maxf(_max_hp, 1.0)
+	_max_hp *= multiplier
+	_hp = _max_hp * frac
+	health_changed.emit(_hp, _max_hp, _shield)
+
 ## Sets HP to a fraction of max HP and emits health_changed.
 func set_hp_fraction(fraction: float) -> void:
 	_hp = _max_hp * clampf(fraction, 0.0, 1.0)
@@ -132,12 +139,9 @@ func apply_resistance_bonus(dtype: int, amount: float, cap: float = 0.75) -> voi
 	var existing: float = _resistance_map.get(dtype, 0.0)
 	_resistance_map[dtype] = minf(existing + amount, cap)
 
-## Scales max HP by multiplier, preserving the current HP fraction.
-func scale_max_hp(multiplier: float) -> void:
-	var frac: float = _hp / maxf(_max_hp, 1.0)
-	_max_hp *= multiplier
-	_hp = _max_hp * frac
-	health_changed.emit(_hp, _max_hp, _shield)
+## Alias for apply_resistance_bonus (backward compat).
+func add_resistance(damage_type: int, amount: float, cap: float = 0.75) -> void:
+	apply_resistance_bonus(damage_type, amount, cap)
 
 ## Enables the Tank Fortified mechanic (25% reduction from first damage type).
 func enable_fortified() -> void:

@@ -128,3 +128,19 @@ TOAST_RESISTANCE_FALLING,THE CONVERGENCE DESTABILIZES — {0} resistance fading,
 UI_SYNERGIES,Synergies,Hiệp lực
 UI_SYNERGY_UNDISCOVERED,???,???
 UI_RESISTANCE,Resistance,Kháng cự
+HUD_STAT_DAMAGE,Damage,Sát thương
+HUD_STAT_FIRE_RATE,Fire Rate,Tốc độ bắn
+HUD_STAT_RANGE,Range,Tầm bắn
+HUD_FULLY_UPGRADED,Fully upgraded,Đã nâng cấp tối đa
+HUD_UPGRADES,UPGRADES,NÂNG CẤP
+HUD_LEVEL_STATS,Level Stats,Thống kê Màn chơi
+HUD_SIGNAL_INTERCEPTED,SIGNAL INTERCEPTED,TÍN HIỆU BỊ CHẶN
+HUD_CHOOSE_BUFF,Choose a buff,Chọn một tăng cường
+HUD_CHOOSE,Choose,Chọn
+SIGNAL_DECODE_INPUT_PROMPT,Tap the sequence!,Chạm theo trình tự!
+UI_REGIONS,REGIONS,KHU VỰC
+UI_DIFFICULTY,DIFFICULTY,ĐỘ KHÓ
+UI_PROGRESS_COMPLETED,{0} / {1} completed,{0} / {1} hoàn thành
+UI_BEST_VALUE,Best Value,Giá trị tốt nhất
+UI_DOUBLE_DIAMONDS,x2 Diamonds (Watch Ad),x2 Kim cương (Xem QC)
+UI_DOUBLED,x2 Doubled!,x2 Đã nhân đôi!
