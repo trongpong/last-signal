@@ -7,6 +7,7 @@ extends Node
 const SFX_POOL_SIZE := 12
 const MAX_SFX_CACHE: int = 64
 
+var event_router: Node
 var _music_system: MusicSystem
 var _sfx_generator: SFXGenerator
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -23,6 +24,10 @@ func _ready() -> void:
 	add_child(_music_system)
 
 	_sfx_generator = SFXGenerator.new()
+
+	event_router = load("res://core/audio/audio_event_router.gd").new()
+	event_router.name = "AudioEventRouter"
+	add_child(event_router)
 
 	for i in SFX_POOL_SIZE:
 		var player := AudioStreamPlayer.new()
@@ -46,6 +51,10 @@ func set_music_state(state: Enums.GameState) -> void:
 
 func set_boss_music(active: bool) -> void:
 	_music_system.set_boss_active(active)
+
+
+func set_music_intensity(value: float) -> void:
+	_music_system.set_intensity(value)
 
 
 # ---------------------------------------------------------------------------
