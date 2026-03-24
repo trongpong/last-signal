@@ -62,6 +62,10 @@ func setup(
 	_wm.all_waves_complete.connect(_on_all_waves_complete)
 	_wm.break_send_requested.connect(_on_break_send_requested)
 
+	if AudioManager.event_router != null:
+		var is_endless := GameManager.current_level_id == "endless"
+		AudioManager.event_router.setup(wm, is_endless)
+
 
 ## Initialises all managers and transitions to BUILDING state.
 func start_level(level_id: String, difficulty: int, waves: Array) -> void:
@@ -72,7 +76,11 @@ func start_level(level_id: String, difficulty: int, waves: Array) -> void:
 	var constants := Constants.new()
 	var gold_mult: float = constants.DIFFICULTY_GOLD_MULT.get(difficulty, 1.0)
 
+	if AudioManager.event_router != null:
+		AudioManager.event_router.suppress_economy_audio(true)
 	_em.reset_match_economy()
+	if AudioManager.event_router != null:
+		AudioManager.event_router.suppress_economy_audio(false)
 	_em.set_gold_modifier(gold_mult)
 
 	_am.setup(difficulty, false)
