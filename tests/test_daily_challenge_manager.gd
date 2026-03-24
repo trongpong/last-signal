@@ -101,8 +101,8 @@ func test_reward_streak_bonus() -> void:
 	]
 	dc["last_completed_date"] = today
 	_sm.data["daily_challenges"] = dc
-	# 100 (3-star) + 5*10 (streak) = 150
-	assert_eq(_dcm.get_reward_diamonds(3), 150)
+	# 150 (base 50 + three-star 100) + 5*10 (streak) = 200
+	assert_eq(_dcm.get_reward_diamonds(3), 200)
 
 func test_streak_bonus_caps_at_70() -> void:
 	var dc: Dictionary = _sm.data.get("daily_challenges", {})

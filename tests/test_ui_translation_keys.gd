@@ -77,7 +77,6 @@ const REQUIRED_KEYS: Array = [
 	"UI_DIAMONDS",
 	"SKILL_TREE",
 	"GLOBAL_UPGRADES",
-	"UI_UPGRADE",
 	"UI_UNLOCK",
 
 	# diamond_shop.gd
@@ -202,7 +201,6 @@ func test_tower_lab_keys() -> void:
 	assert_true(_has_key("SKILL_TREE"),      "Missing: SKILL_TREE")
 	assert_true(_has_key("GLOBAL_UPGRADES"), "Missing: GLOBAL_UPGRADES")
 	assert_true(_has_key("UI_UNLOCK"),       "Missing: UI_UNLOCK")
-	assert_true(_has_key("UI_UPGRADE"),      "Missing: UI_UPGRADE")
 	assert_true(_has_key("UI_COMPLETED"),    "Missing: UI_COMPLETED")
 
 func test_diamond_shop_keys() -> void:

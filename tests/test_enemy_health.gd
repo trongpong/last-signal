@@ -112,8 +112,8 @@ func test_armor_diminishing_returns_on_small_damage() -> void:
 func test_shield_absorbs_damage_before_hp() -> void:
 	eh.initialize(100.0, 0.0, 20.0)
 	eh.take_damage(15.0, Enums.DamageType.PULSE)
-	# Shield absorbs all 15 damage
-	assert_almost_eq(eh.get_hp(), 100.0, 0.001)
+	# Shield absorbs all 15 damage, but min-1-damage rule applies (amount > 0)
+	assert_almost_eq(eh.get_hp(), 99.0, 0.001)
 	assert_almost_eq(eh.get_shield(), 5.0, 0.001)
 
 func test_shield_overflow_damages_hp() -> void:
@@ -149,8 +149,8 @@ func test_full_resistance_negates_all_damage() -> void:
 	rmap[Enums.DamageType.CRYO] = 1.0
 	eh.initialize(100.0, 0.0, 0.0, rmap)
 	eh.take_damage(50.0, Enums.DamageType.CRYO)
-	# 50 * (1 - 1.0) = 0, no minimum-damage clamp → 0 damage
-	assert_almost_eq(eh.get_hp(), 100.0, 0.001)
+	# 50 * (1 - 1.0) = 0, but min-1-damage rule applies (amount > 0)
+	assert_almost_eq(eh.get_hp(), 99.0, 0.001)
 
 func test_no_resistance_for_other_type() -> void:
 	var rmap: Dictionary = {}

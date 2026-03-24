@@ -93,10 +93,9 @@ func test_difficulty_names() -> void:
 # ---------------------------------------------------------------------------
 
 func test_hud_keys() -> void:
-	assert_true(_has_key("HUD_WAVE_COMPLETE"))
-	assert_true(_has_key("HUD_BUILDING_PHASE"))
-	assert_true(_has_key("HUD_PREPARE"))
-	assert_true(_has_key("HUD_INCOMING"))
+	# HUD_WAVE_COMPLETE, HUD_BUILDING_PHASE, HUD_PREPARE, HUD_INCOMING
+	# were removed as dead translation keys.
+	pass
 
 # ---------------------------------------------------------------------------
 # Enemy names

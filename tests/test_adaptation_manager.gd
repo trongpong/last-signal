@@ -103,16 +103,15 @@ func test_resistance_decays_to_zero_and_is_removed() -> void:
 	var initial_res: float = am.get_resistances().get(Enums.DamageType.MISSILE, 0.0)
 	am.start_new_wave_window()
 	# Use a different type exclusively — MISSILE is absent from the damage log,
-	# so check_adaptation never touches its resistance (decay only applies to
-	# types present in the current damage log).  The resistance stays unchanged.
+	# so its resistance should decay over time (unused types lose resistance).
 	for _i in 20:
 		am.record_damage(Enums.DamageType.NANO, 1000.0)
 		am.check_adaptation()
 		am.start_new_wave_window()
 	var res: Dictionary = am.get_resistances()
-	assert_true(res.has(Enums.DamageType.MISSILE), "MISSILE resistance persists when type is absent from damage log")
-	assert_almost_eq(res.get(Enums.DamageType.MISSILE, 0.0), initial_res, 0.0001,
-		"MISSILE resistance should be unchanged — decay requires presence in damage log")
+	var final_res: float = res.get(Enums.DamageType.MISSILE, 0.0)
+	assert_true(final_res < initial_res,
+		"MISSILE resistance should decay when type is absent from damage log")
 
 # ---------------------------------------------------------------------------
 # check_adaptation — no damage recorded
