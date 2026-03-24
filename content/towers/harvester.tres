@@ -45,7 +45,52 @@ tier_branches = [{
 		"range_mult": 1.0,
 		"cost": 320,
 		"special": "income+50",
-		"branches": []
+		"branches": [{
+			"name": "surplus_refinery",
+			"display_name": "Refinery",
+			"damage_mult": 1.0,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 450,
+			"special": "income+75",
+			"branches": []
+		}, {
+			"name": "surplus_dividend",
+			"display_name": "Dividend Engine",
+			"damage_mult": 1.3,
+			"fire_rate_mult": 1.2,
+			"range_mult": 1.0,
+			"cost": 420,
+			"special": "income+30",
+			"branches": []
+		}]
+	}, {
+		"name": "overclock_harvester",
+		"display_name": "Overclock",
+		"damage_mult": 1.2,
+		"fire_rate_mult": 1.3,
+		"range_mult": 1.0,
+		"cost": 280,
+		"special": "income+20",
+		"branches": [{
+			"name": "overclock_turbo",
+			"display_name": "Turbo Extractor",
+			"damage_mult": 1.4,
+			"fire_rate_mult": 1.3,
+			"range_mult": 1.0,
+			"cost": 400,
+			"special": "income+25",
+			"branches": []
+		}, {
+			"name": "overclock_salvager",
+			"display_name": "Salvager",
+			"damage_mult": 1.2,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.2,
+			"cost": 380,
+			"special": "income+40",
+			"branches": []
+		}]
 	}]
 }, {
 	"name": "network",
@@ -63,6 +108,51 @@ tier_branches = [{
 		"range_mult": 1.2,
 		"cost": 300,
 		"special": "income+40",
-		"branches": []
+		"branches": [{
+			"name": "megacore_monopoly",
+			"display_name": "Monopoly Core",
+			"damage_mult": 1.0,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.2,
+			"cost": 430,
+			"special": "income+60",
+			"branches": []
+		}, {
+			"name": "megacore_armed",
+			"display_name": "Armed Harvester",
+			"damage_mult": 1.5,
+			"fire_rate_mult": 1.4,
+			"range_mult": 1.0,
+			"cost": 400,
+			"special": "income+20",
+			"branches": []
+		}]
+	}, {
+		"name": "prospector",
+		"display_name": "Prospector Array",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.3,
+		"cost": 280,
+		"special": "income+30",
+		"branches": [{
+			"name": "prospector_deep_mine",
+			"display_name": "Deep Mine",
+			"damage_mult": 1.0,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 410,
+			"special": "income+55",
+			"branches": []
+		}, {
+			"name": "prospector_sentinel",
+			"display_name": "Sentinel",
+			"damage_mult": 1.4,
+			"fire_rate_mult": 1.3,
+			"range_mult": 1.2,
+			"cost": 420,
+			"special": "income+15",
+			"branches": []
+		}]
 	}]
 }]

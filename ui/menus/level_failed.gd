@@ -46,7 +46,7 @@ func _build_layout() -> void:
 	var backdrop := ColorRect.new()
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.color = Color(0.15, 0.02, 0.02, 0.8)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(backdrop)
 
 	var vbox := VBoxContainer.new()

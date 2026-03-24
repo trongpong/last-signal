@@ -98,6 +98,16 @@ func check_adaptation() -> void:
 			if _resistances[dtype] == 0.0:
 				_resistances.erase(dtype)
 
+	# Decay resistance for types not used at all this window
+	for dtype in _resistances.keys():
+		if not _damage_log.has(dtype) and _resistances[dtype] > 0.0:
+			_resistances[dtype] = maxf(
+				_resistances[dtype] - Constants.ADAPTATION_DECAY_RATE * _decay_multiplier,
+				0.0
+			)
+			if _resistances[dtype] == 0.0:
+				_resistances.erase(dtype)
+
 	adaptation_changed.emit(get_resistances())
 
 

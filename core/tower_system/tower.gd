@@ -41,6 +41,7 @@ var _skill_damage_bonus: float = 0.0
 var _skill_fire_rate_bonus: float = 0.0
 var _skill_range_bonus: float = 0.0
 var _skill_specials: Dictionary = {}  # "special_name" -> level
+var _tier_specials: Dictionary = {}  # "special_string" -> count (from tier upgrade branches)
 
 # Cooldown: seconds remaining before the tower can fire again
 var _fire_cooldown: float = 0.0
@@ -336,56 +337,78 @@ func sell() -> void:
 	queue_free()
 
 # ---------------------------------------------------------------------------
-# Effective stats (base + skill specials)
+# Effective stats (base + tier upgrade specials + skill specials)
 # ---------------------------------------------------------------------------
 
-## Returns effective splash radius including skill bonuses.
+## Returns effective splash radius including tier upgrade and skill bonuses.
 func get_effective_splash() -> float:
 	if _definition == null:
 		return 0.0
 	var base: float = _definition.splash_radius
+	for key in _tier_specials:
+		if key.begins_with("splash+"):
+			base += float(key.substr(7)) * float(_tier_specials[key])
+		elif key.begins_with("splash="):
+			base = maxf(base, float(key.substr(7)))
 	for key in _skill_specials:
 		if key.begins_with("splash+"):
 			base += float(key.substr(7)) * float(_skill_specials[key])
 	return base
 
-## Returns effective chain count including skill bonuses.
+## Returns effective chain count including tier upgrade and skill bonuses.
 func get_effective_chain_count() -> int:
 	if _definition == null:
 		return 0
 	var base: int = _definition.chain_count
+	for key in _tier_specials:
+		if key.begins_with("chain_count+"):
+			base += int(key.substr(12)) * _tier_specials[key]
 	for key in _skill_specials:
 		if key.begins_with("chain_count+"):
 			base += int(key.substr(12)) * _skill_specials[key]
 	return base
 
-## Returns the chain range from the tower definition.
+## Returns the chain range including tier upgrade bonuses.
 func get_effective_chain_range() -> float:
 	if _definition == null:
 		return 0.0
-	return _definition.chain_range
+	var base: float = _definition.chain_range
+	for key in _tier_specials:
+		if key.begins_with("chain_range+"):
+			base += float(key.substr(12)) * float(_tier_specials[key])
+	return base
 
-## Returns effective slow factor including skill bonuses (lower = stronger).
+## Returns effective slow factor including tier upgrade and skill bonuses (lower = stronger).
 func get_effective_slow_factor() -> float:
 	if _definition == null:
 		return 1.0
 	var base: float = _definition.slow_factor
+	for key in _tier_specials:
+		if key.begins_with("slow_factor-"):
+			base -= float(key.substr(12)) * float(_tier_specials[key])
 	for key in _skill_specials:
 		if key.begins_with("slow_power+"):
 			base -= float(key.substr(11)) * float(_skill_specials[key])
 	return clampf(base, 0.05, 1.0)
 
-## Returns the slow duration from the tower definition.
+## Returns the slow duration including tier upgrade bonuses.
 func get_effective_slow_duration() -> float:
 	if _definition == null:
 		return 0.0
-	return _definition.slow_duration
+	var base: float = _definition.slow_duration
+	for key in _tier_specials:
+		if key.begins_with("slow_duration+"):
+			base += float(key.substr(14)) * float(_tier_specials[key])
+	return base
 
-## Returns effective income per wave including skill bonuses.
+## Returns effective income per wave including tier upgrade and skill bonuses.
 func get_effective_income() -> int:
 	if _definition == null:
 		return 0
 	var base: int = _definition.income_per_wave
+	for key in _tier_specials:
+		if key.begins_with("income+"):
+			base += int(key.substr(7)) * _tier_specials[key]
 	for key in _skill_specials:
 		if key.begins_with("gold_bonus+"):
 			base += int(key.substr(11)) * _skill_specials[key]
@@ -397,29 +420,39 @@ func get_effective_buff_range() -> float:
 		return 0.0
 	return _definition.buff_range + _skill_range_bonus
 
-## Returns effective buff damage multiplier including skill bonuses.
+## Returns effective buff damage multiplier including tier upgrade and skill bonuses.
 func get_effective_buff_damage_mult() -> float:
 	if _definition == null:
 		return 1.0
 	var base: float = _definition.buff_damage_mult
+	for key in _tier_specials:
+		if key.begins_with("buff_damage_mult+"):
+			base += float(key.substr(17)) * float(_tier_specials[key])
 	for key in _skill_specials:
 		if key.begins_with("buff_power+"):
 			base += float(key.substr(11)) * float(_skill_specials[key])
 	return base
 
-## Returns the buff fire rate multiplier from the tower definition.
+## Returns the buff fire rate multiplier including tier upgrade bonuses.
 func get_effective_buff_fire_rate_mult() -> float:
 	if _definition == null:
 		return 1.0
-	return _definition.buff_fire_rate_mult
+	var base: float = _definition.buff_fire_rate_mult
+	for key in _tier_specials:
+		if key.begins_with("buff_fire_rate_mult+"):
+			base += float(key.substr(20)) * float(_tier_specials[key])
+	return base
 
-## Returns true if this tower has the named skill special active.
+## Returns true if this tower has the named special active (from skill tree or tier upgrades).
 func has_special(special_name: String) -> bool:
-	return _skill_specials.has(special_name)
+	return _skill_specials.has(special_name) or _tier_specials.has(special_name)
 
 ## Returns the level of the named skill special, or 0 if not present.
+## For tier specials, returns the count (how many times that special was chosen).
 func get_special_level(special_name: String) -> int:
-	return _skill_specials.get(special_name, 0) as int
+	var level: int = _skill_specials.get(special_name, 0) as int
+	level += _tier_specials.get(special_name, 0) as int
+	return level
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -435,6 +468,11 @@ func _recalculate_stats() -> void:
 		"range": _definition.base_range
 	}
 	var upgraded: Dictionary = _tier_tree.apply_upgrades(base, _upgrade_path)
+
+	# Collect tier upgrade specials
+	_tier_specials.clear()
+	for special in _tier_tree.collect_specials(_upgrade_path):
+		_tier_specials[special] = (_tier_specials.get(special, 0) as int) + 1
 
 	current_damage = (upgraded.get("damage", _definition.base_damage) as float) + _skill_damage_bonus
 	current_damage *= (1.0 + _mastery_damage_bonus)

@@ -273,13 +273,8 @@ func _build_layout() -> void:
 
 ## Read settings from SaveManager and populate the UI.
 func _load_settings() -> void:
-	if not Engine.has_singleton("SaveManager"):
-		return
-	var sm = Engine.get_singleton("SaveManager")
-	if sm == null:
-		return
-	var settings: Dictionary = sm.data.get("profile", {}).get("settings", {})
-	var language: String = sm.data.get("profile", {}).get("language", "en")
+	var settings: Dictionary = SaveManager.data.get("profile", {}).get("settings", {})
+	var language: String = SaveManager.data.get("profile", {}).get("language", "en")
 
 	_music_slider.set_value_no_signal(settings.get("music_vol", 1.0) as float)
 	_sfx_slider.set_value_no_signal(settings.get("sfx_vol", 1.0) as float)
@@ -296,36 +291,25 @@ func _load_settings() -> void:
 
 ## Write current UI values back to SaveManager and persist.
 func _save_settings() -> void:
-	if not Engine.has_singleton("SaveManager"):
-		return
-	var sm = Engine.get_singleton("SaveManager")
-	if sm == null:
-		return
-	var settings: Dictionary = sm.data["profile"]["settings"]
+	var settings: Dictionary = SaveManager.data["profile"]["settings"]
 	settings["music_vol"] = _music_slider.value
 	settings["sfx_vol"] = _sfx_slider.value
 	settings["show_damage_numbers"] = _damage_numbers_check.button_pressed
 	settings["show_range_on_hover"] = _range_on_hover_check.button_pressed
 	settings["colorblind_mode"] = _colorblind_check.button_pressed
-	sm.save_game()
+	SaveManager.save_game()
 
 # ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
 
 func _on_music_changed(value: float) -> void:
-	if Engine.has_singleton("AudioManager"):
-		var am = Engine.get_singleton("AudioManager")
-		if am != null:
-			am.set_music_volume(value)
+	AudioManager.set_music_volume(value)
 	_save_settings()
 
 
 func _on_sfx_changed(value: float) -> void:
-	if Engine.has_singleton("AudioManager"):
-		var am = Engine.get_singleton("AudioManager")
-		if am != null:
-			am.set_sfx_volume(value)
+	AudioManager.set_sfx_volume(value)
 	_save_settings()
 
 
@@ -342,6 +326,7 @@ func _on_fullscreen_toggled(toggled: bool) -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	_save_settings()
 
 
 func _on_colorblind_toggled(_on: bool) -> void:
@@ -352,11 +337,8 @@ func _on_language_selected(index: int) -> void:
 	var locale: String = (_LANGUAGES[index] as Array)[0] as String
 	TranslationServer.set_locale(locale)
 
-	if Engine.has_singleton("SaveManager"):
-		var sm = Engine.get_singleton("SaveManager")
-		if sm != null:
-			sm.data["profile"]["language"] = locale
-			sm.save_game()
+	SaveManager.data["profile"]["language"] = locale
+	SaveManager.save_game()
 
 
 func _on_back_pressed() -> void:

@@ -45,7 +45,52 @@ tier_branches = [{
 		"range_mult": 1.15,
 		"cost": 400,
 		"special": "",
-		"branches": []
+		"branches": [{
+			"name": "death_ray_annihilator",
+			"display_name": "Annihilator",
+			"damage_mult": 1.5,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.2,
+			"cost": 450,
+			"special": "",
+			"branches": []
+		}, {
+			"name": "death_ray_lancer",
+			"display_name": "Lancer",
+			"damage_mult": 1.4,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 430,
+			"special": "pierce+1",
+			"branches": []
+		}]
+	}, {
+		"name": "convergence_lens",
+		"display_name": "Convergence Lens",
+		"damage_mult": 1.5,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.3,
+		"cost": 350,
+		"special": "pierce+1",
+		"branches": [{
+			"name": "convergence_prism",
+			"display_name": "Prism",
+			"damage_mult": 1.3,
+			"fire_rate_mult": 1.2,
+			"range_mult": 1.1,
+			"cost": 420,
+			"special": "pierce+1",
+			"branches": []
+		}, {
+			"name": "convergence_disintegrator",
+			"display_name": "Disintegrator",
+			"damage_mult": 1.6,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 440,
+			"special": "",
+			"branches": []
+		}]
 	}]
 }, {
 	"name": "rapid_beam",
@@ -63,6 +108,51 @@ tier_branches = [{
 		"range_mult": 1.0,
 		"cost": 300,
 		"special": "",
-		"branches": []
+		"branches": [{
+			"name": "beam_storm_tempest",
+			"display_name": "Tempest",
+			"damage_mult": 1.2,
+			"fire_rate_mult": 1.5,
+			"range_mult": 1.0,
+			"cost": 400,
+			"special": "",
+			"branches": []
+		}, {
+			"name": "beam_storm_overdriver",
+			"display_name": "Overdriver",
+			"damage_mult": 1.5,
+			"fire_rate_mult": 1.2,
+			"range_mult": 1.1,
+			"cost": 420,
+			"special": "",
+			"branches": []
+		}]
+	}, {
+		"name": "scatter_beam",
+		"display_name": "Scatter Beam",
+		"damage_mult": 1.0,
+		"fire_rate_mult": 1.4,
+		"range_mult": 1.2,
+		"cost": 280,
+		"special": "chain_count+1",
+		"branches": [{
+			"name": "scatter_beam_diffusion",
+			"display_name": "Diffusion",
+			"damage_mult": 1.2,
+			"fire_rate_mult": 1.3,
+			"range_mult": 1.1,
+			"cost": 380,
+			"special": "chain_count+1",
+			"branches": []
+		}, {
+			"name": "scatter_beam_resonator",
+			"display_name": "Resonator",
+			"damage_mult": 1.5,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.2,
+			"cost": 400,
+			"special": "",
+			"branches": []
+		}]
 	}]
 }]

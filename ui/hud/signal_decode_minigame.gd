@@ -62,6 +62,8 @@ func setup(wave_number: int, tower_bar_height: float = 72.0) -> void:
 	_build_ui()
 
 func skip() -> void:
+	_phase = -1  # Terminal state — prevents _process from emitting again
+	set_process(false)
 	decode_finished.emit()
 
 # ---------------------------------------------------------------------------

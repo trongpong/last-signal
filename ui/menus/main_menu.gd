@@ -123,7 +123,7 @@ func _build_layout() -> void:
 	vbox.add_child(settings_btn)
 
 	# Focus neighbors for arrow key navigation
-	var buttons: Array[Button] = [campaign_btn, _endless_btn, lab_btn, shop_btn, settings_btn]
+	var buttons: Array[Button] = [campaign_btn, _endless_btn, daily_btn, lab_btn, shop_btn, settings_btn]
 	for i in buttons.size():
 		var prev_path := buttons[(i - 1 + buttons.size()) % buttons.size()].get_path()
 		var next_path := buttons[(i + 1) % buttons.size()].get_path()

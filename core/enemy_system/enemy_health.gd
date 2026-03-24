@@ -76,7 +76,11 @@ func take_damage(amount: float, damage_type: Enums.DamageType, ignore_armor: boo
 		_shield -= shield_absorbed
 		hp_damage = after_armor - shield_absorbed
 
-	# 4. Apply to HP
+	# 4. Minimum 1 damage per hit (GDD rule) when damage was intended
+	if amount > 0.0:
+		hp_damage = maxf(hp_damage, 1.0)
+
+	# 5. Apply to HP
 	_hp = maxf(_hp - hp_damage, 0.0)
 	health_changed.emit(_hp, _max_hp, _shield)
 

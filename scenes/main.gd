@@ -291,8 +291,9 @@ func _on_campaign_level_complete(level_id: String, stars: int) -> void:
 
 
 func _on_campaign_level_failed(_level_id: String) -> void:
-	# Return to campaign map after a short delay or immediately
-	_show_campaign_map()
+	# Let the game scene's LevelFailed screen handle retry/quit navigation.
+	# The quit button in game.gd already calls change_scene_to_file back to main.
+	pass
 
 
 func _on_daily_challenge_complete(_level_id: String, stars: int) -> void:

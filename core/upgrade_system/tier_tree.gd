@@ -92,3 +92,19 @@ func apply_upgrades(base_stats: Dictionary, chosen_path: Array) -> Dictionary:
 		current_branches = branch.get("branches", []) as Array
 
 	return result
+
+## Collects all non-empty special strings along chosen_path.
+## Returns an Array of Strings (may contain duplicates if the same special appears at multiple tiers).
+func collect_specials(chosen_path: Array) -> Array:
+	var specials: Array = []
+	var current_branches: Array = branches
+	for choice in chosen_path:
+		var idx: int = choice as int
+		if idx < 0 or idx >= current_branches.size():
+			break
+		var branch: Dictionary = current_branches[idx]
+		var special: String = branch.get("special", "") as String
+		if special != "":
+			specials.append(special)
+		current_branches = branch.get("branches", []) as Array
+	return specials

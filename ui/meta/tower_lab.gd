@@ -880,7 +880,8 @@ func _populate_synergies() -> void:
 
 	for syn in _SYNERGY_DEFS:
 		var syn_name: String = syn["name"] as String
-		var is_found: bool = discovered.has(syn_name.to_lower()) or discovered.has(syn_name)
+		var syn_type: int = syn["type"] as int
+		var is_found: bool = discovered.has(syn_type)
 
 		var card := PanelContainer.new()
 		var card_style := StyleBoxFlat.new()

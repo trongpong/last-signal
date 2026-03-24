@@ -78,11 +78,13 @@ Main (scenes/main.tscn) → routes between screens
 
 ### Star Rating
 
+Stars scale proportionally with starting lives per difficulty:
+
 | Stars | Condition |
 |-------|-----------|
 | 3 | No lives lost |
-| 2 | ≤5 lives lost |
-| 1 | >5 lives lost (level completed) |
+| 2 | ≤25% of starting lives lost (Normal: ≤5, Hard: ≤2, Nightmare: ≤1) |
+| 1 | >25% lives lost (level completed) |
 
 ---
 
@@ -209,14 +211,14 @@ Starting at wave 15 in endless mode, random enemies spawn as Elites with a visib
 | **Reflective** | Mirror sheen | 15% damage reflected; attacking tower paused 0.3s | Diverse tower spread |
 | **Enraged** | Red glow, growing size | +5% speed per 3s alive, caps at +50% | Fast kill, high DPS |
 
-**Elite Scaling:**
+**Elite Scaling (per-enemy probability):**
 
-| Wave Range | Elite Rate |
-|------------|-----------|
-| 15–19 | 1 elite per wave |
-| 20–29 | 2 elites per wave |
-| 30–49 | 20% of enemies are elite |
-| 50+ | 40% elite, can stack 2 modifiers |
+| Wave Range | Elite Chance Per Enemy |
+|------------|----------------------|
+| 15–19 | 8% |
+| 20–29 | 15% |
+| 30–49 | 20% |
+| 50+ | 40%, can stack 2 modifiers |
 
 ---
 
@@ -335,32 +337,32 @@ Each tower type's skill tree culminates in a hero unlock (node 10). Heroes are t
 
 ### 10.1 Skill Trees (Per Tower)
 
-Each of the 7 tower types has a 10-node linear skill tree. Nodes unlock sequentially (node N requires node N-1). Node costs escalate: 80→120→180→260→380→540→760→920→1080→1200 diamonds.
+Each of the 7 tower types has a 5-node skill tree. Each node can be leveled up to 5. Node costs per level: 80→120→180→260→380 diamonds.
 
-| Tower | Nodes 1–3 | Nodes 4–6 | Nodes 7–9 | Node 10 |
-|-------|-----------|-----------|-----------|---------|
-| **Pulse Cannon** | +5% damage/level | +3% fire rate/level | Piercing Rounds (projectiles hit 2 targets at level 7+) | Hero unlock |
-| **Arc Emitter** | +1 chain target at level 3 | +4% chain range/level | Conductive Residue (chained enemies +10% damage for 2s) | Hero unlock |
-| **Cryo Array** | +0.05s slow duration/level | +3% range/level | Flash Freeze (5% chance to fully stop enemy 1s) | Hero unlock |
-| **Missile Pod** | +4% splash radius/level | +3% damage/level | Cluster Munitions (on impact, scatter 3 mini-projectiles) | Hero unlock |
-| **Beam Spire** | +5% damage/level | +3% range/level | Overload Beam (3 consecutive same-target hits → 2× damage) | Hero unlock |
-| **Nano Hive** | +3% buff range/level | +2% buff damage mult/level | Repair Drones (heal nearby towers — reduce cooldowns 1s/pulse) | Hero unlock |
-| **Harvester** | +10 income/level | +3% range/level | Salvage Protocol (enemies killed in range +15% gold) | Hero unlock |
+| Tower | Skill 1 | Skill 2 | Skill 3 | Skill 4 | Skill 5 |
+|-------|---------|---------|---------|---------|---------|
+| **Pulse Cannon** | +5% damage | +3% fire rate | +3% range | Pierce count | Crit chance |
+| **Arc Emitter** | +1 chain target | +4% chain range | +5% damage | Conductive Residue | Chain speed |
+| **Cryo Array** | +0.05s slow duration | +3% range | +5% damage | Flash Freeze | Slow potency |
+| **Missile Pod** | +4% splash radius | +3% damage | +3% fire rate | Cluster Munitions | Blast armor pen |
+| **Beam Spire** | +5% damage | +3% range | +3% fire rate | Overload Beam | Pierce count |
+| **Nano Hive** | +3% buff range | +2% buff damage | +2% buff fire rate | Repair Drones | Aura potency |
+| **Harvester** | +10 income | +3% range | +5% damage | Salvage Protocol | Kill gold bonus |
 
 ### 10.2 Global Upgrades
 
-8 permanent upgrades purchased with diamonds. Each has 5–10 tiers with exponential cost scaling: 50, 75, 110, 160, 230, 330, 470, 680, 980, 1400.
+8 permanent upgrades purchased with diamonds. Each has 10 tiers with exponential cost scaling: 50, 75, 110, 160, 230, 330, 470, 680, 980, 1400.
 
 | Upgrade | Effect per Tier | Max Tiers |
 |---------|----------------|-----------|
 | Starting Gold | +25 gold | 10 |
-| Starting Lives | +1 life | 5 |
-| Tower Cost Reduction | -2% build cost | 10 |
-| Wave Clear Bonus | +10 gold per wave clear | 10 |
-| Tower Sell Refund | +3% refund rate | 5 |
-| Diamond Bonus | +5% diamond earnings | 10 |
+| Extra Lives | +1 life | 10 |
+| Tower Cost Reduction | -1% build cost | 10 |
+| Gold per Kill | +3 gold per kill | 10 |
+| Tower Sell Refund | +2% refund rate | 10 |
+| Adaptation Slowdown | +2% slower adaptation | 10 |
 | Ability Cooldown | -2% base cooldown | 10 |
-| Harvester Efficiency | +5% income | 5 |
+| Hero Duration | +1s hero duration | 10 |
 
 ### 10.3 Tower Mastery
 
@@ -377,9 +379,6 @@ Lifetime stats tracked per tower type across all matches. At kill thresholds, un
 **Tracked stats per tower type:**
 - Total kills
 - Total damage dealt
-- Waves active (across all matches)
-- Highest single-hit damage
-- Most kills in a single match
 
 Mastery rewards applied as permanent modifiers via ProgressionManager.
 
@@ -771,8 +770,8 @@ All balance values live in `shared/constants.gd`. Key values:
 - Check interval: every 3 waves
 - Dominance threshold: 40% (Normal/Hard), 25% (Nightmare)
 - Resistance gain: +10% per check
-- Resistance cap: 60% (Normal), 75% (Nightmare/Endless)
-- Resistance decay: 5% per check when not dominant
+- Resistance cap: 60% (Normal/Hard/Nightmare), 75% (Endless)
+- Resistance decay: 5% per check when not dominant (also decays unused types)
 
 **Synergy:**
 - Range: 100px proximity

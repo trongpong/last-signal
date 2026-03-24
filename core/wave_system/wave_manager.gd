@@ -69,6 +69,9 @@ var _break_timer: float = 0.0
 ## Override for wave break duration (-1 = use constant default).
 var break_duration_override: float = -1.0
 
+## The actual break duration used for the current break (for early-send bonus calc).
+var _current_break_duration: float = 0.0
+
 # ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
@@ -132,9 +135,9 @@ func has_more_waves() -> bool:
 ## Returns the gold bonus for sending the next wave early.
 ## Scales linearly with remaining break time.
 func get_early_send_bonus() -> int:
-	if not _in_break or _break_timer <= 0.0:
+	if not _in_break or _break_timer <= 0.0 or _current_break_duration <= 0.0:
 		return 0
-	var fraction: float = _break_timer / Constants.WAVE_BREAK_DURATION
+	var fraction: float = _break_timer / _current_break_duration
 	return int(Constants.EARLY_SEND_GOLD_BONUS * fraction)
 
 
@@ -152,6 +155,7 @@ func pause_break() -> void:
 func resume_break(duration: float) -> void:
 	_in_break = true
 	_break_timer = duration
+	_current_break_duration = duration
 	break_started.emit(duration)
 
 ## Resumes the break timer from where it was paused, without re-emitting break_started.
@@ -230,6 +234,7 @@ func _on_wave_enemies_cleared() -> void:
 		var bd: float = break_duration_override if break_duration_override >= 0.0 else Constants.WAVE_BREAK_DURATION
 		_in_break = true
 		_break_timer = bd
+		_current_break_duration = bd
 		break_started.emit(bd)
 		if bd <= 0.0:
 			_in_break = false

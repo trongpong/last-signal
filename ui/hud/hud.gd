@@ -509,6 +509,7 @@ func _on_send_wave_pressed() -> void:
 
 
 func _on_speed_changed(speed: float) -> void:
+	GameManager.game_speed = speed
 	Engine.time_scale = speed
 
 
@@ -524,8 +525,9 @@ func _on_sell_requested(tower: Tower) -> void:
 	sell_tower_requested.emit(tower)
 
 
-func _on_targeting_changed(tower: Tower, mode: int) -> void:
-	tower.set_targeting_mode(mode)
+func _on_targeting_changed(_tower: Tower, _mode: int) -> void:
+	# Tower targeting is already applied by TowerUpgradePanel before emitting the signal.
+	pass
 
 
 func _on_ability_used(slot: int) -> void:

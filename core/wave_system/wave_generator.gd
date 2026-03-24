@@ -33,8 +33,8 @@ const UNLOCK_WAVE: Array = [
 	3,   # drone_fast
 	5,   # tank_heavy
 	7,   # scout_armored
-	8,   # flyer_light
-	10,  # shielder
+	5,   # flyer_light
+	12,  # shielder
 	12,  # drone_swarm
 	15,  # tank_boss
 	18,  # healer_support

@@ -263,15 +263,19 @@ func show_bonus_ad(economy, save, bonus_diamonds: int) -> void:
 		_grant_bonus(economy, save, bonus_diamonds)
 		return
 
-	if _is_mobile() and _rewarded_ad != null:
-		_bonus_pending_economy = economy
-		_bonus_pending_save = save
-		_bonus_pending_diamonds = bonus_diamonds
-		var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
-		if reward_listener != null:
-			reward_listener.on_user_earned_reward = _on_bonus_ad_earned
-			_rewarded_ad.show(reward_listener)
-			return
+	if _is_mobile():
+		if _rewarded_ad != null:
+			_bonus_pending_economy = economy
+			_bonus_pending_save = save
+			_bonus_pending_diamonds = bonus_diamonds
+			var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
+			if reward_listener != null:
+				reward_listener.on_user_earned_reward = _on_bonus_ad_earned
+				_rewarded_ad.show(reward_listener)
+				return
+		# Mobile but ad not loaded — signal failure
+		bonus_ad_failed.emit()
+		return
 
 	# Desktop/editor simulation: grant reward directly
 	_grant_bonus(economy, save, bonus_diamonds)

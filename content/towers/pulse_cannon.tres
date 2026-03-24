@@ -45,7 +45,52 @@ tier_branches = [{
 		"range_mult": 1.0,
 		"cost": 150,
 		"special": "",
-		"branches": []
+		"branches": [{
+			"name": "burst_storm",
+			"display_name": "Storm",
+			"damage_mult": 1.2,
+			"fire_rate_mult": 1.5,
+			"range_mult": 1.0,
+			"cost": 300,
+			"special": "",
+			"branches": []
+		}, {
+			"name": "burst_shredder",
+			"display_name": "Shredder",
+			"damage_mult": 1.5,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 320,
+			"special": "",
+			"branches": []
+		}]
+	}, {
+		"name": "rapid_precision",
+		"display_name": "Precision",
+		"damage_mult": 1.4,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.2,
+		"cost": 170,
+		"special": "",
+		"branches": [{
+			"name": "precision_sniper",
+			"display_name": "Sniper",
+			"damage_mult": 1.6,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.3,
+			"cost": 350,
+			"special": "",
+			"branches": []
+		}, {
+			"name": "precision_piercing",
+			"display_name": "Piercing",
+			"damage_mult": 1.3,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.1,
+			"cost": 330,
+			"special": "pierce+1",
+			"branches": []
+		}]
 	}]
 }, {
 	"name": "overcharge",
@@ -63,6 +108,51 @@ tier_branches = [{
 		"range_mult": 1.1,
 		"cost": 200,
 		"special": "",
-		"branches": []
+		"branches": [{
+			"name": "impact_devastator",
+			"display_name": "Devastator",
+			"damage_mult": 1.6,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.0,
+			"cost": 400,
+			"special": "",
+			"branches": []
+		}, {
+			"name": "impact_railgun",
+			"display_name": "Railgun",
+			"damage_mult": 1.4,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.3,
+			"cost": 380,
+			"special": "",
+			"branches": []
+		}]
+	}, {
+		"name": "overcharge_shockwave",
+		"display_name": "Shockwave",
+		"damage_mult": 1.2,
+		"fire_rate_mult": 1.0,
+		"range_mult": 1.0,
+		"cost": 180,
+		"special": "splash=40",
+		"branches": [{
+			"name": "shockwave_concussion",
+			"display_name": "Concussion",
+			"damage_mult": 1.3,
+			"fire_rate_mult": 1.0,
+			"range_mult": 1.1,
+			"cost": 370,
+			"special": "splash=60",
+			"branches": []
+		}, {
+			"name": "shockwave_chain",
+			"display_name": "Chain Pulse",
+			"damage_mult": 1.2,
+			"fire_rate_mult": 1.1,
+			"range_mult": 1.0,
+			"cost": 360,
+			"special": "chain_count+1",
+			"branches": []
+		}]
 	}]
 }]

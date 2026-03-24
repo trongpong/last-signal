@@ -41,6 +41,10 @@ var _speed_buff_timer: float = 0.0
 var _focus_fire_timer: float = 0.0
 var _focus_fire_mult: float = 1.0
 
+# Drone swarm / magnetic elite cooldown timers (avoid O(n^2) per frame)
+var _drone_swarm_cooldown: float = 0.0
+var _elite_magnetic_cooldown: float = 0.0
+
 # Elite modifier state
 var _elite_modifiers: Array[int] = []
 var _elite_regen_timer: float = 0.0
@@ -49,6 +53,7 @@ var _elite_phase_active: bool = false
 var _elite_phase_remaining: float = 0.0
 var _elite_enraged_timer: float = 0.0
 var _elite_enraged_speed_bonus: float = 0.0
+var _speed_multiplier: float = 1.0
 
 # Kill attribution (tower type that last dealt damage)
 var _last_damage_tower_type: int = -1
@@ -95,6 +100,7 @@ func initialize(def: EnemyDefinition, difficulty: int) -> void:
 		_health.enable_fortified()
 
 	# Speed (affected by difficulty)
+	_speed_multiplier = spd_mult
 	_effective_speed = def.speed * spd_mult
 
 	_initialized = true
@@ -299,8 +305,7 @@ func _on_died() -> void:
 		var remaining: Array = _elite_modifiers.filter(func(m: int) -> bool: return m != Enums.EliteModifier.SPLITTING)
 		elite_split_requested.emit(global_position, _definition, _spawn_difficulty, _spawn_path_index, get_progress_ratio(), remaining)
 	_spawn_death_effect()
-	if Engine.has_singleton("AudioManager"):
-		AudioManager.play_enemy_death(_definition.size_scale if _definition != null else 1.0)
+	AudioManager.play_enemy_death(_definition.size_scale if _definition != null else 1.0)
 	enemy_died.emit(self)
 	queue_free()
 
@@ -355,6 +360,10 @@ func _process_shielder(delta: float) -> void:
 			ally_health.add_shield(grant)
 
 func _process_drone_swarm() -> void:
+	_drone_swarm_cooldown -= get_process_delta_time()
+	if _drone_swarm_cooldown > 0.0:
+		return
+	_drone_swarm_cooldown = 0.5
 	var drone_count: int = 0
 	var drones: Array = []
 	for node in get_tree().get_nodes_in_group("enemies"):
@@ -420,6 +429,10 @@ func _process_elite_phasing(delta: float) -> void:
 				_renderer.set_phasing(true)
 
 func _process_elite_magnetic() -> void:
+	_elite_magnetic_cooldown -= get_process_delta_time()
+	if _elite_magnetic_cooldown > 0.0:
+		return
+	_elite_magnetic_cooldown = 0.5
 	for node in get_tree().get_nodes_in_group("enemies"):
 		if node == self or not (node is Enemy) or not node.is_alive():
 			continue
@@ -437,7 +450,7 @@ func _process_elite_enraged(delta: float) -> void:
 			Constants.ELITE_ENRAGED_SPEED_CAP
 		)
 		if _definition != null:
-			_effective_speed = _definition.speed * (1.0 + _elite_enraged_speed_bonus)
+			_effective_speed = _definition.speed * _speed_multiplier * (1.0 + _elite_enraged_speed_bonus)
 
 # ---------------------------------------------------------------------------
 # Death effect

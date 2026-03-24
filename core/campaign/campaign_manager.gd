@@ -180,13 +180,20 @@ func get_unlocked_towers() -> Array:
 # ---------------------------------------------------------------------------
 
 ## Returns the cumulative best-star count across all completed levels.
+## Handles the per-difficulty save format where each record is a dict of dicts
+## keyed by difficulty: { "0": { "best_stars": 3, "completed": true }, ... }
 func get_total_stars() -> int:
 	if _save_manager == null:
 		return 0
 	var completed: Dictionary = _save_manager.data["campaign"]["levels_completed"]
 	var total: int = 0
 	for record in completed.values():
-		total += (record as Dictionary).get("best_stars", 0) as int
+		if record is Dictionary:
+			var best: int = 0
+			for diff_record in record.values():
+				if diff_record is Dictionary:
+					best = maxi(best, diff_record.get("best_stars", 0) as int)
+			total += best
 	return total
 
 # ---------------------------------------------------------------------------

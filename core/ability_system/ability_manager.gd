@@ -103,8 +103,7 @@ func activate_ability(slot: int, target: Variant = null) -> bool:
 		return false
 	var ab_id: String = _loadout[slot] if slot < _loadout.size() else ""
 	ability_activated.emit(ab_id, slot, target)
-	if Engine.has_singleton("AudioManager"):
-		AudioManager.play_ability_activate()
+	AudioManager.play_ability_activate()
 	return true
 
 # ---------------------------------------------------------------------------

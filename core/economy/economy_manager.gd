@@ -75,7 +75,7 @@ func set_gold_modifier(modifier: float) -> void:
 ## Adds diamonds. If diamond_doubler is active, doubles the amount.
 ## Tracks total_diamonds_earned. Emits diamonds_changed.
 func add_diamonds(amount: int) -> void:
-	var actual: int = amount * 2 if diamond_doubler else amount
+	var actual: int = (amount * 2) if diamond_doubler else amount
 	diamonds += actual
 	total_diamonds_earned += actual
 	diamonds_changed.emit(diamonds, actual)
