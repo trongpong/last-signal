@@ -291,3 +291,43 @@ func test_generate_ui_panel_close_returns_valid_stream() -> void:
 	var stream := _gen.generate_ui_panel_close()
 	assert_not_null(stream)
 	assert_gt(stream.data.size(), 0)
+
+
+# --- Minigame sounds ---
+
+func test_generate_glyph_tone_returns_valid_stream() -> void:
+	var stream := _gen.generate_glyph_tone(0)
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_glyph_tone_different_per_index() -> void:
+	var stream0 := _gen.generate_glyph_tone(0)
+	var stream1 := _gen.generate_glyph_tone(1)
+	var stream2 := _gen.generate_glyph_tone(2)
+	assert_ne(stream0.data, stream1.data, "glyph 0 and 1 should differ")
+	assert_ne(stream1.data, stream2.data, "glyph 1 and 2 should differ")
+
+func test_generate_glyph_tone_wraps_with_modulo() -> void:
+	var stream0 := _gen.generate_glyph_tone(0)
+	var stream5 := _gen.generate_glyph_tone(5)
+	assert_eq(stream0.data, stream5.data, "index 5 should wrap to same as index 0")
+
+func test_generate_decode_correct_returns_valid_stream() -> void:
+	var stream := _gen.generate_decode_correct()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_decode_wrong_returns_valid_stream() -> void:
+	var stream := _gen.generate_decode_wrong()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_decode_success_returns_valid_stream() -> void:
+	var stream := _gen.generate_decode_success()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)
+
+func test_generate_decode_fail_returns_valid_stream() -> void:
+	var stream := _gen.generate_decode_fail()
+	assert_not_null(stream)
+	assert_gt(stream.data.size(), 0)

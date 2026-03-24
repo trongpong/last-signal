@@ -5,6 +5,7 @@ extends RefCounted
 ## Generates AudioStreamWAV-compatible PackedFloat32Array buffers for all game SFX.
 
 const SAMPLE_RATE := 44100
+const PENTATONIC_SCALE := [523.25, 587.33, 698.46, 783.99, 880.00]
 
 ## Per-tower SFX configuration: {wave, freq, duration}
 const TOWER_SFX: Dictionary = {
@@ -303,6 +304,46 @@ func generate_ui_panel_close() -> AudioStreamWAV:
 		result.append_array(chunk)
 	result = SynthEngine.apply_adsr(result, 0.003, 0.015, 0.5, 0.025, SAMPLE_RATE)
 	return SynthEngine.samples_to_stream(result, SAMPLE_RATE)
+
+
+func generate_glyph_tone(glyph_index: int) -> AudioStreamWAV:
+	var freq := PENTATONIC_SCALE[glyph_index % PENTATONIC_SCALE.size()]
+	var samples := SynthEngine.generate_sine(freq, 0.1, SAMPLE_RATE)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.015, 0.7, 0.03, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_decode_correct() -> AudioStreamWAV:
+	var base := SynthEngine.generate_sine(660.0, 0.08, SAMPLE_RATE)
+	var fifth := SynthEngine.generate_sine(990.0, 0.08, SAMPLE_RATE)
+	var samples := SynthEngine.mix(base, fifth, 0.6, 0.3)
+	samples = SynthEngine.apply_adsr(samples, 0.003, 0.01, 0.6, 0.02, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_decode_wrong() -> AudioStreamWAV:
+	var tone1 := SynthEngine.generate_square(200.0, 0.1, SAMPLE_RATE)
+	var tone2 := SynthEngine.generate_square(215.0, 0.1, SAMPLE_RATE)
+	var samples := SynthEngine.mix(tone1, tone2, 0.5, 0.5)
+	samples = SynthEngine.apply_adsr(samples, 0.002, 0.01, 0.5, 0.03, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_decode_success() -> AudioStreamWAV:
+	var samples := PackedFloat32Array()
+	for freq in PENTATONIC_SCALE:
+		var note := SynthEngine.generate_sine(freq, 0.04, SAMPLE_RATE)
+		note = SynthEngine.apply_adsr(note, 0.002, 0.005, 0.7, 0.01, SAMPLE_RATE)
+		samples.append_array(note)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
+
+
+func generate_decode_fail() -> AudioStreamWAV:
+	var samples := _generate_sweep(400.0, 200.0, 0.15)
+	var saw := SynthEngine.generate_saw(300.0, 0.15, SAMPLE_RATE)
+	samples = SynthEngine.mix(samples, saw, 0.7, 0.3)
+	samples = SynthEngine.apply_adsr(samples, 0.005, 0.02, 0.5, 0.05, SAMPLE_RATE)
+	return SynthEngine.samples_to_stream(samples, SAMPLE_RATE)
 
 
 func _generate_sweep(freq_start: float, freq_end: float, duration: float) -> PackedFloat32Array:
