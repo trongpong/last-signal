@@ -401,7 +401,7 @@ func show_toast(message: String) -> void:
 	toast.offset_bottom = 100.0
 	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(toast)
-	var tw := create_tween()
+	var tw := toast.create_tween()
 	tw.tween_interval(1.5)
 	tw.tween_property(toast, "modulate:a", 0.0, 0.5)
 	tw.tween_callback(toast.queue_free)

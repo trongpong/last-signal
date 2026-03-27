@@ -1036,7 +1036,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 	# Conduit synergy: +1 chain target
 	if synergy == Enums.SynergyType.CONDUIT:
 		chain_count += 1
-	if chain_count > 0 and hit_enemies.size() > 0:
+	if chain_count > 0 and hit_enemies.size() > 0 and is_instance_valid(hit_enemies[0]):
 		var chain_range: float = source_tower.get_effective_chain_range()
 		var chain_damage: float = damage * 0.7
 		# Shatter synergy: chain damage doubled on slowed enemies (applied in _apply_chain_damage)
@@ -1051,7 +1051,7 @@ func _on_projectile_hit(hit_pos: Vector2, damage: float, damage_type: int, splas
 		_apply_pierce(hit_pos, damage * 0.8, damage_type, hit_enemies, armor_pierce, src_tower_type)
 
 	# Focus Fire synergy: if partner's last target matches, debuff the enemy
-	if synergy == Enums.SynergyType.FOCUS_FIRE and hit_enemies.size() > 0:
+	if synergy == Enums.SynergyType.FOCUS_FIRE and hit_enemies.size() > 0 and is_instance_valid(hit_enemies[0]):
 		var partner = instance_from_id(source_tower.get_synergy_partner_id())
 		if partner != null and partner is Tower:
 			var target_e: Enemy = hit_enemies[0] as Enemy
@@ -1962,16 +1962,18 @@ func _show_gold_popup(world_pos: Vector2, amount: int) -> void:
 	label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(label)
-	var tw := create_tween()
+	var tw := label.create_tween()
 	tw.tween_property(label, "position:y", label.position.y - 40, 0.8)
 	tw.parallel().tween_property(label, "modulate:a", 0.0, 0.8)
 	tw.tween_callback(label.queue_free)
 
 func _apply_glitch_effect(enemy: Enemy) -> void:
+	if not is_instance_valid(enemy):
+		return
 	var renderer := enemy.get_node_or_null("EnemyRenderer") as Node2D
 	if renderer == null:
 		return
-	var tw := create_tween()
+	var tw := enemy.create_tween()
 	tw.tween_property(renderer, "position", Vector2(randf_range(-4, 4), randf_range(-4, 4)), 0.03)
 	tw.tween_property(renderer, "position", Vector2(randf_range(-4, 4), randf_range(-4, 4)), 0.03)
 	tw.tween_property(renderer, "position", Vector2(randf_range(-4, 4), randf_range(-4, 4)), 0.03)
@@ -2048,7 +2050,7 @@ func _show_damage_popup(world_pos: Vector2, damage: float, damage_type: int) -> 
 	}
 	label.add_theme_color_override("font_color", colors.get(damage_type, Color.WHITE))
 	ui.add_child(label)
-	var tw := create_tween()
+	var tw := label.create_tween()
 	tw.tween_property(label, "position:y", label.position.y - 30, 0.6)
 	tw.parallel().tween_property(label, "modulate:a", 0.0, 0.6)
 	tw.tween_callback(label.queue_free)

@@ -331,7 +331,7 @@ func _process_healer(delta: float) -> void:
 	_ability_cooldown = Constants.HEALER_PULSE_COOLDOWN
 	var healed_any: bool = false
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if node == self or not (node is Enemy):
+		if not is_instance_valid(node) or node == self or not (node is Enemy):
 			continue
 		if not node.is_alive():
 			continue
@@ -348,7 +348,7 @@ func _process_shielder(delta: float) -> void:
 		return
 	_ability_cooldown = Constants.SHIELDER_AURA_COOLDOWN
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if node == self or not (node is Enemy):
+		if not is_instance_valid(node) or node == self or not (node is Enemy):
 			continue
 		if not node.is_alive():
 			continue
@@ -367,18 +367,19 @@ func _process_drone_swarm() -> void:
 	var drone_count: int = 0
 	var drones: Array = []
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if not (node is Enemy) or not node.is_alive():
+		if not is_instance_valid(node) or not (node is Enemy) or not node.is_alive():
 			continue
 		if node.get_archetype() == Enums.EnemyArchetype.DRONE:
 			drone_count += 1
 			drones.append(node)
 	if drone_count >= Constants.DRONE_OVERWHELM_THRESHOLD:
 		for d in drones:
-			d.apply_speed_buff(Constants.DRONE_OVERWHELM_SPEED_MULT, 0.5)
+			if is_instance_valid(d) and d.is_alive():
+				d.apply_speed_buff(Constants.DRONE_OVERWHELM_SPEED_MULT, 0.5)
 
 func _scatter_signal() -> void:
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if node == self or not (node is Enemy):
+		if not is_instance_valid(node) or node == self or not (node is Enemy):
 			continue
 		if not node.is_alive():
 			continue
@@ -434,7 +435,7 @@ func _process_elite_magnetic() -> void:
 		return
 	_elite_magnetic_cooldown = 0.5
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if node == self or not (node is Enemy) or not node.is_alive():
+		if not is_instance_valid(node) or node == self or not (node is Enemy) or not node.is_alive():
 			continue
 		if global_position.distance_to(node.global_position) <= Constants.ELITE_MAGNETIC_RANGE:
 			node.apply_speed_buff(Constants.ELITE_MAGNETIC_SPEED_MULT, 0.5)
