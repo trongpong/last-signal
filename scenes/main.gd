@@ -74,6 +74,7 @@ func _ready() -> void:
 	else:
 		_show_main_menu()
 
+
 # ---------------------------------------------------------------------------
 # Screen transitions
 # ---------------------------------------------------------------------------
@@ -379,3 +380,4 @@ func _on_daily_challenge_failed(_level_id: String) -> void:
 
 func _on_endless_failed(_level_id: String) -> void:
 	_show_main_menu()
+

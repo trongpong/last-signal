@@ -116,28 +116,15 @@ func start_next_wave() -> void:
 	_break_timer = 0.0
 
 	current_wave_index += 1
-	_debug_log("WaveManager: wave_index=%d, total=%d" % [current_wave_index, _waves.size()])
 	var wave: WaveDefinition = _waves[current_wave_index]
 
 	_build_spawn_queue(wave)
 	_enemies_alive = wave.get_total_enemy_count()
 	_enemies_to_spawn = _enemies_alive
 	_spawn_timer = 0.0
-	_debug_log("WaveManager: enemies=%d, spawn_queue=%d" % [_enemies_alive, _spawn_queue.size()])
 
 	is_wave_active = true
-	_debug_log("WaveManager: emitting wave_started(%d, %d)" % [wave.wave_number, total_waves])
 	wave_started.emit(wave.wave_number, total_waves)
-	_debug_log("WaveManager: wave_started emitted OK")
-
-static func _debug_log(msg: String) -> void:
-	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
-	if f != null:
-		f.seek_end()
-		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
-		f.close()
 
 
 ## Returns true if there are still waves left to play.

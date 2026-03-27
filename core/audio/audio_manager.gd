@@ -126,11 +126,8 @@ func play_enemy_escape(escalation: float) -> void:
 
 
 func play_wave_start(escalation: float) -> void:
-	_debug_log("AudioManager: play_wave_start escalation=%.3f" % escalation)
 	var stream := _sfx_generator.generate_wave_start(escalation)
-	_debug_log("AudioManager: generate_wave_start returned stream=%s" % str(stream != null))
 	_play_sfx(stream)
-	_debug_log("AudioManager: play_wave_start DONE")
 
 
 func play_wave_complete(escalation: float) -> void:
@@ -249,7 +246,7 @@ func play_procedural_background() -> void:
 		return
 
 	var sample_rate: int = SFXGenerator.SAMPLE_RATE
-	var duration: float = 8.0  # 8-second loop
+	var duration: float = 8.0  # 8-second drone
 
 	# Layer 1: deep bass drone at ~55 Hz (A1)
 	var bass := SynthEngine.generate_sine(55.0, duration, sample_rate)
@@ -263,22 +260,31 @@ func play_procedural_background() -> void:
 	var mixed := SynthEngine.mix(bass, fifth, 0.5, 0.25)
 	mixed = SynthEngine.mix(mixed, harmonic, 1.0, 0.15)
 
-	# Apply a gentle envelope for smooth looping (fade in/out at edges)
-	mixed = SynthEngine.apply_adsr(mixed, 0.5, 0.2, 0.8, 0.5, sample_rate)
+	# Tiny fade at edges to prevent click on restart
+	var fade_len := mini(100, mixed.size() / 2)
+	for i in fade_len:
+		var t := float(i) / float(fade_len)
+		mixed[i] *= t
+		mixed[mixed.size() - 1 - i] *= t
 
 	var stream := _samples_to_stream(mixed)
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_end = mixed.size()
+	# No loop_mode — use finished signal to restart (avoids Android crash)
 
 	if _bg_player == null:
 		_bg_player = AudioStreamPlayer.new()
 		_bg_player.bus = "Music"
 		_bg_player.name = "ProceduralBG"
 		_bg_player.volume_db = linear_to_db(0.3)
+		_bg_player.finished.connect(_on_bg_finished)
 		add_child(_bg_player)
 
 	_bg_player.stream = stream
 	_bg_player.play()
+
+
+func _on_bg_finished() -> void:
+	if _bg_player != null and _bg_player.stream != null:
+		_bg_player.play()
 
 
 ## Stop the procedural background drone.
@@ -310,31 +316,18 @@ func set_sfx_volume(vol: float) -> void:
 ## Find a free SFX player in the pool and play the stream on it.
 func _play_sfx(stream: AudioStreamWAV, volume: float = 1.0) -> void:
 	if stream == null:
-		_debug_log("AudioManager: _play_sfx called with null stream")
 		return
-	_debug_log("AudioManager: _play_sfx stream_data_size=%d" % stream.data.size())
 	for player in _sfx_players:
 		if not player.playing:
 			player.stream = stream
 			player.volume_db = linear_to_db(volume)
 			player.play()
-			_debug_log("AudioManager: _play_sfx played on free player")
 			return
 	# All players busy — steal the first one
 	_sfx_players[0].stop()
 	_sfx_players[0].stream = stream
 	_sfx_players[0].volume_db = linear_to_db(volume)
 	_sfx_players[0].play()
-	_debug_log("AudioManager: _play_sfx stole player 0")
-
-static func _debug_log(msg: String) -> void:
-	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
-	if f != null:
-		f.seek_end()
-		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
-		f.close()
 
 
 ## Return a cached AudioStreamWAV or generate and cache a new one.

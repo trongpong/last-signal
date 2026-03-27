@@ -14,6 +14,13 @@ func _ready() -> void:
 	volume_db = -80.0
 	_current_volume = 0.0
 	target_volume = 0.0
+	finished.connect(_on_finished)
+
+
+## Restart playback when stream ends (replaces native LOOP_FORWARD to avoid Android crash).
+func _on_finished() -> void:
+	if target_volume > 0.0001 and stream != null:
+		play()
 
 
 func _process(delta: float) -> void:

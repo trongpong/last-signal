@@ -63,10 +63,14 @@ func _make_drone_stream(freq_a: float, freq_b: float, wave: String, cutoff: floa
 			layer_b = SynthEngine.generate_saw(freq_b, LOOP_DURATION, SAMPLE_RATE)
 	var mixed := SynthEngine.mix(layer_a, layer_b, 0.6, 0.4)
 	mixed = SynthEngine.apply_filter_lowpass(mixed, cutoff, SAMPLE_RATE)
-	mixed = SynthEngine.apply_adsr(mixed, 0.5, 0.2, 0.8, 0.5, SAMPLE_RATE)
+	# Tiny fade at edges to prevent click on restart (replaces ADSR + native loop)
+	var fade_len := mini(100, mixed.size() / 2)
+	for i in fade_len:
+		var t := float(i) / float(fade_len)
+		mixed[i] *= t
+		mixed[mixed.size() - 1 - i] *= t
 	var stream := SynthEngine.samples_to_stream(mixed, SAMPLE_RATE)
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_end = mixed.size()
+	# No loop_mode — MusicLayer restarts via finished signal to avoid Android crash
 	return stream
 
 
