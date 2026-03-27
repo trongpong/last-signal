@@ -225,3 +225,10 @@ TOAST_BUFF_DEFAULT,Buff,Tăng cường
 TOAST_DECODE_GOLD,+{0} gold,+{0} vàng
 TOAST_DECODE_DAMAGE,+{0}% damage,+{0}% sát thương
 TOAST_DECODE_LIFE,+{0} life,+{0} mạng
+SETTINGS_DATA,Data,Dữ liệu
+UI_RESET_PROGRESS,Reset Progress,Đặt lại Tiến trình
+UI_RESET_STATS,Reset Stats,Đặt lại Thống kê
+UI_RESET_EVERYTHING,Reset Everything,Đặt lại Tất cả
+UI_CONFIRM_RESET_PROGRESS,"This will erase all campaign progress, tower upgrades, and challenge history. Economy and stats are kept. Continue?","Thao tác này sẽ xóa toàn bộ tiến trình chiến dịch, nâng cấp tháp và lịch sử thử thách. Kinh tế và thống kê được giữ lại. Tiếp tục?"
+UI_CONFIRM_RESET_STATS,This will erase all gameplay statistics. Continue?,Thao tác này sẽ xóa toàn bộ thống kê. Tiếp tục?
+UI_CONFIRM_RESET_EVERYTHING,This will erase ALL saved data and return everything to defaults. This cannot be undone. Continue?,Thao tác này sẽ xóa TẤT CẢ dữ liệu đã lưu và đặt lại mọi thứ về mặc định. Không thể hoàn tác. Tiếp tục?
