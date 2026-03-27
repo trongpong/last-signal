@@ -70,9 +70,22 @@ func _can_play_gold_earn() -> bool:
 
 
 func _on_wave_started(wave_number: int, total_waves: int) -> void:
+	_debug_log("EventRouter: _on_wave_started wave=%d total=%d" % [wave_number, total_waves])
 	_update_escalation(wave_number, total_waves)
+	_debug_log("EventRouter: escalation=%.3f, calling play_wave_start" % _escalation)
 	AudioManager.play_wave_start(_escalation)
+	_debug_log("EventRouter: play_wave_start OK, calling set_music_intensity")
 	AudioManager.set_music_intensity(_escalation)
+	_debug_log("EventRouter: _on_wave_started DONE")
+
+static func _debug_log(msg: String) -> void:
+	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
+	if f != null:
+		f.seek_end()
+		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
+		f.close()
 
 
 func _on_wave_complete(wave_number: int) -> void:

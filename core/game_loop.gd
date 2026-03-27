@@ -92,18 +92,35 @@ func start_level(level_id: String, difficulty: int, waves: Array) -> void:
 ## Optionally grants early-send bonus then launches the next wave.
 ## Changes game state to WAVE_ACTIVE.
 func send_wave() -> void:
+	_debug_log("GameLoop: send_wave START")
 	if not _wm.has_more_waves():
+		_debug_log("GameLoop: no more waves, returning")
 		return
 	if _wm.is_wave_active:
+		_debug_log("GameLoop: wave already active, returning")
 		return
 
 	var bonus: int = _wm.get_early_send_bonus()
+	_debug_log("GameLoop: early_send_bonus=%d" % bonus)
 	if bonus > 0:
 		_em.add_gold(bonus)
 
+	_debug_log("GameLoop: start_new_wave_window")
 	_am.start_new_wave_window()
+	_debug_log("GameLoop: start_next_wave")
 	_wm.start_next_wave()
+	_debug_log("GameLoop: start_next_wave OK, changing state to WAVE_ACTIVE")
 	_gm.change_state(Enums.GameState.WAVE_ACTIVE)
+	_debug_log("GameLoop: send_wave DONE")
+
+static func _debug_log(msg: String) -> void:
+	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
+	if f != null:
+		f.seek_end()
+		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
+		f.close()
 
 
 ## Called by enemy death handlers. Adds gold and records damage for adaptation.

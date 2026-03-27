@@ -126,8 +126,11 @@ func play_enemy_escape(escalation: float) -> void:
 
 
 func play_wave_start(escalation: float) -> void:
+	_debug_log("AudioManager: play_wave_start escalation=%.3f" % escalation)
 	var stream := _sfx_generator.generate_wave_start(escalation)
+	_debug_log("AudioManager: generate_wave_start returned stream=%s" % str(stream != null))
 	_play_sfx(stream)
+	_debug_log("AudioManager: play_wave_start DONE")
 
 
 func play_wave_complete(escalation: float) -> void:
@@ -307,18 +310,31 @@ func set_sfx_volume(vol: float) -> void:
 ## Find a free SFX player in the pool and play the stream on it.
 func _play_sfx(stream: AudioStreamWAV, volume: float = 1.0) -> void:
 	if stream == null:
+		_debug_log("AudioManager: _play_sfx called with null stream")
 		return
+	_debug_log("AudioManager: _play_sfx stream_data_size=%d" % stream.data.size())
 	for player in _sfx_players:
 		if not player.playing:
 			player.stream = stream
 			player.volume_db = linear_to_db(volume)
 			player.play()
+			_debug_log("AudioManager: _play_sfx played on free player")
 			return
 	# All players busy — steal the first one
 	_sfx_players[0].stop()
 	_sfx_players[0].stream = stream
 	_sfx_players[0].volume_db = linear_to_db(volume)
 	_sfx_players[0].play()
+	_debug_log("AudioManager: _play_sfx stole player 0")
+
+static func _debug_log(msg: String) -> void:
+	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
+	if f != null:
+		f.seek_end()
+		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
+		f.close()
 
 
 ## Return a cached AudioStreamWAV or generate and cache a new one.

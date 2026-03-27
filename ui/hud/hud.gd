@@ -505,8 +505,20 @@ func _on_state_changed(new_state: int, _old_state: int) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_send_wave_pressed() -> void:
+	_debug_log("HUD: send_wave_pressed START")
 	AudioManager.play_ui_click()
+	_debug_log("HUD: play_ui_click OK")
 	send_wave_requested.emit()
+	_debug_log("HUD: send_wave_requested emitted OK")
+
+static func _debug_log(msg: String) -> void:
+	var f := FileAccess.open("user://debug_log.txt", FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open("user://debug_log.txt", FileAccess.WRITE)
+	if f != null:
+		f.seek_end()
+		f.store_line("[%d] %s" % [Time.get_ticks_msec(), msg])
+		f.close()
 
 
 func _on_speed_changed(speed: float) -> void:
