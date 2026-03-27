@@ -282,7 +282,29 @@ func _on_ad_failed() -> void:
 func _show_settings() -> void:
 	var settings := SettingsMenu.new()
 	settings.back_pressed.connect(_show_main_menu)
+	settings.data_reset.connect(_on_data_reset)
 	_switch_screen(settings)
+
+
+func _on_data_reset() -> void:
+	# Re-apply defaults to runtime managers
+	var eco_data: Dictionary = SaveManager.data.get("economy", {})
+	EconomyManager.diamonds = eco_data.get("diamonds", 0) as int
+	EconomyManager.diamond_doubler = eco_data.get("diamond_doubler", false) as bool
+	EconomyManager.total_diamonds_earned = eco_data.get("total_diamonds_earned", 0) as int
+
+	var settings: Dictionary = SaveManager.data.get("profile", {}).get("settings", {})
+	AudioManager.set_music_volume(settings.get("music_vol", 1.0) as float)
+	AudioManager.set_sfx_volume(settings.get("sfx_vol", 1.0) as float)
+
+	var lang: String = SaveManager.data.get("profile", {}).get("language", "en") as String
+	TranslationServer.set_locale(lang)
+
+	# Re-setup campaign manager with reset data
+	_campaign_manager.setup(SaveManager)
+	_daily_challenge_manager.setup(SaveManager)
+
+	_show_main_menu()
 
 # ---------------------------------------------------------------------------
 # Screen swap helper
