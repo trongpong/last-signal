@@ -9,6 +9,7 @@ extends Control
 # ---------------------------------------------------------------------------
 
 signal back_pressed
+signal data_reset
 
 # ---------------------------------------------------------------------------
 # Supported languages: [locale_code, display_name]
@@ -30,6 +31,11 @@ var _damage_numbers_check: CheckButton
 var _range_on_hover_check: CheckButton
 var _fullscreen_check: CheckButton
 var _colorblind_check: CheckButton
+var _confirm_overlay: ColorRect
+var _confirm_label: Label
+var _confirm_yes_btn: Button
+var _confirm_no_btn: Button
+var _pending_reset_action: Callable
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -252,17 +258,109 @@ func _build_layout() -> void:
 	_language_option.item_selected.connect(_on_language_selected)
 	vbox.add_child(_language_option)
 
+	vbox.add_child(HSeparator.new())
+
+	# --- Data section ---
+	var data_header := Label.new()
+	data_header.text = tr("SETTINGS_DATA")
+	data_header.add_theme_font_size_override("font_size", 16)
+	data_header.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	vbox.add_child(data_header)
+
+	var reset_progress_btn := Button.new()
+	reset_progress_btn.text = tr("UI_RESET_PROGRESS")
+	reset_progress_btn.focus_mode = Control.FOCUS_ALL
+	reset_progress_btn.custom_minimum_size = Vector2(260, 56)
+	reset_progress_btn.add_theme_font_size_override("font_size", 20)
+	reset_progress_btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))
+	reset_progress_btn.pressed.connect(_on_reset_progress_pressed)
+	vbox.add_child(reset_progress_btn)
+
+	var reset_stats_btn := Button.new()
+	reset_stats_btn.text = tr("UI_RESET_STATS")
+	reset_stats_btn.focus_mode = Control.FOCUS_ALL
+	reset_stats_btn.custom_minimum_size = Vector2(260, 56)
+	reset_stats_btn.add_theme_font_size_override("font_size", 20)
+	reset_stats_btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))
+	reset_stats_btn.pressed.connect(_on_reset_stats_pressed)
+	vbox.add_child(reset_stats_btn)
+
+	var reset_all_btn := Button.new()
+	reset_all_btn.text = tr("UI_RESET_EVERYTHING")
+	reset_all_btn.focus_mode = Control.FOCUS_ALL
+	reset_all_btn.custom_minimum_size = Vector2(260, 56)
+	reset_all_btn.add_theme_font_size_override("font_size", 20)
+	reset_all_btn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	reset_all_btn.pressed.connect(_on_reset_all_pressed)
+	vbox.add_child(reset_all_btn)
+
 	# Focus neighbors for arrow key navigation
 	var controls: Array[Control] = [
 		_music_slider, _sfx_slider,
 		_damage_numbers_check, _range_on_hover_check,
-		_fullscreen_check, _colorblind_check, _language_option
+		_fullscreen_check, _colorblind_check, _language_option,
+		reset_progress_btn, reset_stats_btn, reset_all_btn
 	]
 	for i in controls.size():
 		var prev_path := controls[(i - 1 + controls.size()) % controls.size()].get_path()
 		var next_path := controls[(i + 1) % controls.size()].get_path()
 		controls[i].focus_neighbor_top = prev_path
 		controls[i].focus_neighbor_bottom = next_path
+
+	# --- Confirmation overlay (shared, hidden by default) ---
+	_confirm_overlay = ColorRect.new()
+	_confirm_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_confirm_overlay.color = Color(0.0, 0.0, 0.0, 0.75)
+	_confirm_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_confirm_overlay.visible = false
+	add_child(_confirm_overlay)
+
+	var confirm_center := CenterContainer.new()
+	confirm_center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_confirm_overlay.add_child(confirm_center)
+
+	var confirm_panel := PanelContainer.new()
+	confirm_panel.custom_minimum_size = Vector2(400, 0)
+	confirm_center.add_child(confirm_panel)
+
+	var confirm_margin := MarginContainer.new()
+	confirm_margin.add_theme_constant_override("margin_left", 24)
+	confirm_margin.add_theme_constant_override("margin_right", 24)
+	confirm_margin.add_theme_constant_override("margin_top", 24)
+	confirm_margin.add_theme_constant_override("margin_bottom", 24)
+	confirm_panel.add_child(confirm_margin)
+
+	var confirm_inner := VBoxContainer.new()
+	confirm_inner.add_theme_constant_override("separation", 16)
+	confirm_margin.add_child(confirm_inner)
+
+	_confirm_label = Label.new()
+	_confirm_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_confirm_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_confirm_label.add_theme_font_size_override("font_size", 18)
+	confirm_inner.add_child(_confirm_label)
+
+	_confirm_yes_btn = Button.new()
+	_confirm_yes_btn.text = tr("UI_YES")
+	_confirm_yes_btn.focus_mode = Control.FOCUS_ALL
+	_confirm_yes_btn.custom_minimum_size = Vector2(260, 56)
+	_confirm_yes_btn.add_theme_font_size_override("font_size", 20)
+	_confirm_yes_btn.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	_confirm_yes_btn.pressed.connect(_on_confirm_yes)
+	confirm_inner.add_child(_confirm_yes_btn)
+
+	_confirm_no_btn = Button.new()
+	_confirm_no_btn.text = tr("UI_NO")
+	_confirm_no_btn.focus_mode = Control.FOCUS_ALL
+	_confirm_no_btn.custom_minimum_size = Vector2(260, 56)
+	_confirm_no_btn.add_theme_font_size_override("font_size", 20)
+	_confirm_no_btn.pressed.connect(_on_confirm_no)
+	confirm_inner.add_child(_confirm_no_btn)
+
+	_confirm_yes_btn.focus_neighbor_bottom = _confirm_no_btn.get_path()
+	_confirm_yes_btn.focus_neighbor_top = _confirm_no_btn.get_path()
+	_confirm_no_btn.focus_neighbor_top = _confirm_yes_btn.get_path()
+	_confirm_no_btn.focus_neighbor_bottom = _confirm_yes_btn.get_path()
 
 	# Grab initial focus
 	_music_slider.grab_focus()
@@ -344,3 +442,37 @@ func _on_language_selected(index: int) -> void:
 func _on_back_pressed() -> void:
 	AudioManager.play_ui_click()
 	back_pressed.emit()
+
+
+func _show_confirm(message: String, action: Callable) -> void:
+	_confirm_label.text = message
+	_pending_reset_action = action
+	_confirm_overlay.visible = true
+	_confirm_yes_btn.grab_focus()
+
+
+func _on_confirm_yes() -> void:
+	AudioManager.play_ui_click()
+	_confirm_overlay.visible = false
+	_pending_reset_action.call()
+	data_reset.emit()
+
+
+func _on_confirm_no() -> void:
+	AudioManager.play_ui_click()
+	_confirm_overlay.visible = false
+
+
+func _on_reset_progress_pressed() -> void:
+	AudioManager.play_ui_click()
+	_show_confirm(tr("UI_CONFIRM_RESET_PROGRESS"), SaveManager.reset_progress)
+
+
+func _on_reset_stats_pressed() -> void:
+	AudioManager.play_ui_click()
+	_show_confirm(tr("UI_CONFIRM_RESET_STATS"), SaveManager.reset_stats)
+
+
+func _on_reset_all_pressed() -> void:
+	AudioManager.play_ui_click()
+	_show_confirm(tr("UI_CONFIRM_RESET_EVERYTHING"), SaveManager.reset_all)
