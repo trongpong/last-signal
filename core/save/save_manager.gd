@@ -321,3 +321,29 @@ func apply_economy(economy_manager) -> void:
 	economy_manager.diamonds = eco.get("diamonds", 0)
 	economy_manager.diamond_doubler = eco.get("diamond_doubler", false)
 	economy_manager.total_diamonds_earned = eco.get("total_diamonds_earned", 0)
+
+# ---------------------------------------------------------------------------
+# Data Reset
+# ---------------------------------------------------------------------------
+
+## Resets campaign, progression, endless, daily challenges, and tower mastery
+## to defaults. Preserves economy, stats, settings, monetization, and unlocks.
+func reset_progress() -> void:
+	var defaults := get_default_save_data()
+	data["campaign"] = defaults["campaign"].duplicate(true)
+	data["progression"] = defaults["progression"].duplicate(true)
+	data["endless"] = defaults["endless"].duplicate(true)
+	data["daily_challenges"] = defaults["daily_challenges"].duplicate(true)
+	data["tower_mastery"] = defaults["tower_mastery"].duplicate(true)
+	save_game()
+
+## Resets stats to defaults. Preserves all other data.
+func reset_stats() -> void:
+	var defaults := get_default_save_data()
+	data["stats"] = defaults["stats"].duplicate(true)
+	save_game()
+
+## Full factory reset — replaces all data with defaults.
+func reset_all() -> void:
+	data = get_default_save_data()
+	save_game()

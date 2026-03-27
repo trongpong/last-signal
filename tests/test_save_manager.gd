@@ -194,3 +194,82 @@ func test_apply_economy_sets_diamond_doubler() -> void:
 	sm.apply_economy(eco)
 	assert_true(eco.diamond_doubler)
 	eco.queue_free()
+
+# ---------------------------------------------------------------------------
+# Data reset
+# ---------------------------------------------------------------------------
+
+func test_reset_progress_clears_campaign() -> void:
+	sm.data["campaign"]["levels_completed"]["level_01"] = {"0": {"best_stars": 3, "completed": true}}
+	sm.data["campaign"]["endless_unlocked"] = true
+	sm.reset_progress()
+	var defaults := sm.get_default_save_data()
+	assert_eq(sm.data["campaign"], defaults["campaign"])
+
+func test_reset_progress_clears_progression() -> void:
+	sm.data["progression"]["skill_trees"]["pulse"] = {"level": 3}
+	sm.data["progression"]["towers_unlocked"].append("VOID_PRISM")
+	sm.reset_progress()
+	var defaults := sm.get_default_save_data()
+	assert_eq(sm.data["progression"], defaults["progression"])
+
+func test_reset_progress_clears_endless() -> void:
+	sm.data["endless"]["high_scores"]["endless_01"] = 500
+	sm.reset_progress()
+	assert_true(sm.data["endless"]["high_scores"].is_empty())
+
+func test_reset_progress_clears_daily_challenges() -> void:
+	sm.data["daily_challenges"]["streak"] = 7
+	sm.data["daily_challenges"]["last_completed_date"] = "2026-03-27"
+	sm.reset_progress()
+	var defaults := sm.get_default_save_data()
+	assert_eq(sm.data["daily_challenges"], defaults["daily_challenges"])
+
+func test_reset_progress_clears_tower_mastery() -> void:
+	sm.data["tower_mastery"]["pulse"] = {"kills": 100}
+	sm.reset_progress()
+	assert_true(sm.data["tower_mastery"].is_empty())
+
+func test_reset_progress_preserves_economy() -> void:
+	sm.data["economy"]["diamonds"] = 999
+	sm.reset_progress()
+	assert_eq(sm.data["economy"]["diamonds"], 999)
+
+func test_reset_progress_preserves_stats() -> void:
+	sm.data["stats"]["total_enemies_killed"] = 5000
+	sm.reset_progress()
+	assert_eq(sm.data["stats"]["total_enemies_killed"], 5000)
+
+func test_reset_progress_preserves_settings() -> void:
+	sm.data["profile"]["settings"]["music_vol"] = 0.5
+	sm.reset_progress()
+	assert_eq(sm.data["profile"]["settings"]["music_vol"], 0.5)
+
+func test_reset_stats_clears_stats() -> void:
+	sm.data["stats"]["total_enemies_killed"] = 5000
+	sm.data["stats"]["total_gold_earned"] = 100000
+	sm.data["stats"]["total_waves_survived"] = 200
+	sm.data["stats"]["total_play_time_seconds"] = 36000
+	sm.reset_stats()
+	var defaults := sm.get_default_save_data()
+	assert_eq(sm.data["stats"], defaults["stats"])
+
+func test_reset_stats_preserves_economy() -> void:
+	sm.data["economy"]["diamonds"] = 999
+	sm.reset_stats()
+	assert_eq(sm.data["economy"]["diamonds"], 999)
+
+func test_reset_stats_preserves_campaign() -> void:
+	sm.data["campaign"]["levels_completed"]["level_01"] = {"0": {"best_stars": 3, "completed": true}}
+	sm.reset_stats()
+	assert_false(sm.data["campaign"]["levels_completed"].is_empty())
+
+func test_reset_all_returns_to_defaults() -> void:
+	sm.data["economy"]["diamonds"] = 999
+	sm.data["campaign"]["levels_completed"]["level_01"] = {"0": {"best_stars": 3, "completed": true}}
+	sm.data["progression"]["skill_trees"]["pulse"] = {"level": 3}
+	sm.data["profile"]["settings"]["music_vol"] = 0.5
+	sm.data["stats"]["total_enemies_killed"] = 5000
+	sm.reset_all()
+	var defaults := sm.get_default_save_data()
+	assert_eq(sm.data, defaults)
