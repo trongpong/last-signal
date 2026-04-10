@@ -43,9 +43,7 @@ dependencies {
 
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
-
-    // Google Play Billing Library v7 (satisfies Play Console requirement of >= 6.0.1)
-    implementation "com.android.billingclient:billing:7.1.1"
+    implementation "androidx.documentfile:documentfile:$versions.documentfileVersion"
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")

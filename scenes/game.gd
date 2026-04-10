@@ -1134,28 +1134,24 @@ func _on_level_victory(level_id: String, stars: int, diamonds: int) -> void:
 	screen.restart_pressed.connect(func() -> void:
 		get_tree().reload_current_scene()
 	)
-	# x2 diamond ad button
-	var ad_mgr: AdManager = get_node_or_null("/root/Main/AdManager") as AdManager
-	if ad_mgr == null:
-		screen.hide_double_button()
-	else:
-		screen.double_diamonds_requested.connect(func() -> void:
-			var on_success: Callable
-			var on_fail: Callable
-			on_success = func(_bonus: int) -> void:
-				if ad_mgr.bonus_ad_failed.is_connected(on_fail):
-					ad_mgr.bonus_ad_failed.disconnect(on_fail)
-				if is_instance_valid(screen):
-					screen.on_double_diamonds_granted()
-			on_fail = func() -> void:
-				if ad_mgr.bonus_ad_reward_granted.is_connected(on_success):
-					ad_mgr.bonus_ad_reward_granted.disconnect(on_success)
-				if is_instance_valid(screen):
-					screen.hide_double_button()
-			ad_mgr.bonus_ad_reward_granted.connect(on_success, CONNECT_ONE_SHOT)
-			ad_mgr.bonus_ad_failed.connect(on_fail, CONNECT_ONE_SHOT)
-			ad_mgr.show_bonus_ad(EconomyManager, SaveManager, diamonds)
-		)
+	# x2 diamond ad button — AdManager is an autoload
+	screen.double_diamonds_requested.connect(func() -> void:
+		var on_success: Callable
+		var on_fail: Callable
+		on_success = func(_bonus: int) -> void:
+			if AdManager.bonus_ad_failed.is_connected(on_fail):
+				AdManager.bonus_ad_failed.disconnect(on_fail)
+			if is_instance_valid(screen):
+				screen.on_double_diamonds_granted()
+		on_fail = func() -> void:
+			if AdManager.bonus_ad_reward_granted.is_connected(on_success):
+				AdManager.bonus_ad_reward_granted.disconnect(on_success)
+			if is_instance_valid(screen):
+				screen.hide_double_button()
+		AdManager.bonus_ad_reward_granted.connect(on_success, CONNECT_ONE_SHOT)
+		AdManager.bonus_ad_failed.connect(on_fail, CONNECT_ONE_SHOT)
+		AdManager.show_bonus_ad(EconomyManager, SaveManager, diamonds)
+	)
 
 func _on_level_failed(level_id: String) -> void:
 	if _tower_mastery_manager != null:

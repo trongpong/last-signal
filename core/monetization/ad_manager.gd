@@ -1,21 +1,23 @@
-class_name AdManager
 extends Node
 
 ## Manages rewarded-ad viewing with a per-day cap.
-## Uses Poing-Studios godot-admob-plugin v4.1.0 on Android/iOS at runtime.
-## All plugin access is fully dynamic via ClassDB to avoid parse errors
-## in the editor where plugin classes don't exist.
-## Falls back to instant simulation on desktop/editor.
+## Uses Poing-Studios godot-admob-plugin v4.1.0 on Android/iOS.
+## All calls are gated by `_available` — desktop/editor falls back to
+## instant simulation. Pattern mirrors 2048plus/scripts/ads/AdMobManager.gd.
 
 # ---------------------------------------------------------------------------
 # Ad Unit IDs
 # ---------------------------------------------------------------------------
 
 const AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4258670828"
-const AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5224354917"
-
 const DC_AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/5883745702"
-const DC_AD_UNIT_ID_TEST: String = "ca-app-pub-3940256099942544/5354046379"
+const BANNER_AD_UNIT_ID_ANDROID: String = "ca-app-pub-3637456949556000/4533230854"
+const BANNER_RESERVED_HEIGHT_DEFAULT: float = 180.0
+
+# Actual banner pixel height — starts at a conservative default (covers ~3x
+# density devices for a 50dp banner), then updates to the real value after
+# the native plugin reports it via AdView.get_height_in_pixels().
+var _banner_reserve: float = BANNER_RESERVED_HEIGHT_DEFAULT
 
 # ---------------------------------------------------------------------------
 # Signals
@@ -27,104 +29,100 @@ signal rewarded_interstitial_reward_granted(diamonds: int)
 signal rewarded_interstitial_dismissed
 signal bonus_ad_reward_granted(diamonds: int)
 signal bonus_ad_failed
+signal banner_reserve_changed(pixels: float)
 
 # ---------------------------------------------------------------------------
 # State
 # ---------------------------------------------------------------------------
 
-var _rewarded_ad = null
+var _available: bool = false
+
+var _rewarded_ad: RewardedAd = null
 var _ad_loading: bool = false
 var _pending_economy = null
 var _pending_save = null
 var _bonus_pending_economy = null
 var _bonus_pending_save = null
 var _bonus_pending_diamonds: int = 0
+var _bonus_mode: bool = false
 
 # Rewarded interstitial state
-var _ri_ad = null
+var _ri_ad: RewardedInterstitialAd = null
 var _ri_loading: bool = false
 var _ri_pending_economy = null
 var _ri_pending_save = null
 var _ri_pending_diamonds: int = 0
 var _ri_rewarded: bool = false
 
+# Banner ad state
+var _banner_ad: AdView = null
+var _banner_loading: bool = false
+var _banner_shown: bool = false
+
+# Shared listener/callback objects — created up front; harmless no-ops on desktop
+var _rewarded_load_callback: RewardedAdLoadCallback = null
+var _rewarded_content_callback: FullScreenContentCallback = null
+var _reward_listener: OnUserEarnedRewardListener = null
+var _ri_load_callback: RewardedInterstitialAdLoadCallback = null
+var _ri_content_callback: FullScreenContentCallback = null
+var _ri_reward_listener: OnUserEarnedRewardListener = null
+var _banner_listener: AdListener = null
+
 # ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
 
 func _ready() -> void:
-	if not _is_mobile():
+	IAPManager.no_ads_purchased.connect(_on_no_ads_purchased)
+
+	_available = Engine.has_singleton("PoingGodotAdMob")
+	if not _available:
 		return
-	# Initialize AdMob via dynamic call
-	var mobile_ads_class = _get_class("MobileAds")
-	if mobile_ads_class != null and mobile_ads_class.has_method("initialize"):
-		mobile_ads_class.initialize()
+
+	_setup_callbacks()
+	MobileAds.initialize()
 	_load_rewarded_ad()
 	_load_ri_ad()
 
-func _is_mobile() -> bool:
-	return OS.get_name() in ["Android", "iOS"]
+func _setup_callbacks() -> void:
+	_rewarded_load_callback = RewardedAdLoadCallback.new()
+	_rewarded_load_callback.on_ad_loaded = _on_rewarded_ad_loaded
+	_rewarded_load_callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
 
-func _get_ad_unit_id() -> String:
-	if OS.is_debug_build():
-		return AD_UNIT_ID_TEST
-	return AD_UNIT_ID_ANDROID
+	_rewarded_content_callback = FullScreenContentCallback.new()
+	_rewarded_content_callback.on_ad_dismissed_full_screen_content = _on_ad_dismissed
 
-func _get_ri_ad_unit_id() -> String:
-	if OS.is_debug_build():
-		return DC_AD_UNIT_ID_TEST
-	return DC_AD_UNIT_ID_ANDROID
+	_reward_listener = OnUserEarnedRewardListener.new()
+	_reward_listener.on_user_earned_reward = _on_user_earned_reward
 
-## Safely get a GDScript class by name from the global scope.
-## Returns null if the class doesn't exist (e.g., plugin not loaded).
-func _get_class(class_name_str: String):
-	var script = ResourceLoader.load("res://addons/admob/src/api/%s.gd" % class_name_str, "GDScript", ResourceLoader.CACHE_MODE_REUSE)
-	if script != null:
-		return script
-	return null
+	_ri_load_callback = RewardedInterstitialAdLoadCallback.new()
+	_ri_load_callback.on_ad_loaded = _on_ri_ad_loaded
+	_ri_load_callback.on_ad_failed_to_load = _on_ri_ad_failed_to_load
 
-func _new_instance(class_name_str: String):
-	var script = _get_class(class_name_str)
-	if script != null:
-		return script.new()
-	return null
+	_ri_content_callback = FullScreenContentCallback.new()
+	_ri_content_callback.on_ad_dismissed_full_screen_content = _on_ri_ad_dismissed
 
-func _new_instance_from(path: String):
-	var script = ResourceLoader.load(path, "GDScript", ResourceLoader.CACHE_MODE_REUSE)
-	if script != null:
-		return script.new()
-	return null
+	_ri_reward_listener = OnUserEarnedRewardListener.new()
+	_ri_reward_listener.on_user_earned_reward = _on_ri_user_earned_reward
+
+	_banner_listener = AdListener.new()
+	_banner_listener.on_ad_loaded = _on_banner_ad_loaded
+	_banner_listener.on_ad_failed_to_load = _on_banner_ad_failed_to_load
 
 # ---------------------------------------------------------------------------
 # Ad loading
 # ---------------------------------------------------------------------------
 
 func _load_rewarded_ad() -> void:
-	if _ad_loading or not _is_mobile():
+	if _ad_loading or not _available:
 		return
-
-	var loader = _new_instance("RewardedAdLoader")
-	if loader == null:
-		return
-
 	_ad_loading = true
-	var callback = _new_instance_from("res://addons/admob/src/api/listeners/RewardedAdLoadCallback.gd")
-	if callback == null:
-		_ad_loading = false
-		return
-	callback.on_ad_loaded = _on_rewarded_ad_loaded
-	callback.on_ad_failed_to_load = _on_rewarded_ad_failed_to_load
+	RewardedAdLoader.new().load(AD_UNIT_ID_ANDROID, AdRequest.new(), _rewarded_load_callback)
 
-	var ad_request = _new_instance_from("res://addons/admob/src/api/core/AdRequest.gd")
-	if ad_request == null:
-		_ad_loading = false
-		return
-	loader.load(_get_ad_unit_id(), ad_request, callback)
-
-func _on_rewarded_ad_loaded(ad) -> void:
+func _on_rewarded_ad_loaded(ad: RewardedAd) -> void:
 	_rewarded_ad = ad
 	_ad_loading = false
-	ad.full_screen_content_callback.on_ad_dismissed_full_screen_content = _on_ad_dismissed
+	_rewarded_ad.full_screen_content_callback = _rewarded_content_callback
 
 func _on_rewarded_ad_failed_to_load(_error) -> void:
 	_rewarded_ad = null
@@ -136,6 +134,7 @@ func _on_ad_dismissed() -> void:
 	if _rewarded_ad != null:
 		_rewarded_ad.destroy()
 		_rewarded_ad = null
+	_bonus_mode = false
 	_load_rewarded_ad()
 
 # ---------------------------------------------------------------------------
@@ -143,31 +142,15 @@ func _on_ad_dismissed() -> void:
 # ---------------------------------------------------------------------------
 
 func _load_ri_ad() -> void:
-	if _ri_loading or not _is_mobile():
+	if _ri_loading or not _available:
 		return
-
-	var loader = _new_instance("RewardedInterstitialAdLoader")
-	if loader == null:
-		return
-
 	_ri_loading = true
-	var callback = _new_instance_from("res://addons/admob/src/api/listeners/RewardedInterstitialAdLoadCallback.gd")
-	if callback == null:
-		_ri_loading = false
-		return
-	callback.on_ad_loaded = _on_ri_ad_loaded
-	callback.on_ad_failed_to_load = _on_ri_ad_failed_to_load
+	RewardedInterstitialAdLoader.new().load(DC_AD_UNIT_ID_ANDROID, AdRequest.new(), _ri_load_callback)
 
-	var ad_request = _new_instance_from("res://addons/admob/src/api/core/AdRequest.gd")
-	if ad_request == null:
-		_ri_loading = false
-		return
-	loader.load(_get_ri_ad_unit_id(), ad_request, callback)
-
-func _on_ri_ad_loaded(ad) -> void:
+func _on_ri_ad_loaded(ad: RewardedInterstitialAd) -> void:
 	_ri_ad = ad
 	_ri_loading = false
-	ad.full_screen_content_callback.on_ad_dismissed_full_screen_content = _on_ri_ad_dismissed
+	_ri_ad.full_screen_content_callback = _ri_content_callback
 
 func _on_ri_ad_failed_to_load(_error) -> void:
 	_ri_ad = null
@@ -235,16 +218,13 @@ func show_rewarded_interstitial(economy, save, bonus_diamonds: int) -> void:
 		rewarded_interstitial_reward_granted.emit(bonus_diamonds)
 		return
 
-	if _is_mobile() and _ri_ad != null:
+	if _available and _ri_ad != null:
 		_ri_pending_economy = economy
 		_ri_pending_save = save
 		_ri_pending_diamonds = bonus_diamonds
 		_ri_rewarded = false
-		var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
-		if reward_listener != null:
-			reward_listener.on_user_earned_reward = _on_ri_user_earned_reward
-			_ri_ad.show(reward_listener)
-			return
+		_ri_ad.show(_ri_reward_listener)
+		return
 
 	# Desktop/editor simulation: grant reward directly
 	if economy != null:
@@ -263,29 +243,19 @@ func show_bonus_ad(economy, save, bonus_diamonds: int) -> void:
 		_grant_bonus(economy, save, bonus_diamonds)
 		return
 
-	if _is_mobile():
+	if _available:
 		if _rewarded_ad != null:
 			_bonus_pending_economy = economy
 			_bonus_pending_save = save
 			_bonus_pending_diamonds = bonus_diamonds
-			var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
-			if reward_listener != null:
-				reward_listener.on_user_earned_reward = _on_bonus_ad_earned
-				_rewarded_ad.show(reward_listener)
-				return
-		# Mobile but ad not loaded — signal failure
+			_bonus_mode = true
+			_rewarded_ad.show(_reward_listener)
+			return
 		bonus_ad_failed.emit()
 		return
 
 	# Desktop/editor simulation: grant reward directly
 	_grant_bonus(economy, save, bonus_diamonds)
-
-func _on_bonus_ad_earned(_rewarded_item) -> void:
-	if _bonus_pending_economy != null and _bonus_pending_save != null:
-		_grant_bonus(_bonus_pending_economy, _bonus_pending_save, _bonus_pending_diamonds)
-	_bonus_pending_economy = null
-	_bonus_pending_save = null
-	_bonus_pending_diamonds = 0
 
 func _grant_bonus(economy, save, bonus: int) -> void:
 	if economy != null:
@@ -305,14 +275,12 @@ func request_ad(economy, save) -> void:
 		ad_failed.emit()
 		return
 
-	if _is_mobile() and _rewarded_ad != null:
+	if _available and _rewarded_ad != null:
 		_pending_economy = economy
 		_pending_save = save
-		var reward_listener = _new_instance_from("res://addons/admob/src/api/listeners/OnUserEarnedRewardListener.gd")
-		if reward_listener != null:
-			reward_listener.on_user_earned_reward = _on_user_earned_reward
-			_rewarded_ad.show(reward_listener)
-			return
+		_bonus_mode = false
+		_rewarded_ad.show(_reward_listener)
+		return
 
 	# Simulation fallback
 	_grant_reward(economy, save)
@@ -322,10 +290,17 @@ func request_ad(economy, save) -> void:
 # ---------------------------------------------------------------------------
 
 func _on_user_earned_reward(_rewarded_item) -> void:
-	if _pending_economy != null and _pending_save != null:
-		_grant_reward(_pending_economy, _pending_save)
-	_pending_economy = null
-	_pending_save = null
+	if _bonus_mode:
+		if _bonus_pending_economy != null and _bonus_pending_save != null:
+			_grant_bonus(_bonus_pending_economy, _bonus_pending_save, _bonus_pending_diamonds)
+		_bonus_pending_economy = null
+		_bonus_pending_save = null
+		_bonus_pending_diamonds = 0
+	else:
+		if _pending_economy != null and _pending_save != null:
+			_grant_reward(_pending_economy, _pending_save)
+		_pending_economy = null
+		_pending_save = null
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -351,3 +326,86 @@ func _check_date_reset(save) -> void:
 		save.data["monetization"]["ads_watched_today"] = 0
 		save.data["monetization"]["ads_last_reset_date"] = today
 		save.save_game()
+
+# ---------------------------------------------------------------------------
+# Banner ads
+# ---------------------------------------------------------------------------
+
+func show_banner(save) -> void:
+	if has_no_ads(save):
+		return
+	if not _available:
+		return
+	_banner_shown = true
+	if _banner_ad == null and not _banner_loading:
+		_load_banner()
+		return
+	if _banner_ad != null:
+		_banner_ad.show()
+
+func hide_banner() -> void:
+	_banner_shown = false
+	if _banner_ad != null:
+		_banner_ad.hide()
+
+func destroy_banner() -> void:
+	_banner_shown = false
+	_banner_loading = false
+	if _banner_ad != null:
+		_banner_ad.destroy()
+		_banner_ad = null
+
+func get_banner_reserve(save) -> float:
+	if not _available:
+		return 0.0
+	if has_no_ads(save):
+		return 0.0
+	return _banner_reserve
+
+func apply_banner_reserve(control: Control, save) -> void:
+	if control == null:
+		return
+	control.offset_bottom = -get_banner_reserve(save)
+
+## Anchors a ColorRect/Panel so it paints the full screen including the area
+## reserved for the banner. The background stays at PRESET_FULL_RECT relative
+## to its (shrunken) parent, but extends downward by `reserve` pixels to cover
+## the banner strip. Called once after adding the bg; re-applied on
+## banner_reserve_changed for dynamic resize.
+func extend_bg_over_banner(bg: Control, save) -> void:
+	if bg == null:
+		return
+	bg.offset_bottom = get_banner_reserve(save)
+
+func _load_banner() -> void:
+	if _banner_loading or not _available:
+		return
+	_banner_loading = true
+	_banner_ad = AdView.new(BANNER_AD_UNIT_ID_ANDROID, AdSize.BANNER, AdPosition.Values.BOTTOM)
+	_banner_ad.ad_listener = _banner_listener
+	_banner_ad.load_ad(AdRequest.new())
+
+func _on_banner_ad_loaded() -> void:
+	_banner_loading = false
+	if _banner_ad != null:
+		var px: int = _banner_ad.get_height_in_pixels()
+		if px > 0:
+			var new_reserve: float = float(px)
+			if not is_equal_approx(new_reserve, _banner_reserve):
+				_banner_reserve = new_reserve
+				banner_reserve_changed.emit(_banner_reserve)
+	if _banner_shown and _banner_ad != null:
+		_banner_ad.show()
+
+func _on_banner_ad_failed_to_load(_error) -> void:
+	_banner_ad = null
+	_banner_loading = false
+	if is_inside_tree():
+		get_tree().create_timer(30.0).timeout.connect(_maybe_retry_banner)
+
+func _maybe_retry_banner() -> void:
+	if _banner_shown and _banner_ad == null and not _banner_loading:
+		_load_banner()
+
+func _on_no_ads_purchased() -> void:
+	destroy_banner()

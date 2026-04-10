@@ -1,4 +1,3 @@
-class_name IAPManager
 extends Node
 
 ## In-App Purchase manager.
@@ -11,6 +10,7 @@ extends Node
 
 signal purchase_complete(pack_id: String, diamonds: int)
 signal purchase_failed(pack_id: String)
+signal no_ads_purchased
 
 # ---------------------------------------------------------------------------
 # Pack catalogue
@@ -173,6 +173,7 @@ func _apply_purchase(pack_id: String, economy, save) -> void:
 		"no_ads":
 			if save != null:
 				save.data["monetization"]["no_ads_purchased"] = true
+			no_ads_purchased.emit()
 		"speed_x3":
 			if save != null:
 				save.data["unlocks"]["speed_x3"] = true

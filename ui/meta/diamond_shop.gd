@@ -36,6 +36,7 @@ var _confirm_overlay: PanelContainer
 var _confirm_label: Label
 var _pending_pack_id: String = ""
 var _pack_buttons: Dictionary = {}  # pack_id -> Button
+var _bg: ColorRect
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -43,23 +44,38 @@ var _pack_buttons: Dictionary = {}  # pack_id -> Button
 
 func _ready() -> void:
 	_build_layout()
+	AdManager.apply_banner_reserve(self, SaveManager)
+	AdManager.banner_reserve_changed.connect(_on_banner_reserve_changed)
+	AdManager.show_banner(SaveManager)
+
+
+func _exit_tree() -> void:
+	AdManager.hide_banner()
+	if AdManager.banner_reserve_changed.is_connected(_on_banner_reserve_changed):
+		AdManager.banner_reserve_changed.disconnect(_on_banner_reserve_changed)
+
+
+func _on_banner_reserve_changed(_pixels: float) -> void:
+	AdManager.apply_banner_reserve(self, SaveManager)
+	AdManager.extend_bg_over_banner(_bg, SaveManager)
 
 
 func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Dark background
-	var bg := ColorRect.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.03, 0.06, 0.95)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(bg)
+	_bg = ColorRect.new()
+	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_bg.color = Color(0.02, 0.03, 0.06, 0.95)
+	_bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_bg)
+	AdManager.extend_bg_over_banner(_bg, SaveManager)
 
 	var vbox := VBoxContainer.new()
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
-	vbox.custom_minimum_size = Vector2(400, 0)
+	vbox.custom_minimum_size = Vector2(720, 0)
 	vbox.add_theme_constant_override("separation", 10)
 	add_child(vbox)
 
@@ -94,9 +110,17 @@ func _build_layout() -> void:
 				best_ratio = ratio
 				best_pack_id = pack["id"] as String
 
-	# Pack buttons — card-style rows
+	# Pack buttons — 2-column grid of card-style cells
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(grid)
+
 	for pack in PACKS:
 		var card := PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var card_style := StyleBoxFlat.new()
 		card_style.bg_color = Color(0.06, 0.06, 0.1, 0.7)
 		card_style.border_color = Color(0.2, 0.3, 0.4, 0.5)
@@ -104,7 +128,7 @@ func _build_layout() -> void:
 		card_style.set_corner_radius_all(4)
 		card_style.set_content_margin_all(8)
 		card.add_theme_stylebox_override("panel", card_style)
-		vbox.add_child(card)
+		grid.add_child(card)
 
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)

@@ -27,6 +27,8 @@ GameManager="*res://core/game_manager.gd"
 EconomyManager="*res://core/economy/economy_manager.gd"
 SaveManager="*res://core/save/save_manager.gd"
 AudioManager="*res://core/audio/audio_manager.gd"
+IAPManager="*res://core/monetization/iap_manager.gd"
+AdManager="*res://core/monetization/ad_manager.gd"
 
 [configuration]
 

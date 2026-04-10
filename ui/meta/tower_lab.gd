@@ -65,6 +65,7 @@ var _global_scroll: ScrollContainer
 var _synergy_scroll: ScrollContainer
 var _synergy_panel: VBoxContainer
 var _current_tab: int = 0  # 0 = skills, 1 = globals, 2 = synergies
+var _bg: ColorRect
 
 # ---------------------------------------------------------------------------
 # Lifecycle
@@ -72,6 +73,20 @@ var _current_tab: int = 0  # 0 = skills, 1 = globals, 2 = synergies
 
 func _ready() -> void:
 	_build_layout()
+	AdManager.apply_banner_reserve(self, SaveManager)
+	AdManager.banner_reserve_changed.connect(_on_banner_reserve_changed)
+	AdManager.show_banner(SaveManager)
+
+
+func _exit_tree() -> void:
+	AdManager.hide_banner()
+	if AdManager.banner_reserve_changed.is_connected(_on_banner_reserve_changed):
+		AdManager.banner_reserve_changed.disconnect(_on_banner_reserve_changed)
+
+
+func _on_banner_reserve_changed(_pixels: float) -> void:
+	AdManager.apply_banner_reserve(self, SaveManager)
+	AdManager.extend_bg_over_banner(_bg, SaveManager)
 
 
 func _get_safe_margin() -> float:
@@ -86,11 +101,12 @@ func _build_layout() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Full dark background
-	var bg := ColorRect.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.03, 0.06, 0.95)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(bg)
+	_bg = ColorRect.new()
+	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_bg.color = Color(0.02, 0.03, 0.06, 0.95)
+	_bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_bg)
+	AdManager.extend_bg_over_banner(_bg, SaveManager)
 
 	var safe: float = _get_safe_margin()
 	var main_hbox := HBoxContainer.new()
