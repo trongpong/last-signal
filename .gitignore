@@ -11,9 +11,10 @@ Thumbs.db
 android/
 *.keystore
 *.jks
-GodotGooglePlayBilling/
+addons/GodotGooglePlayBilling/
 ios/
 
 # Exports
 *.export
 export_presets.cfg
+build/
