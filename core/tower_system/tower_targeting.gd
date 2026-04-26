@@ -46,67 +46,56 @@ func _is_valid(tower_pos: Vector2, attack_range: float, enemies: Array, i: int) 
 	var dist: float = (tower_pos.distance_to(e.get("position", Vector2.ZERO) as Vector2))
 	return dist <= attack_range
 
-## NEAREST: closest enemy to the tower.
-func _select_nearest(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
+## Generic selector: iterates valid enemies, scores each with score_fn(enemy_dict, tower_pos),
+## returns index of the enemy with highest score (if higher_is_better) or lowest score.
+func _select_by_score(tower_pos: Vector2, attack_range: float, enemies: Array, score_fn: Callable, higher_is_better: bool) -> int:
 	var best_idx: int = -1
-	var best_dist: float = INF
+	var best_score: float = -INF if higher_is_better else INF
 	for i in range(enemies.size()):
 		if not _is_valid(tower_pos, attack_range, enemies, i):
 			continue
-		var dist: float = tower_pos.distance_to(enemies[i].get("position", Vector2.ZERO) as Vector2)
-		if dist < best_dist:
-			best_dist = dist
-			best_idx = i
+		var score: float = score_fn.call(enemies[i], tower_pos)
+		if higher_is_better:
+			if score > best_score:
+				best_score = score
+				best_idx = i
+		else:
+			if score < best_score:
+				best_score = score
+				best_idx = i
 	return best_idx
+
+## NEAREST: closest enemy to the tower.
+func _select_nearest(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
+	return _select_by_score(tower_pos, attack_range, enemies,
+		func(e: Dictionary, pos: Vector2) -> float:
+			return pos.distance_to(e.get("position", Vector2.ZERO) as Vector2),
+		false)
 
 ## STRONGEST: enemy with the highest current HP.
 func _select_strongest(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
-	var best_idx: int = -1
-	var best_hp: float = -INF
-	for i in range(enemies.size()):
-		if not _is_valid(tower_pos, attack_range, enemies, i):
-			continue
-		var hp: float = enemies[i].get("hp", 0.0) as float
-		if hp > best_hp:
-			best_hp = hp
-			best_idx = i
-	return best_idx
+	return _select_by_score(tower_pos, attack_range, enemies,
+		func(e: Dictionary, _pos: Vector2) -> float:
+			return e.get("hp", 0.0) as float,
+		true)
 
 ## WEAKEST: enemy with the lowest current HP.
 func _select_weakest(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
-	var best_idx: int = -1
-	var best_hp: float = INF
-	for i in range(enemies.size()):
-		if not _is_valid(tower_pos, attack_range, enemies, i):
-			continue
-		var hp: float = enemies[i].get("hp", 0.0) as float
-		if hp < best_hp:
-			best_hp = hp
-			best_idx = i
-	return best_idx
+	return _select_by_score(tower_pos, attack_range, enemies,
+		func(e: Dictionary, _pos: Vector2) -> float:
+			return e.get("hp", 0.0) as float,
+		false)
 
 ## FIRST: enemy farthest along the path (highest progress).
 func _select_first(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
-	var best_idx: int = -1
-	var best_progress: float = -INF
-	for i in range(enemies.size()):
-		if not _is_valid(tower_pos, attack_range, enemies, i):
-			continue
-		var progress: float = enemies[i].get("progress", 0.0) as float
-		if progress > best_progress:
-			best_progress = progress
-			best_idx = i
-	return best_idx
+	return _select_by_score(tower_pos, attack_range, enemies,
+		func(e: Dictionary, _pos: Vector2) -> float:
+			return e.get("progress", 0.0) as float,
+		true)
 
 ## LAST: enemy least far along the path (lowest progress).
 func _select_last(tower_pos: Vector2, attack_range: float, enemies: Array) -> int:
-	var best_idx: int = -1
-	var best_progress: float = INF
-	for i in range(enemies.size()):
-		if not _is_valid(tower_pos, attack_range, enemies, i):
-			continue
-		var progress: float = enemies[i].get("progress", 0.0) as float
-		if progress < best_progress:
-			best_progress = progress
-			best_idx = i
-	return best_idx
+	return _select_by_score(tower_pos, attack_range, enemies,
+		func(e: Dictionary, _pos: Vector2) -> float:
+			return e.get("progress", 0.0) as float,
+		false)

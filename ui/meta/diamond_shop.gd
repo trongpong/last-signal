@@ -44,20 +44,11 @@ var _bg: ColorRect
 
 func _ready() -> void:
 	_build_layout()
-	AdManager.apply_banner_reserve(self, SaveManager)
-	AdManager.banner_reserve_changed.connect(_on_banner_reserve_changed)
-	AdManager.show_banner(SaveManager)
+	AdManager.setup_banner_screen(self, _bg, SaveManager)
 
 
 func _exit_tree() -> void:
-	AdManager.hide_banner()
-	if AdManager.banner_reserve_changed.is_connected(_on_banner_reserve_changed):
-		AdManager.banner_reserve_changed.disconnect(_on_banner_reserve_changed)
-
-
-func _on_banner_reserve_changed(_pixels: float) -> void:
-	AdManager.apply_banner_reserve(self, SaveManager)
-	AdManager.extend_bg_over_banner(_bg, SaveManager)
+	AdManager.teardown_banner_screen(self)
 
 
 func _build_layout() -> void:

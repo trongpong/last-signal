@@ -58,6 +58,7 @@ var _ri_rewarded: bool = false
 var _banner_ad: AdView = null
 var _banner_loading: bool = false
 var _banner_shown: bool = false
+var _banner_screens: Array = []
 
 # Shared listener/callback objects — created up front; harmless no-ops on desktop
 var _rewarded_load_callback: RewardedAdLoadCallback = null
@@ -218,12 +219,15 @@ func show_rewarded_interstitial(economy, save, bonus_diamonds: int) -> void:
 		rewarded_interstitial_reward_granted.emit(bonus_diamonds)
 		return
 
-	if _available and _ri_ad != null:
-		_ri_pending_economy = economy
-		_ri_pending_save = save
-		_ri_pending_diamonds = bonus_diamonds
-		_ri_rewarded = false
-		_ri_ad.show(_ri_reward_listener)
+	if _available:
+		if _ri_ad != null:
+			_ri_pending_economy = economy
+			_ri_pending_save = save
+			_ri_pending_diamonds = bonus_diamonds
+			_ri_rewarded = false
+			_ri_ad.show(_ri_reward_listener)
+			return
+		rewarded_interstitial_dismissed.emit()
 		return
 
 	# Desktop/editor simulation: grant reward directly
@@ -275,14 +279,17 @@ func request_ad(economy, save) -> void:
 		ad_failed.emit()
 		return
 
-	if _available and _rewarded_ad != null:
-		_pending_economy = economy
-		_pending_save = save
-		_bonus_mode = false
-		_rewarded_ad.show(_reward_listener)
+	if _available:
+		if _rewarded_ad != null:
+			_pending_economy = economy
+			_pending_save = save
+			_bonus_mode = false
+			_rewarded_ad.show(_reward_listener)
+			return
+		ad_failed.emit()
 		return
 
-	# Simulation fallback
+	# Desktop/editor simulation: grant reward directly
 	_grant_reward(economy, save)
 
 # ---------------------------------------------------------------------------
@@ -409,3 +416,32 @@ func _maybe_retry_banner() -> void:
 
 func _on_no_ads_purchased() -> void:
 	destroy_banner()
+
+## Registers a screen to receive banner reserve updates.
+## Call from _ready() after _build_layout(). Applies initial reserve,
+## shows the banner, and auto-refreshes when banner height changes.
+func setup_banner_screen(control: Control, bg: Control, save) -> void:
+	apply_banner_reserve(control, save)
+	extend_bg_over_banner(bg, save)
+	_banner_screens.append({control = control, bg = bg, save = save})
+	if not banner_reserve_changed.is_connected(_refresh_banner_screens):
+		banner_reserve_changed.connect(_refresh_banner_screens)
+	show_banner(save)
+
+## Unregisters a screen from banner reserve updates.
+## Call from _exit_tree(). Hides the banner if no screens remain registered.
+func teardown_banner_screen(control: Control) -> void:
+	for i in range(_banner_screens.size() - 1, -1, -1):
+		if _banner_screens[i].get("control") == control:
+			_banner_screens.remove_at(i)
+			break
+	if _banner_screens.is_empty():
+		hide_banner()
+		if banner_reserve_changed.is_connected(_refresh_banner_screens):
+			banner_reserve_changed.disconnect(_refresh_banner_screens)
+
+func _refresh_banner_screens(_pixels: float) -> void:
+	for s in _banner_screens:
+		if is_instance_valid(s.control):
+			apply_banner_reserve(s.control, s.save)
+			extend_bg_over_banner(s.bg, s.save)

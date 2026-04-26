@@ -695,6 +695,9 @@ func _viewport_to_world(viewport_pos: Vector2) -> Vector2:
 	return get_canvas_transform().affine_inverse() * viewport_pos
 
 func _handle_tap(viewport_pos: Vector2) -> void:
+	if _signal_decode_minigame != null:
+		return
+
 	var pos: Vector2 = _viewport_to_world(viewport_pos)
 
 	# Handle pending ability targeting

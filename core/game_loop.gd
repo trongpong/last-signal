@@ -60,7 +60,7 @@ func setup(
 
 	_wm.wave_complete.connect(_on_wave_complete)
 	_wm.all_waves_complete.connect(_on_all_waves_complete)
-	_wm.break_send_requested.connect(_on_break_send_requested)
+	_wm.break_skip_requested.connect(_on_break_skip_requested)
 
 	if AudioManager.event_router != null:
 		var is_endless := GameManager.current_level_id == "endless"
@@ -137,7 +137,7 @@ func _on_wave_complete(wave_number: int) -> void:
 	_gm.change_state(Enums.GameState.WAVE_COMPLETE)
 
 
-func _on_break_send_requested() -> void:
+func _on_break_skip_requested() -> void:
 	send_wave()
 
 

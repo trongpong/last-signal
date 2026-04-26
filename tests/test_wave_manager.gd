@@ -221,10 +221,10 @@ func test_break_timer_emits_send_request() -> void:
 	wm._process(0.5)
 	wm.on_enemy_died()
 	wm.on_enemy_died()
-	# Fast-forward through the break — should emit break_send_requested
+	# Fast-forward through the break — should emit break_skip_requested
 	watch_signals(wm)
 	wm._process(Constants.WAVE_BREAK_DURATION + 0.1)
-	assert_signal_emitted(wm, "break_send_requested")
+	assert_signal_emitted(wm, "break_skip_requested")
 
 # ---------------------------------------------------------------------------
 # on_enemy_reached_exit

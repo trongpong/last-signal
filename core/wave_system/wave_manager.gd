@@ -25,7 +25,7 @@ signal break_started(duration: float)
 
 ## Emitted when the break timer expires, requesting the next wave be sent.
 ## The game loop should handle this to ensure proper orchestration.
-signal break_send_requested
+signal break_skip_requested
 
 # ---------------------------------------------------------------------------
 # Public state
@@ -82,7 +82,7 @@ func _process(delta: float) -> void:
 		if _break_timer <= 0.0:
 			_in_break = false
 			if has_more_waves():
-				break_send_requested.emit()
+				break_skip_requested.emit()
 	elif is_wave_active:
 		_process_spawn_queue(delta)
 
@@ -238,6 +238,6 @@ func _on_wave_enemies_cleared() -> void:
 		break_started.emit(bd)
 		if bd <= 0.0:
 			_in_break = false
-			break_send_requested.emit()
+			break_skip_requested.emit()
 	else:
 		all_waves_complete.emit()
